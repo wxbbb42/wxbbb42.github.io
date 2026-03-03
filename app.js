@@ -745,6 +745,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   ScrollTrigger.refresh();
 
   initThemeLang();
+  initMobileProgress();
 });
 
 // ══════════════════════════════════════════════════════════════
@@ -861,4 +862,16 @@ function applyLang(lang) {
   // About name tagline
   const taglineEl = document.querySelector('.about-tagline');
   if (taglineEl && taglineEl.dataset.cn) taglineEl.textContent = lang === 'cn' ? taglineEl.dataset.cn : taglineEl.dataset.en;
+}
+
+// --------------------------------------------------------------
+// MOBILE SCROLL PROGRESS (no sticky � use window scroll)
+// --------------------------------------------------------------
+function initMobileProgress() {
+  const bar = document.querySelector('.mobile-header-bar');
+  if (!bar || window.innerWidth > 960) return;
+  window.addEventListener('scroll', () => {
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = total > 0 ? `${(window.scrollY / total) * 100}%` : '0%';
+  }, { passive: true });
 }
