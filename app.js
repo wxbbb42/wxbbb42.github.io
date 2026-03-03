@@ -439,30 +439,7 @@ function initSceneAnimations() {
 // CARD ANIMATIONS  (LOCKED — Ben approved)
 // ══════════════════════════════════════════════════════════════
 function initCardAnimations() {
-  // Use scene as trigger (reliable in sticky layout), not the grid itself
-  const workScene = scenes[0];
-  const labScene  = scenes[1];
-
-  ScrollTrigger.create({
-    trigger: workScene, start: 'top+=50% center', once: true,
-    onEnter: () => gsap.fromTo('.card',
-      { y: 40, opacity: 0, rotation: 0.4 },
-      { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 })
-  });
-
-  ScrollTrigger.create({
-    trigger: labScene, start: 'top+=50% center', once: true,
-    onEnter: () => gsap.fromTo('.lab-card',
-      { y: 36, opacity: 0, rotation: 0.3 },
-      { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 })
-  });
-
-  ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', once: true, onEnter: () => {
-    gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
-    gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
-    gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
-  }});
-
+  // Hover lift effect on cards
   document.querySelectorAll('.card, .lab-card').forEach(card => {
     card.addEventListener('mouseenter', () =>
       gsap.to(card, { y: -28, boxShadow: '0 12px 32px rgba(0,0,0,0.10)', duration: 0.45, ease: 'power3.out', overwrite: 'auto', zIndex: 2 }));
@@ -473,6 +450,13 @@ function initCardAnimations() {
     card.addEventListener('mouseleave', () =>
       gsap.to(card, { y: 0, rotationX: 0, rotationY: 0, boxShadow: '0 0px 0px rgba(0,0,0,0)', duration: 0.55, ease: 'power3.out', overwrite: 'auto', zIndex: 1 }));
   });
+
+  // About section scroll animations
+  ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', once: true, onEnter: () => {
+    gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
+    gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
+    gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
+  }});
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -531,9 +515,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCardAnimations();
   await new Promise(r => setTimeout(r, 100));
   ScrollTrigger.refresh();
-
-  // Trigger card animations immediately since work cards are visible on load
-  gsap.fromTo('.card',
-    { y: 30, opacity: 0 },
-    { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', stagger: 0.10, delay: 0.3 });
 });
