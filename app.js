@@ -726,14 +726,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Apply saved language immediately after content renders
   applyLang(localStorage.getItem('lang') || 'en');
 
-  if (prefersReducedMotion) {
-    // Show all content immediately, no animations
-    document.querySelectorAll('.scene-eyebrow').forEach(el => { el.style.opacity = 1; });
-    document.querySelectorAll('.card, .lab-card').forEach(el => { el.style.opacity = 1; });
-    document.querySelectorAll('.about-right, .about-bio, .about-loc, .about-link').forEach(el => { el.style.opacity = 1; });
-    return;
-  }
-
   resizeCanvas();
   updateCardEdges();
   tickCanvas();
