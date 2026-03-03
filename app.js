@@ -56,13 +56,125 @@ gsap.ticker.lagSmoothing(0);
 // Sync Lenis scroll → ScrollTrigger
 lenis.on('scroll', ScrollTrigger.update);
 
+// ─── Background dot-grid canvas ────────────────────────────────
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx    = bgCanvas.getContext('2d');
+
+// Dot config per section (0=Work, 1=Lab, 2=About)
+const sectionConfigs = [
+  { spacing: 28, radius: 1.2, color: '26,26,24' },   // Work: dense grid
+  { spacing: 40, radius: 1.5, color: '193,122,58' },  // Lab: sparser, amber
+  { spacing: 22, radius: 1.0, color: '26,26,24' },    // About: tight fine grid
+];
+
+let dots = [];
+let bgW, bgH;
+let mouse = { x: -999, y: -999 };
+let currentConfig = { ...sectionConfigs[0] };
+let targetConfig  = { ...sectionConfigs[0] };
+
+function buildDots(cfg) {
+  dots = [];
+  const cols = Math.ceil(bgW / cfg.spacing) + 1;
+  const rows = Math.ceil(bgH / cfg.spacing) + 1;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      dots.push({
+        ox: c * cfg.spacing,  // origin x
+        oy: r * cfg.spacing,  // origin y
+        x:  c * cfg.spacing,  // current x
+        y:  r * cfg.spacing,  // current y
+        vx: 0, vy: 0,
+      });
+    }
+  }
+}
+
+function resizeCanvas() {
+  bgW = bgCanvas.offsetWidth;
+  bgH = bgCanvas.offsetHeight;
+  bgCanvas.width  = bgW * devicePixelRatio;
+  bgCanvas.height = bgH * devicePixelRatio;
+  bgCtx.scale(devicePixelRatio, devicePixelRatio);
+  buildDots(currentConfig);
+}
+
+const REPEL_RADIUS = 90;
+const REPEL_STRENGTH = 0.18;
+const RETURN_STRENGTH = 0.06;
+const DAMPING = 0.82;
+
+function tickDots() {
+  bgCtx.clearRect(0, 0, bgW, bgH);
+
+  // Lerp config values
+  currentConfig.spacing  += (targetConfig.spacing  - currentConfig.spacing)  * 0.03;
+  currentConfig.radius   += (targetConfig.radius   - currentConfig.radius)   * 0.03;
+
+  dots.forEach(d => {
+    // Mouse repulsion
+    const dx = d.x - mouse.x;
+    const dy = d.y - mouse.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < REPEL_RADIUS && dist > 0) {
+      const force = (1 - dist / REPEL_RADIUS) * REPEL_STRENGTH;
+      d.vx += (dx / dist) * force * REPEL_RADIUS;
+      d.vy += (dy / dist) * force * REPEL_RADIUS;
+    }
+
+    // Spring back to origin
+    d.vx += (d.ox - d.x) * RETURN_STRENGTH;
+    d.vy += (d.oy - d.y) * RETURN_STRENGTH;
+
+    // Dampen
+    d.vx *= DAMPING;
+    d.vy *= DAMPING;
+
+    d.x += d.vx;
+    d.y += d.vy;
+
+    // Draw dot
+    bgCtx.beginPath();
+    bgCtx.arc(d.x, d.y, currentConfig.radius, 0, Math.PI * 2);
+    bgCtx.fillStyle = `rgba(${currentConfig.color},0.35)`;
+    bgCtx.fill();
+  });
+
+  requestAnimationFrame(tickDots);
+}
+
+// Track mouse relative to canvas
+window.addEventListener('mousemove', e => {
+  const rect = bgCanvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+});
+window.addEventListener('mouseleave', () => { mouse.x = -999; mouse.y = -999; });
+
+// Switch dot config when section changes
+function setBgSection(i) {
+  const cfg = sectionConfigs[Math.min(i, sectionConfigs.length - 1)];
+  targetConfig = { ...cfg };
+  // Rebuild grid at new spacing after a beat
+  setTimeout(() => {
+    buildDots(targetConfig);
+  }, 600);
+}
+
+window.addEventListener('resize', resizeCanvas);
+
 // ─── Nav & progress bar ───────────────────────────────────────
-const navBtns    = [...document.querySelectorAll('.nav-btn')];
+const navBtns     = [...document.querySelectorAll('.nav-btn')];
 const navLineFill = document.querySelector('.nav-line-fill');
-const scenes     = [...document.querySelectorAll('.scene')];
+const scenes      = [...document.querySelectorAll('.scene')];
+let lastSection   = -1;
 
 function setActiveNav(i) {
   navBtns.forEach((b, bi) => b.classList.toggle('active', bi === i));
+  if (i !== lastSection) {
+    lastSection = i;
+    setBgSection(i);
+  }
 }
 
 // Nav click → scroll to scene
@@ -74,13 +186,10 @@ navBtns.forEach((btn, i) => {
   });
 });
 
-// ─── Mouse parallax on scene content ─────────────────────────
+// ─── Mouse parallax on scene content only ────────────────────
 document.addEventListener('mousemove', e => {
   const nx = (e.clientX / window.innerWidth  - 0.5);
   const ny = (e.clientY / window.innerHeight - 0.5);
-  document.querySelectorAll('.scene-wordmark').forEach(el => {
-    gsap.to(el, { x: nx * 18, y: ny * 10, duration: 1.2, ease: 'power2.out' });
-  });
   document.querySelectorAll('.scene.active .scene-content').forEach(el => {
     gsap.to(el, { x: nx * 8, y: ny * 5, duration: 1.2, ease: 'power2.out' });
   });
@@ -89,20 +198,12 @@ document.addEventListener('mousemove', e => {
 // ─── Per-scene ScrollTrigger animations ──────────────────────
 function initSceneAnimations() {
   scenes.forEach((scene, i) => {
-    const wordmark = scene.querySelector('.scene-wordmark');
     const content  = scene.querySelector('.scene-content');
     const eyebrow  = scene.querySelector('.scene-eyebrow');
     const titleEl  = scene.querySelector('.scene-title, .about-name');
     const note     = scene.querySelector('.scene-note');
 
-    // ── 1. Wordmark: parallax slide in on enter, slide out on leave
-    const tlWord = gsap.timeline({ paused: true });
-    tlWord.fromTo(wordmark,
-      { x: 80, opacity: 0 },
-      { x: 0,  opacity: 1, duration: 1.2, ease: 'power3.out' }
-    );
-
-    // ── 2. SplitText on heading
+    // ── 1. SplitText on heading
     let splitTitle;
     if (titleEl) {
       splitTitle = SplitText.create(titleEl, {
@@ -124,8 +225,6 @@ function initSceneAnimations() {
       onEnter: () => {
         scene.classList.add('active');
         setActiveNav(i);
-        // wordmark in
-        tlWord.play();
         // eyebrow fade
         if (eyebrow) gsap.to(eyebrow, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', delay: 0.1 });
         // title lines slide up
@@ -140,8 +239,6 @@ function initSceneAnimations() {
       },
       onLeaveBack: () => {
         scene.classList.remove('active');
-        // wordmark out (reverse)
-        tlWord.reverse();
         if (eyebrow) gsap.to(eyebrow, { y: 16, opacity: 0, duration: 0.4 });
         if (splitTitle) gsap.to(splitTitle.lines, { y: '100%', opacity: 0, duration: 0.4, stagger: 0.06 });
         if (note) gsap.to(note, { y: 14, opacity: 0, duration: 0.3 });
@@ -302,6 +399,10 @@ function renderAbout(meta) {
 
 // ─── Init ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  // Init canvas background
+  resizeCanvas();
+  tickDots();
+
   await loadContent();
   bindCursorHovers(); // bind after cards are in DOM
 
