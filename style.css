@@ -510,15 +510,12 @@ body.cursor-active .cursor-center {
 }
 
 /* ─── Reduced motion ─────────────────────────────────────── */
+/* Intentionally NOT hiding canvas or disabling animations — design choice.
+   Custom cursor hidden on touch/no-pointer devices only. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  /* Keep scene height and canvas — just pause animations via JS */
   .cursor { display: none; }
   body, a, button { cursor: auto; }
+}
 }
 
 /* ─── Focus visible — restore native cursor for keyboard ── */
