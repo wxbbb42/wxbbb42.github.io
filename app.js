@@ -1,96 +1,75 @@
-// ─── State ────────────────────────────────────────────────────
-const TOTAL = 3;
-let current = 0;
-let isAnimating = false;
+// ─── Scenes ────────────────────────────────────────────────────
+const scenes = [...document.querySelectorAll('.scene')];
+const navBtns = [...document.querySelectorAll('.nav-btn')];
+const navLineFill = document.querySelector('.nav-line-fill');
+const TOTAL = scenes.length;
+let activeScene = -1;
 
-// ─── Slide elements ────────────────────────────────────────────
-const slideEls = () => [...document.querySelectorAll('.slide')];
+// ─── Scroll driver ─────────────────────────────────────────────
+function onScroll() {
+  const scrollY = window.scrollY;
+  const winH = window.innerHeight;
+  const docH = document.documentElement.scrollHeight;
 
-// ─── Navigate ─────────────────────────────────────────────────
-function goTo(next) {
-  if (next === current || isAnimating) return;
-  if (next < 0 || next >= TOTAL) return;
+  // Progress bar (0→1 across full page)
+  const totalScroll = docH - winH;
+  const progress = Math.min(1, scrollY / totalScroll);
+  navLineFill.style.height = (progress * 100) + '%';
 
-  isAnimating = true;
-  const prev = current;
-  const dir = next > prev ? 1 : -1;   // 1 = going right, -1 = going left
-  current = next;
+  scenes.forEach((scene, i) => {
+    const rect = scene.getBoundingClientRect();
+    const sceneH = scene.offsetHeight;
+    const scrollInScene = -rect.top; // how far we've scrolled into this scene
+    const sceneProgress = scrollInScene / (sceneH - winH); // 0 → 1
 
-  const slides = slideEls();
-  const leaving = slides[prev];
-  const entering = slides[next];
+    const isPresent  = sceneProgress >= 0 && sceneProgress <= 1;
+    const isEntering = sceneProgress > -0.15 && sceneProgress < 0.15;
+    const isLeaving  = sceneProgress > 0.85;
 
-  // 1. Position the entering slide off-screen (no transition yet)
-  entering.style.transition = 'none';
-  entering.querySelector('.slide-bg').style.transition = 'none';
-  entering.querySelector('.slide-content').style.transition = 'none';
+    scene.classList.toggle('present',  isPresent);
+    scene.classList.toggle('entering', isEntering && !isLeaving);
+    scene.classList.toggle('leaving',  isLeaving);
 
-  if (dir > 0) {
-    entering.classList.add('enter-from-right');
-  } else {
-    entering.classList.add('enter-from-left');
-  }
-  entering.classList.remove('active', 'slide-visible');
+    // Reveal data-enter elements when scene is sufficiently entered
+    if (sceneProgress > -0.05) {
+      scene.querySelectorAll('[data-enter]').forEach(el => el.classList.add('visible'));
+    } else {
+      scene.querySelectorAll('[data-enter]').forEach(el => el.classList.remove('visible'));
+    }
 
-  // 2. Force reflow
-  entering.getBoundingClientRect();
+    // Reveal cards with stagger when entering
+    if (sceneProgress > -0.02) {
+      scene.querySelectorAll('.card, .lab-card').forEach((card, ci) => {
+        setTimeout(() => card.classList.add('visible'), ci * 90);
+      });
+    } else {
+      scene.querySelectorAll('.card, .lab-card').forEach(c => c.classList.remove('visible'));
+    }
 
-  // 3. Restore transitions
-  entering.style.transition = '';
-  entering.querySelector('.slide-bg').style.transition = '';
-  entering.querySelector('.slide-content').style.transition = '';
-
-  // 4. Animate leaving slide out
-  leaving.classList.remove('active', 'slide-visible');
-  if (dir > 0) {
-    leaving.classList.add('leave-to-left');
-  } else {
-    leaving.classList.add('leave-to-right');
-  }
-
-  // 5. Animate entering slide in
-  requestAnimationFrame(() => {
-    entering.classList.remove('enter-from-right', 'enter-from-left');
-    entering.classList.add('active');
-
-    // content enters slightly after bg
-    setTimeout(() => {
-      entering.classList.add('slide-visible');
-    }, 80);
+    // Active nav
+    if (isPresent) {
+      if (activeScene !== i) {
+        activeScene = i;
+        navBtns.forEach((b, bi) => b.classList.toggle('active', bi === i));
+      }
+    }
   });
-
-  // 6. Cleanup after transition
-  const DUR = 800;
-  setTimeout(() => {
-    leaving.classList.remove('leave-to-left', 'leave-to-right');
-    isAnimating = false;
-    updateUI();
-  }, DUR);
-
-  updateUI();
 }
 
-function updateUI() {
-  // Nav buttons
-  document.querySelectorAll('.nav-btn').forEach((b, i) => {
-    b.classList.toggle('active', i === current);
+// ─── Nav click → smooth scroll to scene ───────────────────────
+navBtns.forEach((btn, i) => {
+  btn.addEventListener('click', () => {
+    const scene = scenes[i];
+    // Scroll to slightly inside the scene (10% of scroll space)
+    const sceneTop = scene.offsetTop;
+    const sceneH   = scene.offsetHeight;
+    const winH     = window.innerHeight;
+    const target   = sceneTop + (sceneH - winH) * 0.12;
+    window.scrollTo({ top: target, behavior: 'smooth' });
   });
+});
 
-  // Progress bar
-  document.querySelector('.nav-progress-bar').style.width =
-    `${((current + 1) / TOTAL) * 100}%`;
-
-  // Dots
-  document.querySelectorAll('.footer-dot').forEach((d, i) => {
-    d.classList.toggle('active', i === current);
-  });
-
-  // Nav dark mode (about slide)
-  document.querySelector('.nav').classList.toggle('dark', current === 2);
-  document.querySelector('.footer').classList.toggle('dark', current === 2);
-}
-
-// ─── Load Content ──────────────────────────────────────────────
+// ─── Load content ──────────────────────────────────────────────
 async function loadContent() {
   const res = await fetch('./data/content.json');
   const data = await res.json();
@@ -110,24 +89,13 @@ function renderWork(projects) {
     </a>
   `).join('');
 
-  // Decorative rings behind the grid
-  const slide = document.getElementById('slide-work');
-  const rings = document.createElement('div');
-  rings.className = 'deco-rings';
-  rings.innerHTML = `
-    <div class="deco-ring ring-1"></div>
-    <div class="deco-ring ring-2"></div>
-    <div class="deco-ring ring-3"></div>
-  `;
-  slide.appendChild(rings);
-
   // 3D tilt on cards
   document.querySelectorAll('.card').forEach(card => {
     card.addEventListener('mousemove', e => {
-      const r = card.getBoundingClientRect();
-      const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -5;
-      const ry = ((e.clientX - r.left - r.width/2)  / (r.width/2))  *  5;
-      card.style.transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(6px)`;
+      const r  = card.getBoundingClientRect();
+      const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -4;
+      const ry = ((e.clientX - r.left - r.width/2)  / (r.width/2))  *  4;
+      card.style.transform = `translateY(-6px) rotate(-0.4deg) perspective(600px) rotateX(${rx}deg) rotateY(${ry}deg)`;
     });
     card.addEventListener('mouseleave', () => { card.style.transform = ''; });
   });
@@ -160,78 +128,9 @@ function renderAbout(meta) {
   `).join('');
 }
 
-// ─── Footer dots ───────────────────────────────────────────────
-function renderDots() {
-  const c = document.getElementById('footer-dots');
-  c.innerHTML = Array.from({length: TOTAL}, (_, i) =>
-    `<div class="footer-dot${i===0?' active':''}" data-target="${i}"></div>`
-  ).join('');
-  c.querySelectorAll('.footer-dot').forEach(d => {
-    d.addEventListener('click', () => goTo(+d.dataset.target));
-  });
-}
-
-// ─── Input handling ────────────────────────────────────────────
-// Wheel / trackpad — robust cooldown-based
-let wheelTimer = null;
-let wheelAcc = 0;
-let wheelLocked = false;
-
-function onWheel(e) {
-  if (wheelLocked) return;
-  wheelAcc += e.deltaX + e.deltaY;
-  clearTimeout(wheelTimer);
-  wheelTimer = setTimeout(() => {
-    if (Math.abs(wheelAcc) > 20) {
-      wheelLocked = true;
-      goTo(wheelAcc > 0 ? current + 1 : current - 1);
-      setTimeout(() => { wheelLocked = false; }, 900);
-    }
-    wheelAcc = 0;
-  }, 50);
-}
-
-window.addEventListener('wheel', onWheel, { passive: false });
-
-// Keyboard
-window.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  goTo(current + 1);
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    goTo(current - 1);
-});
-
-// Touch
-let tx = 0, ty = 0;
-window.addEventListener('touchstart', e => {
-  tx = e.touches[0].clientX;
-  ty = e.touches[0].clientY;
-}, { passive: true });
-window.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - tx;
-  const dy = e.changedTouches[0].clientY - ty;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  if (dist < 20) return;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    goTo(dx < 0 ? current + 1 : current - 1);
-  } else {
-    goTo(dy < 0 ? current + 1 : current - 1);
-  }
-}, { passive: true });
-
-// Nav buttons
-document.querySelectorAll('.nav-btn').forEach(b => {
-  b.addEventListener('click', () => goTo(+b.dataset.target));
-});
-
 // ─── Init ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  renderDots();
-
-  // Set initial slide visible
-  const first = slideEls()[0];
-  first.classList.add('active');
-  setTimeout(() => first.classList.add('slide-visible'), 100);
-
-  document.querySelector('.nav-progress-bar').style.width = `${(1/TOTAL)*100}%`;
-
   await loadContent();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); // run once on load
 });

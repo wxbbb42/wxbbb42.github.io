@@ -12,73 +12,91 @@
 </head>
 <body>
 
-  <!-- NAV -->
+  <!-- LEFT SIDEBAR NAV -->
   <nav class="nav">
-    <span class="nav-name">XW</span>
-    <div class="nav-links">
-      <button class="nav-btn active" data-target="0">Work</button>
-      <button class="nav-btn" data-target="1">AI Lab</button>
-      <button class="nav-btn" data-target="2">About</button>
+    <a class="nav-logo" href="#">XW</a>
+    <div class="nav-items">
+      <button class="nav-btn active" data-section="0">
+        <span class="nav-num">01</span>
+        <span class="nav-label">Work</span>
+      </button>
+      <button class="nav-btn" data-section="1">
+        <span class="nav-num">02</span>
+        <span class="nav-label">AI Lab</span>
+      </button>
+      <button class="nav-btn" data-section="2">
+        <span class="nav-num">03</span>
+        <span class="nav-label">About</span>
+      </button>
     </div>
-    <div class="nav-progress">
-      <div class="nav-progress-bar"></div>
-    </div>
+    <div class="nav-line"><div class="nav-line-fill"></div></div>
   </nav>
 
-  <!-- SLIDES -->
-  <div class="slides-wrapper">
+  <!-- SCROLL TRACK -->
+  <div class="scroll-track">
 
-    <!-- SLIDE 0: WORK -->
-    <section class="slide active" id="slide-work" data-index="0">
-      <div class="slide-bg"></div>
-      <div class="slide-content">
-        <div class="section-header">
-          <span class="section-label">Work</span>
-          <h2>Selected Projects</h2>
+    <!-- ── SECTION 0: WORK ── -->
+    <div class="scene" id="scene-0">
+      <div class="scene-sticky">
+        <div class="scene-bg">
+          <span class="scene-wordmark">Work</span>
         </div>
-        <div class="grid" id="work-grid"></div>
-      </div>
-      <div class="slide-num">01</div>
-    </section>
-
-    <!-- SLIDE 1: AI LAB -->
-    <section class="slide" id="slide-lab" data-index="1">
-      <div class="slide-bg"></div>
-      <div class="slide-content">
-        <div class="section-header">
-          <span class="section-label">AI Lab</span>
-          <h2>Agent Experiments</h2>
-          <p class="section-note">Maintained by my AI agent.</p>
-        </div>
-        <div class="lab-grid" id="lab-grid"></div>
-      </div>
-      <div class="slide-num">02</div>
-    </section>
-
-    <!-- SLIDE 2: ABOUT -->
-    <section class="slide slide-about" id="slide-about" data-index="2">
-      <div class="slide-bg"></div>
-      <div class="slide-content about-content">
-        <div class="about-left">
-          <span class="section-label">About</span>
-          <h1 class="about-name">Xiaoben<br/><em>Wang</em></h1>
-          <p class="about-tagline">Designer who builds.</p>
-        </div>
-        <div class="about-right">
-          <p class="about-bio" id="bio-text"></p>
-          <p class="about-location" id="about-location"></p>
-          <div class="about-links" id="about-links"></div>
+        <div class="scene-content">
+          <header class="scene-header">
+            <p class="scene-eyebrow" data-enter="fade-up" data-delay="0">Selected Projects</p>
+            <h2 class="scene-title" data-enter="fade-up" data-delay="80">Things<br/><em>I've built</em></h2>
+          </header>
+          <div class="cards-grid" id="work-grid"></div>
         </div>
       </div>
-      <div class="slide-num">03</div>
-    </section>
+    </div>
 
-  </div>
+    <!-- ── SECTION 1: AI LAB ── -->
+    <div class="scene" id="scene-1">
+      <div class="scene-sticky">
+        <div class="scene-bg">
+          <span class="scene-wordmark">Lab</span>
+        </div>
+        <div class="scene-content">
+          <header class="scene-header">
+            <p class="scene-eyebrow" data-enter="fade-up" data-delay="0">AI Lab</p>
+            <h2 class="scene-title" data-enter="fade-up" data-delay="80">Agent<br/><em>Experiments</em></h2>
+            <p class="scene-note" data-enter="fade-up" data-delay="160">Maintained by my AI agent.</p>
+          </header>
+          <div class="lab-grid" id="lab-grid"></div>
+        </div>
+      </div>
+    </div>
 
-  <!-- BOTTOM BAR -->
+    <!-- ── SECTION 2: ABOUT ── -->
+    <div class="scene" id="scene-2">
+      <div class="scene-sticky">
+        <div class="scene-bg">
+          <span class="scene-wordmark name-word">Xiaoben</span>
+        </div>
+        <div class="scene-content about-layout">
+          <div class="about-left">
+            <p class="scene-eyebrow" data-enter="fade-up" data-delay="0">About</p>
+            <h1 class="about-name" data-enter="fade-up" data-delay="100">
+              Xiaoben<br/><em>Wang</em>
+            </h1>
+            <p class="about-tagline" data-enter="fade-up" data-delay="200">Designer who builds.</p>
+          </div>
+          <div class="about-right" data-enter="fade-up" data-delay="300">
+            <p class="about-bio" id="bio-text"></p>
+            <p class="about-loc" id="about-location"></p>
+            <div class="about-links" id="about-links"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /scroll-track -->
+
+  <!-- FOOTER STRIP -->
   <footer class="footer">
-    <div class="footer-dots" id="footer-dots"></div>
-    <span class="footer-copy">© 2025 Xiaoben Wang · <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">maintained by an AI agent</a></span>
+    <span>© 2025 Xiaoben Wang</span>
+    <span>Maintained by <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">an AI agent</a></span>
   </footer>
 
   <script src="app.js"></script>
