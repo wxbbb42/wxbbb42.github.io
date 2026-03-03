@@ -306,12 +306,6 @@ body.cursor-active .cursor-center {
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   background: var(--border);
-  /* when a card is hovered, dim siblings */
-  transition: opacity 0.3s;
-}
-.cards-grid:has(.card:hover) .card:not(:hover) {
-  opacity: 0.45;
-  filter: brightness(0.97);
 }
 
 .card {
@@ -320,18 +314,13 @@ body.cursor-active .cursor-center {
   position: relative;
   overflow: hidden;
   display: block;
-  /* base: flush, flat */
   box-shadow: none;
-  transform: translateY(0);
   transition:
-    transform   0.30s var(--ease-out),
-    box-shadow  0.30s var(--ease-out),
-    opacity     0.30s,
-    filter      0.30s;
+    transform   0.35s var(--ease-out),
+    box-shadow  0.35s var(--ease-out);
   will-change: transform, box-shadow;
 }
 
-/* Top accent line — always present but collapsed */
 .card::before {
   content: '';
   position: absolute;
@@ -343,13 +332,12 @@ body.cursor-active .cursor-center {
   transition: transform 0.35s var(--ease-out);
 }
 
-/* Lift + shadow on hover */
 .card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-18px);
   box-shadow:
-    0  2px  4px rgba(0,0,0,0.04),
-    0  8px  20px rgba(0,0,0,0.08),
-    0 24px  48px rgba(0,0,0,0.06);
+    0  2px  6px  rgba(0,0,0,0.05),
+    0 12px  28px rgba(0,0,0,0.10),
+    0 32px  60px rgba(0,0,0,0.08);
   z-index: 2;
 }
 .card:hover::before { transform: scaleX(1); }
@@ -376,22 +364,15 @@ body.cursor-active .cursor-center {
   gap: 1px;
   background: var(--border);
 }
-.lab-grid:has(.lab-card:hover) .lab-card:not(:hover) {
-  opacity: 0.45;
-  filter: brightness(0.97);
-}
 
 .lab-card {
   background: var(--bg);
   padding: 28px 28px 24px;
   position: relative;
-  transform: translateY(0);
   box-shadow: none;
   transition:
-    transform   0.30s var(--ease-out),
-    box-shadow  0.30s var(--ease-out),
-    opacity     0.30s,
-    filter      0.30s;
+    transform   0.35s var(--ease-out),
+    box-shadow  0.35s var(--ease-out);
   will-change: transform, box-shadow;
 }
 
@@ -407,11 +388,11 @@ body.cursor-active .cursor-center {
 }
 
 .lab-card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-18px);
   box-shadow:
-    0  2px  4px rgba(0,0,0,0.04),
-    0  8px  20px rgba(0,0,0,0.08),
-    0 24px  48px rgba(0,0,0,0.06);
+    0  2px  6px  rgba(0,0,0,0.05),
+    0 12px  28px rgba(0,0,0,0.10),
+    0 32px  60px rgba(0,0,0,0.08);
   z-index: 2;
 }
 .lab-card:hover::before { transform: scaleX(1); }

@@ -16,27 +16,28 @@ window.addEventListener('mousemove', e => {
   gsap.set(cursorEl, { x: mx, y: my });
 });
 
-// Context labels per element type
-const labelMap = [
-  { selector: '.card',      label: 'View ↗' },
-  { selector: '.lab-card',  label: 'View ↗' },
-  { selector: '.nav-btn',   label: 'Go' },
-  { selector: '.nav-logo',  label: 'Top' },
-  { selector: '.about-link',label: 'Open ↗' },
-];
-
-labelMap.forEach(({ selector, label }) => {
-  document.querySelectorAll(selector).forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      document.body.classList.add('cursor-hover');
-      cursorLabel.textContent = label;
-    });
-    el.addEventListener('mouseleave', () => {
-      document.body.classList.remove('cursor-hover');
-      cursorLabel.textContent = '';
+// ─── Cursor hover binding (call after dynamic content renders) ─
+function bindCursorHovers() {
+  const labelMap = [
+    { selector: '.card',       label: 'View ↗' },
+    { selector: '.lab-card',   label: 'View ↗' },
+    { selector: '.nav-btn',    label: 'Go' },
+    { selector: '.nav-logo',   label: 'Top' },
+    { selector: '.about-link', label: 'Open ↗' },
+  ];
+  labelMap.forEach(({ selector, label }) => {
+    document.querySelectorAll(selector).forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        document.body.classList.add('cursor-hover');
+        cursorLabel.textContent = label;
+      });
+      el.addEventListener('mouseleave', () => {
+        document.body.classList.remove('cursor-hover');
+        cursorLabel.textContent = '';
+      });
     });
   });
-});
+}
 
 window.addEventListener('mousedown', () => document.body.classList.add('cursor-active'));
 window.addEventListener('mouseup',   () => document.body.classList.remove('cursor-active'));
@@ -208,35 +209,7 @@ function initCardAnimations() {
     }
   });
 
-  // Card hover — CSS handles the lift, GSAP only adds subtle tilt
-  document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const r  = card.getBoundingClientRect();
-      const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -3;
-      const ry = ((e.clientX - r.left - r.width/2)  / (r.width/2))  *  3;
-      gsap.to(card, {
-        rotationX: rx, rotationY: ry,
-        transformPerspective: 800,
-        duration: 0.4, ease: 'power2.out', overwrite: 'auto'
-      });
-    });
-    card.addEventListener('mouseleave', () => {
-      gsap.to(card, { rotationX: 0, rotationY: 0, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
-    });
-  });
-
-  // Lab card hover — same clean lift via CSS, no extra tilt
-  document.querySelectorAll('.lab-card').forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const r  = card.getBoundingClientRect();
-      const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -2;
-      const ry = ((e.clientX - r.left - r.width/2)  / (r.width/2))  *  2;
-      gsap.to(card, { rotationX: rx, rotationY: ry, transformPerspective: 800, duration: 0.4, ease: 'power2.out', overwrite: 'auto' });
-    });
-    card.addEventListener('mouseleave', () => {
-      gsap.to(card, { rotationX: 0, rotationY: 0, duration: 0.5, ease: 'power3.out', overwrite: 'auto' });
-    });
-  });
+  // Cards: CSS handles lift+shadow, no GSAP override needed
 }
 
 // ─── Load Content ─────────────────────────────────────────────
@@ -290,6 +263,7 @@ function renderAbout(meta) {
 // ─── Init ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   await loadContent();
+  bindCursorHovers(); // bind after cards are in DOM
 
   // Small delay so fonts + layout are settled before GSAP measures
   await new Promise(r => setTimeout(r, 120));
