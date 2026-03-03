@@ -67,13 +67,12 @@ function drawCoordinates(alpha) {
   const tickCount = 16;
   const tickSpacing = size / tickCount;
 
-  // Left-to-right fade mask via globalAlpha gradient trick:
-  // draw everything at full opacity then composite with a gradient overlay
-  // Actually: just multiply per-line alpha by xRatio smoothly
-  const fadeEdge = bgW * 0.50; // left of this: fully faded
+  // Left-to-right gradient fade: transparent at x=fadeStart, fully opaque at x=fadeEnd
+  const fadeStart = 0;
+  const fadeEnd   = bgW * 0.48;
 
   function xFade(x) {
-    return Math.max(0.05, Math.min(1, (x - fadeEdge * 0.1) / (fadeEdge * 0.9)));
+    return Math.max(0, Math.min(1, (x - fadeStart) / (fadeEnd - fadeStart)));
   }
 
   // Vertical grid lines
@@ -85,16 +84,23 @@ function drawCoordinates(alpha) {
     line(gx, 0, gx, bgH, baseA * xFade(gx), isMajor ? 0.8 : 0.4);
   }
 
-  // Horizontal grid lines — fade via gradient on each segment
+  // Horizontal grid lines — true canvas gradient (no hard edge)
   for (let i = -tickCount; i <= tickCount; i++) {
     const gy = cy + i * tickSpacing;
     if (gy < -10 || gy > bgH + 10) continue;
     const isMajor = i % 4 === 0;
     const baseA = isMajor ? alpha * 0.22 : alpha * 0.10;
-    // Left dim half
-    line(0, gy, fadeEdge, gy, baseA * 0.05, isMajor ? 0.8 : 0.4);
-    // Right bright half (with smooth ramp over 200px)
-    line(fadeEdge, gy, bgW, gy, baseA, isMajor ? 0.8 : 0.4);
+    const grad = bgCtx.createLinearGradient(0, 0, bgW, 0);
+    grad.addColorStop(0,                         `rgba(26,26,24,0)`);
+    grad.addColorStop(fadeEnd / bgW * 0.5,       `rgba(26,26,24,0)`);
+    grad.addColorStop(Math.min(1, fadeEnd / bgW),`rgba(26,26,24,${baseA})`);
+    grad.addColorStop(1,                         `rgba(26,26,24,${baseA})`);
+    bgCtx.beginPath();
+    bgCtx.moveTo(0, gy);
+    bgCtx.lineTo(bgW, gy);
+    bgCtx.strokeStyle = grad;
+    bgCtx.lineWidth = isMajor ? 0.8 : 0.4;
+    bgCtx.stroke();
   }
 
   // Main axes
@@ -164,14 +170,14 @@ function drawOrbitals(alpha) {
   const mouseDist = hasMouse
     ? Math.min(1, Math.sqrt((mouse.x - bgW*0.5)**2 + (mouse.y - bgH*0.5)**2) / (bgW * 0.4))
     : 0;
-  const speedBoost = 1 + mouseDist * 2.5; // orbit faster when mouse is further from center
+  const speedBoost = hasMouse ? Math.max(0.15, 1 - mouseDist * 0.85) : 1; // bullet-time: mouse presence slows orbits
 
   const orbits = [
-    { rx: scale * 0.18, ry: scale * 0.10, tilt: 0.25,  speed: 0.010, dotR: 4,   color: '193,122,58' },
-    { rx: scale * 0.38, ry: scale * 0.24, tilt: -0.50, speed: 0.006, dotR: 3.5, color: '26,26,24' },
-    { rx: scale * 0.58, ry: scale * 0.38, tilt: 0.65,  speed: 0.0038,dotR: 3,   color: '26,26,24' },
-    { rx: scale * 0.80, ry: scale * 0.52, tilt: -0.28, speed: 0.0022,dotR: 2.5, color: '26,26,24' },
-    { rx: scale * 1.00, ry: scale * 0.64, tilt: 0.48,  speed: 0.0014,dotR: 2,   color: '26,26,24' },
+    { rx: scale * 0.18, ry: scale * 0.10, tilt: 0.25,  speed: 0.005,  dotR: 4,   color: '193,122,58' },
+    { rx: scale * 0.38, ry: scale * 0.24, tilt: -0.50, speed: 0.003,  dotR: 3.5, color: '26,26,24' },
+    { rx: scale * 0.58, ry: scale * 0.38, tilt: 0.65,  speed: 0.0019, dotR: 3,   color: '26,26,24' },
+    { rx: scale * 0.80, ry: scale * 0.52, tilt: -0.28, speed: 0.0011, dotR: 2.5, color: '26,26,24' },
+    { rx: scale * 1.00, ry: scale * 0.64, tilt: 0.48,  speed: 0.0007, dotR: 2,   color: '26,26,24' },
   ];
 
   // Star field
@@ -219,9 +225,9 @@ function drawOrbitals(alpha) {
 // ── SECTION 2: Radial / Compass (About) ──────────────────────
 function drawRadial(alpha) {
   if (alpha < 0.005) return;
-  const cx = bgW * 0.5;
-  const cy = bgH * 0.5;
-  const maxR = Math.max(bgW, bgH) * 0.55; // extend beyond canvas edge
+  const cx = bgW * 0.65;
+  const cy = bgH * 0.50;
+  const maxR = Math.max(bgW, bgH) * 0.55;
 
   const lineCount = 48;
   const rot = t * 0.0012;
@@ -269,20 +275,26 @@ function drawRadial(alpha) {
 //                   last 40%  = fade out (and next fades in)
 
 function getSectionAlphaAndOffset(sectionIndex, nSections) {
-  const span     = scrollH / nSections;           // scroll px per section
-  const sStart   = sectionIndex * span;
-  const sEnd     = sStart + span;
-  const raw      = (scrollY - sStart) / span;     // -inf→0 entering, 0→1 inside, 1→inf leaving
+  const span   = scrollH / nSections;
+  const sStart = sectionIndex * span;
+  const raw    = (scrollY - sStart) / span; // 0→1 inside section
 
-  // Fade in: 0→0.2 of span
-  // Full:    0.2→0.65
-  // Fade out: 0.65→1.0
-  const fadeIn  = Math.max(0, Math.min(1, raw / 0.20));
-  const fadeOut = Math.max(0, Math.min(1, (raw - 0.65) / 0.35));
-  const alpha   = fadeIn * (1 - fadeOut);
+  let alpha;
+  if (sectionIndex === 0) {
+    // Section 0: visible immediately, no fade-in, only fade-out at end
+    const fadeOut = Math.max(0, Math.min(1, (raw - 0.60) / 0.40));
+    alpha = Math.max(0, 1 - fadeOut);
+  } else {
+    const fadeIn  = Math.max(0, Math.min(1, raw / 0.25));
+    const fadeOut = Math.max(0, Math.min(1, (raw - 0.65) / 0.35));
+    alpha = fadeIn * (1 - fadeOut);
+  }
 
-  // Parallax: pattern drifts upward at 0.3× scroll speed within its section
-  const parallax = Math.max(0, raw) * span * 0.28;
+  // Eased parallax: fast at start of section, slows as cards appear (~mid section)
+  // Use power2 ease-out so displacement decelerates
+  const clampedRaw = Math.max(0, Math.min(1, raw));
+  const easedRaw   = 1 - Math.pow(1 - clampedRaw, 2); // ease-out quad
+  const parallax   = easedRaw * span * 0.22;
 
   return { alpha: Math.max(0, alpha), offsetY: -parallax };
 }
