@@ -439,11 +439,34 @@ function initSceneAnimations() {
 // CARD ANIMATIONS  (LOCKED — Ben approved)
 // ══════════════════════════════════════════════════════════════
 function initCardAnimations() {
-  ScrollTrigger.create({ trigger: '#work-grid', start: 'top 85%', onEnter: () =>
-    gsap.fromTo('.card', { y: 40, opacity: 0, rotation: 0.4 }, { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }) });
-  ScrollTrigger.create({ trigger: '#lab-grid', start: 'top 85%', onEnter: () =>
-    gsap.fromTo('.lab-card', { y: 36, opacity: 0, rotation: 0.3 }, { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }) });
-  ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', onEnter: () => {
+  // Only animate cards into view if they start below the viewport
+  function animateIn(selector, trigger, props) {
+    const els = document.querySelectorAll(selector);
+    if (!els.length) return;
+    // Check if trigger is already in view on load
+    const rect = document.querySelector(trigger)?.getBoundingClientRect();
+    if (rect && rect.top < window.innerHeight) {
+      // Already visible — skip the hidden initial state, just show immediately
+      gsap.set(selector, { opacity: 1, y: 0, x: 0, rotation: 0 });
+      return;
+    }
+    gsap.set(selector, props.from);
+    ScrollTrigger.create({
+      trigger, start: 'top 85%', once: true,
+      onEnter: () => gsap.to(selector, props.to)
+    });
+  }
+
+  animateIn('.card', '#work-grid', {
+    from: { y: 40, opacity: 0, rotation: 0.4 },
+    to:   { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }
+  });
+  animateIn('.lab-card', '#lab-grid', {
+    from: { y: 36, opacity: 0, rotation: 0.3 },
+    to:   { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }
+  });
+
+  ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', once: true, onEnter: () => {
     gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
     gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
     gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
@@ -511,8 +534,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadContent();
   bindCursorHovers();
 
-  await new Promise(r => setTimeout(r, 120));
+  // Wait for fonts + layout to settle before initializing scroll animations
+  await new Promise(r => setTimeout(r, 200));
+  scrollH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
   initSceneAnimations();
   initCardAnimations();
+  await new Promise(r => setTimeout(r, 100));
   ScrollTrigger.refresh();
 });
