@@ -12,6 +12,10 @@
 </head>
 <body>
 
+  <!-- Custom cursor -->
+  <div class="cursor-dot" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"></div>
+
   <!-- LEFT SIDEBAR NAV -->
   <nav class="nav">
     <a class="nav-logo" href="#">XW</a>
@@ -43,8 +47,8 @@
         </div>
         <div class="scene-content">
           <header class="scene-header">
-            <p class="scene-eyebrow" data-enter="fade-up" data-delay="0">Selected Projects</p>
-            <h2 class="scene-title" data-enter="fade-up" data-delay="80">Things<br/><em>I've built</em></h2>
+            <p class="scene-eyebrow">Selected Projects</p>
+            <h2 class="scene-title">Things<br/><em>I've built</em></h2>
           </header>
           <div class="cards-grid" id="work-grid"></div>
         </div>
@@ -59,9 +63,9 @@
         </div>
         <div class="scene-content">
           <header class="scene-header">
-            <p class="scene-eyebrow" data-enter="fade-up" data-delay="0">AI Lab</p>
-            <h2 class="scene-title" data-enter="fade-up" data-delay="80">Agent<br/><em>Experiments</em></h2>
-            <p class="scene-note" data-enter="fade-up" data-delay="160">Maintained by my AI agent.</p>
+            <p class="scene-eyebrow">AI Lab</p>
+            <h2 class="scene-title">Agent<br/><em>Experiments</em></h2>
+            <p class="scene-note">Maintained by my AI agent.</p>
           </header>
           <div class="lab-grid" id="lab-grid"></div>
         </div>
@@ -76,13 +80,11 @@
         </div>
         <div class="scene-content about-layout">
           <div class="about-left">
-            <p class="scene-eyebrow" data-enter="fade-up" data-delay="0">About</p>
-            <h1 class="about-name" data-enter="fade-up" data-delay="100">
-              Xiaoben<br/><em>Wang</em>
-            </h1>
-            <p class="about-tagline" data-enter="fade-up" data-delay="200">Designer who builds.</p>
+            <p class="scene-eyebrow">About</p>
+            <h1 class="about-name scene-title">Xiaoben<br/><em>Wang</em></h1>
+            <p class="about-tagline">Designer who builds.</p>
           </div>
-          <div class="about-right" data-enter="fade-up" data-delay="300">
+          <div class="about-right">
             <p class="about-bio" id="bio-text"></p>
             <p class="about-loc" id="about-location"></p>
             <div class="about-links" id="about-links"></div>
@@ -99,6 +101,11 @@
     <span>Maintained by <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">an AI agent</a></span>
   </footer>
 
+  <!-- LIBRARIES -->
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
