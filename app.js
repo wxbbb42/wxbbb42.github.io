@@ -123,9 +123,20 @@ function drawCoordinates(alpha) {
 // ── SECTION 1: Orbital System (Lab) ──────────────────────────
 function drawOrbitals(alpha) {
   if (alpha < 0.005) return;
-  const cx = bgW * 0.5;
-  const cy = bgH * 0.5;
+
+  // Mouse pull: shift the entire system center toward mouse
+  const hasMouse = mouse.x > 0 && mouse.x < bgW;
+  const pullX = hasMouse ? (mouse.x - bgW * 0.5) * 0.08 : 0;
+  const pullY = hasMouse ? (mouse.y - bgH * 0.5) * 0.08 : 0;
+  const cx = bgW * 0.5 + pullX;
+  const cy = bgH * 0.5 + pullY;
   const scale = Math.min(bgW, bgH) * 0.48;
+
+  // Mouse distance from center (normalized 0–1)
+  const mouseDist = hasMouse
+    ? Math.min(1, Math.sqrt((mouse.x - bgW*0.5)**2 + (mouse.y - bgH*0.5)**2) / (bgW * 0.4))
+    : 0;
+  const speedBoost = 1 + mouseDist * 2.5; // orbit faster when mouse is further from center
 
   const orbits = [
     { rx: scale * 0.18, ry: scale * 0.10, tilt: 0.25,  speed: 0.010, dotR: 4,   color: '193,122,58' },
@@ -141,6 +152,14 @@ function drawOrbitals(alpha) {
     const sy = bgH * ((i * 97.333) % 1);
     const pulse = 0.25 + 0.2 * Math.sin(t * 0.018 + i * 1.3);
     dot(sx, sy, 1, alpha * pulse * 0.5);
+  }
+
+  // Mouse → center attraction line
+  if (hasMouse) {
+    const mdist = Math.sqrt((mouse.x - cx)**2 + (mouse.y - cy)**2);
+    const lineAlpha = alpha * Math.min(0.35, mdist / 300);
+    line(mouse.x, mouse.y, cx, cy, lineAlpha, 0.6);
+    dot(mouse.x, mouse.y, 3, alpha * 0.5, '193,122,58');
   }
 
   // Nucleus glow rings
@@ -159,27 +178,19 @@ function drawOrbitals(alpha) {
     bgCtx.stroke();
     bgCtx.restore();
 
-    // Orbiting dot
-    const angle = t * o.speed + i * 1.4;
-    const cosT = o.tilt, sinT = Math.sin(o.tilt), cosA = Math.cos(angle), sinA = Math.sin(angle);
-    const px = cx + cosA * o.rx * Math.cos(o.tilt) - sinA * o.ry * Math.sin(o.tilt);
-    const py = cy + cosA * o.rx * Math.sin(o.tilt) + sinA * o.ry * Math.cos(o.tilt);
+    // Orbiting dot (speed boosted by mouse distance)
+    const angle = t * o.speed * speedBoost + i * 1.4;
+    const px = cx + Math.cos(angle) * o.rx * Math.cos(o.tilt) - Math.sin(angle) * o.ry * Math.sin(o.tilt);
+    const py = cy + Math.cos(angle) * o.rx * Math.sin(o.tilt) + Math.sin(angle) * o.ry * Math.cos(o.tilt);
 
     // Trail
     for (let tr = 1; tr <= 8; tr++) {
-      const ta = angle - tr * 0.10;
+      const ta = angle - tr * 0.10 * speedBoost;
       const tpx = cx + Math.cos(ta) * o.rx * Math.cos(o.tilt) - Math.sin(ta) * o.ry * Math.sin(o.tilt);
       const tpy = cy + Math.cos(ta) * o.rx * Math.sin(o.tilt) + Math.sin(ta) * o.ry * Math.cos(o.tilt);
       dot(tpx, tpy, o.dotR * (1 - tr * 0.1), alpha * 0.18 * (1 - tr * 0.11), o.color);
     }
     dot(px, py, o.dotR, alpha * 0.80, o.color);
-
-    // Mouse gravity line
-    if (mouse.x > 0) {
-      const dx = mouse.x - px, dy = mouse.y - py;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < 160) line(px, py, mouse.x, mouse.y, alpha * (1 - dist/160) * 0.25, 0.5);
-    }
   });
 }
 
