@@ -33,42 +33,60 @@ function buildBgDots(sp) {
       bgDots.push({ x: c * sp, y: r * sp });
 }
 
-// ── Pixel shapes (bitmap → world positions) ───────────────────
-const CELL = 30; // px per pixel-art cell
+// ── Pixel shapes ──────────────────────────────────────────────
+const CELL = 22; // px per pixel-art cell (smaller = more detail)
 
 const BITMAPS = [
-  // 0 · Work — arrow ↗
+  // 0 · Work — arrow ↗ (16×12)
   [
-    [0,0,0,0,0,1,1,1,1,1],
-    [0,0,0,0,0,0,1,1,1,1],
-    [0,0,0,0,0,0,0,1,1,1],
-    [0,1,0,0,0,0,0,0,1,1],
-    [1,1,1,0,0,0,0,0,0,1],
-    [0,1,1,1,0,0,0,0,0,0],
-    [0,0,1,1,1,0,0,0,0,0],
-    [0,0,0,1,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],
+    [0,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1],
+    [0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1],
+    [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+    [0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0],
+    [0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
   ],
-  // 1 · Lab — hexagon ring
+  // 1 · Lab — circuit node / octagon ring (16×16)
   [
-    [0,0,1,1,1,1,0,0],
-    [0,1,1,0,0,1,1,0],
-    [1,1,0,0,0,0,1,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,1,0,0,0,0,1,1],
-    [0,1,1,0,0,1,1,0],
-    [0,0,1,1,1,1,0,0],
+    [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+    [0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0],
+    [0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0],
+    [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
+    [1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1],
+    [1,1,0,0,0,1,1,1,1,1,1,0,0,0,1,1],
+    [1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1],
+    [1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1],
+    [1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1],
+    [1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1],
+    [1,1,0,0,0,1,1,1,1,1,1,0,0,0,1,1],
+    [1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1],
+    [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
+    [0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0],
+    [0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0],
+    [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
   ],
-  // 2 · About — letter X
+  // 2 · About — bold X (14×14)
   [
-    [1,1,0,0,0,0,1,1],
-    [0,1,1,0,0,1,1,0],
-    [0,0,1,1,1,1,0,0],
-    [0,0,0,1,1,0,0,0],
-    [0,0,0,1,1,0,0,0],
-    [0,0,1,1,1,1,0,0],
-    [0,1,1,0,0,1,1,0],
-    [1,1,0,0,0,0,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,1,0,0,0,0,0,0,1,1,1,1],
+    [0,1,1,1,1,0,0,0,0,1,1,1,1,0],
+    [0,0,1,1,1,1,0,0,1,1,1,1,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,0,0,1,1,1,1,1,1,0,0,0,0],
+    [0,0,0,0,0,1,1,1,1,0,0,0,0,0],
+    [0,0,0,0,0,1,1,1,1,0,0,0,0,0],
+    [0,0,0,0,1,1,1,1,1,1,0,0,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,1,1,1,1,0,0,1,1,1,1,0,0],
+    [0,1,1,1,1,0,0,0,0,1,1,1,1,0],
+    [1,1,1,1,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,1,1,1],
   ],
 ];
 
@@ -82,18 +100,37 @@ function buildShape(idx) {
   const cols  = bm[0].length;
   const shapeW = cols * CELL;
   const shapeH = rows * CELL;
-  // Place shape: center-right of canvas
-  const originX = bgW * 0.62 - shapeW / 2;
-  const originY = bgH * 0.5  - shapeH / 2;
+  const originX = bgW * 0.60 - shapeW / 2;
+  const originY = bgH * 0.50 - shapeH / 2;
 
-  const targets = [];
+  // Find shape centroid for distance-based halftone scaling
+  let sumX = 0, sumY = 0, count = 0;
   for (let r = 0; r < rows; r++)
     for (let c = 0; c < cols; c++)
-      if (bm[r][c])
-        targets.push({
-          tx: originX + c * CELL + CELL / 2,
-          ty: originY + r * CELL + CELL / 2,
-        });
+      if (bm[r][c]) { sumX += c; sumY += r; count++; }
+  const centCol = sumX / count;
+  const centRow = sumY / count;
+  const maxDist = Math.sqrt(centCol ** 2 + centRow ** 2) * 1.2 || 1;
+
+  const targets = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (!bm[r][c]) continue;
+      // Distance from centroid → controls size & alpha (halftone effect)
+      const dr   = r - centRow;
+      const dc   = c - centCol;
+      const dist = Math.sqrt(dr * dr + dc * dc);
+      const t    = 1 - Math.min(dist / maxDist, 1); // 1=center, 0=edge
+      const scale = 0.35 + t * 0.65;  // edge: 35% size → center: 100%
+      const alpha = 0.45 + t * 0.55;  // edge: 45% opacity → center: 100%
+      targets.push({
+        tx: originX + c * CELL + CELL / 2,
+        ty: originY + r * CELL + CELL / 2,
+        scale,
+        alpha,
+      });
+    }
+  }
   return targets;
 }
 
@@ -116,23 +153,24 @@ function scatterPixels(onDone) {
 
 function assembleShape(idx) {
   const targets = buildShape(idx);
-  const cx = bgW * 0.62, cy = bgH * 0.5;
+  const cx = bgW * 0.60, cy = bgH * 0.5;
 
   pixels = targets.map(t => ({
     tx: t.tx, ty: t.ty,
+    tScale: t.scale, tAlpha: t.alpha,
     x: cx + (Math.random() - 0.5) * bgW * 0.9,
     y: cy + (Math.random() - 0.5) * bgH * 0.9,
     vx: 0, vy: 0,
     alpha: 0,
+    scale: t.scale,
   }));
 
-  // Stagger fly-in
   pixels.forEach((p, i) => {
     gsap.to(p, {
-      x: p.tx, y: p.ty, alpha: 1,
-      duration: 0.9 + Math.random() * 0.3,
+      x: p.tx, y: p.ty, alpha: p.tAlpha,
+      duration: 0.9 + Math.random() * 0.35,
       ease: 'power3.out',
-      delay: i * 0.012,
+      delay: i * 0.008,
     });
   });
 }
@@ -193,7 +231,7 @@ function tickCanvas() {
     bgCtx.fill();
   });
 
-  // Pixel particles (the shape) with mouse repulsion
+  // Pixel particles with halftone sizing + mouse repulsion
   const ACCENT = '193,122,58';
   pixels.forEach(p => {
     if (p.alpha <= 0.01) return;
@@ -216,15 +254,17 @@ function tickCanvas() {
     p.x  += p.vx;
     p.y  += p.vy;
 
-    // Rotation from displacement
-    const disp = Math.sqrt((p.x - p.tx) ** 2 + (p.y - p.ty) ** 2);
-    const rot  = Math.min(disp * 0.035, 0.8);
+    // Halftone: per-pixel scale + rotation from displacement
+    const disp    = Math.sqrt((p.x - p.tx) ** 2 + (p.y - p.ty) ** 2);
+    const rot     = Math.min(disp * 0.03, 0.9);
+    const sz      = CELL * p.scale * (0.76 + Math.min(disp / 120, 0.2));
+    const half    = sz / 2;
 
     bgCtx.save();
     bgCtx.translate(p.x, p.y);
     bgCtx.rotate(rot);
-    bgCtx.fillStyle = `rgba(${ACCENT},${p.alpha * 0.9})`;
-    bgCtx.fillRect(-CELL * 0.38, -CELL * 0.38, CELL * 0.76, CELL * 0.76);
+    bgCtx.fillStyle = `rgba(${ACCENT},${p.alpha})`;
+    bgCtx.fillRect(-half, -half, sz, sz);
     bgCtx.restore();
   });
 
