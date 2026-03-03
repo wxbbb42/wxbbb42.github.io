@@ -1,10 +1,122 @@
 /* ─────────────────────────────────────────────────────────────
-   app.js  —  Lenis + GSAP ScrollTrigger + SplitText + cursor
+   app.js  —  Lenis + GSAP ScrollTrigger + SplitText + cursor + grid canvas
 ───────────────────────────────────────────────────────────── */
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
-// ─── Crosshair cursor ─────────────────────────────────────────
+// ─── Background canvas: grid lines + square dots ───────────────
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx    = bgCanvas.getContext('2d');
+
+const sectionConfigs = [
+  { spacing: 32, size: 2.5, color: '26,26,24',   alpha: 0.18, lineAlpha: 0.06 },
+  { spacing: 44, size: 3.5, color: '193,122,58',  alpha: 0.20, lineAlpha: 0.05 },
+  { spacing: 26, size: 2.0, color: '26,26,24',   alpha: 0.14, lineAlpha: 0.07 },
+];
+
+let dots = [];
+let bgW, bgH;
+const mouse = { x: -9999, y: -9999 };
+let curCfg = { ...sectionConfigs[0] };
+let tgtCfg = { ...sectionConfigs[0] };
+
+function buildDots(spacing) {
+  dots = [];
+  const cols = Math.ceil(bgW / spacing) + 2;
+  const rows = Math.ceil(bgH / spacing) + 2;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const ox = c * spacing;
+      const oy = r * spacing;
+      dots.push({ ox, oy, x: ox, y: oy, vx: 0, vy: 0 });
+    }
+  }
+}
+
+function resizeCanvas() {
+  bgW = bgCanvas.offsetWidth;
+  bgH = bgCanvas.offsetHeight;
+  bgCanvas.width  = bgW * devicePixelRatio;
+  bgCanvas.height = bgH * devicePixelRatio;
+  bgCtx.scale(devicePixelRatio, devicePixelRatio);
+  buildDots(curCfg.spacing);
+}
+
+const REPEL_R = 110;
+const REPEL_F = 0.20;
+const RETURN  = 0.055;
+const DAMP    = 0.80;
+
+function tickDots() {
+  bgCtx.clearRect(0, 0, bgW, bgH);
+
+  // Lerp config
+  curCfg.spacing   += (tgtCfg.spacing   - curCfg.spacing)   * 0.025;
+  curCfg.size      += (tgtCfg.size      - curCfg.size)       * 0.04;
+  curCfg.alpha     += (tgtCfg.alpha     - curCfg.alpha)       * 0.04;
+  curCfg.lineAlpha += (tgtCfg.lineAlpha - curCfg.lineAlpha)   * 0.04;
+
+  // Grid lines
+  bgCtx.strokeStyle = `rgba(${curCfg.color},${curCfg.lineAlpha})`;
+  bgCtx.lineWidth = 0.5;
+  const sp = curCfg.spacing;
+  for (let x = 0; x < bgW + sp; x += sp) {
+    bgCtx.beginPath(); bgCtx.moveTo(x, 0); bgCtx.lineTo(x, bgH); bgCtx.stroke();
+  }
+  for (let y = 0; y < bgH + sp; y += sp) {
+    bgCtx.beginPath(); bgCtx.moveTo(0, y); bgCtx.lineTo(bgW, y); bgCtx.stroke();
+  }
+
+  // Square dots at intersections
+  const half = curCfg.size / 2;
+  dots.forEach(d => {
+    const dx   = d.x - mouse.x;
+    const dy   = d.y - mouse.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < REPEL_R && dist > 0) {
+      const force = (1 - dist / REPEL_R) * REPEL_F;
+      d.vx += (dx / dist) * force * REPEL_R;
+      d.vy += (dy / dist) * force * REPEL_R;
+    }
+
+    d.vx += (d.ox - d.x) * RETURN;
+    d.vy += (d.oy - d.y) * RETURN;
+    d.vx *= DAMP;
+    d.vy *= DAMP;
+    d.x  += d.vx;
+    d.y  += d.vy;
+
+    // Rotate square proportional to displacement
+    const disp = Math.sqrt((d.x - d.ox) ** 2 + (d.y - d.oy) ** 2);
+    const rot  = Math.min(disp * 0.04, 0.7);
+
+    bgCtx.save();
+    bgCtx.translate(d.x, d.y);
+    bgCtx.rotate(rot);
+    bgCtx.fillStyle = `rgba(${curCfg.color},${curCfg.alpha})`;
+    bgCtx.fillRect(-half, -half, curCfg.size, curCfg.size);
+    bgCtx.restore();
+  });
+
+  requestAnimationFrame(tickDots);
+}
+
+window.addEventListener('mousemove', e => {
+  const rect = bgCanvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+});
+window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+
+function setBgSection(i) {
+  tgtCfg = { ...sectionConfigs[Math.min(i, sectionConfigs.length - 1)] };
+  setTimeout(() => buildDots(tgtCfg.spacing), 500);
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+// ─── Crosshair cursor ──────────────────────────────────────────
 const cursorEl    = document.querySelector('.cursor');
 const cursorLabel = document.getElementById('cursor-label');
 
@@ -12,11 +124,9 @@ let mx = window.innerWidth / 2, my = window.innerHeight / 2;
 
 window.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
-  // cursor snaps directly — no lag, precision feel
   gsap.set(cursorEl, { x: mx, y: my });
 });
 
-// ─── Cursor hover binding (call after dynamic content renders) ─
 function bindCursorHovers() {
   const labelMap = [
     { selector: '.card',       label: 'View ↗' },
@@ -46,122 +156,10 @@ window.addEventListener('mouseup',   () => document.body.classList.remove('curso
 const lenis = new Lenis({
   duration: 1.4,
   easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-  smooth: true,
 });
-
-// Tie Lenis to GSAP ticker
 gsap.ticker.add(time => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
-
-// Sync Lenis scroll → ScrollTrigger
 lenis.on('scroll', ScrollTrigger.update);
-
-// ─── Background dot-grid canvas ────────────────────────────────
-const bgCanvas = document.getElementById('bg-canvas');
-const bgCtx    = bgCanvas.getContext('2d');
-
-// Dot config per section (0=Work, 1=Lab, 2=About)
-const sectionConfigs = [
-  { spacing: 28, radius: 1.2, color: '26,26,24' },   // Work: dense grid
-  { spacing: 40, radius: 1.5, color: '193,122,58' },  // Lab: sparser, amber
-  { spacing: 22, radius: 1.0, color: '26,26,24' },    // About: tight fine grid
-];
-
-let dots = [];
-let bgW, bgH;
-let mouse = { x: -999, y: -999 };
-let currentConfig = { ...sectionConfigs[0] };
-let targetConfig  = { ...sectionConfigs[0] };
-
-function buildDots(cfg) {
-  dots = [];
-  const cols = Math.ceil(bgW / cfg.spacing) + 1;
-  const rows = Math.ceil(bgH / cfg.spacing) + 1;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      dots.push({
-        ox: c * cfg.spacing,  // origin x
-        oy: r * cfg.spacing,  // origin y
-        x:  c * cfg.spacing,  // current x
-        y:  r * cfg.spacing,  // current y
-        vx: 0, vy: 0,
-      });
-    }
-  }
-}
-
-function resizeCanvas() {
-  bgW = bgCanvas.offsetWidth;
-  bgH = bgCanvas.offsetHeight;
-  bgCanvas.width  = bgW * devicePixelRatio;
-  bgCanvas.height = bgH * devicePixelRatio;
-  bgCtx.scale(devicePixelRatio, devicePixelRatio);
-  buildDots(currentConfig);
-}
-
-const REPEL_RADIUS = 90;
-const REPEL_STRENGTH = 0.18;
-const RETURN_STRENGTH = 0.06;
-const DAMPING = 0.82;
-
-function tickDots() {
-  bgCtx.clearRect(0, 0, bgW, bgH);
-
-  // Lerp config values
-  currentConfig.spacing  += (targetConfig.spacing  - currentConfig.spacing)  * 0.03;
-  currentConfig.radius   += (targetConfig.radius   - currentConfig.radius)   * 0.03;
-
-  dots.forEach(d => {
-    // Mouse repulsion
-    const dx = d.x - mouse.x;
-    const dy = d.y - mouse.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist < REPEL_RADIUS && dist > 0) {
-      const force = (1 - dist / REPEL_RADIUS) * REPEL_STRENGTH;
-      d.vx += (dx / dist) * force * REPEL_RADIUS;
-      d.vy += (dy / dist) * force * REPEL_RADIUS;
-    }
-
-    // Spring back to origin
-    d.vx += (d.ox - d.x) * RETURN_STRENGTH;
-    d.vy += (d.oy - d.y) * RETURN_STRENGTH;
-
-    // Dampen
-    d.vx *= DAMPING;
-    d.vy *= DAMPING;
-
-    d.x += d.vx;
-    d.y += d.vy;
-
-    // Draw dot
-    bgCtx.beginPath();
-    bgCtx.arc(d.x, d.y, currentConfig.radius, 0, Math.PI * 2);
-    bgCtx.fillStyle = `rgba(${currentConfig.color},0.35)`;
-    bgCtx.fill();
-  });
-
-  requestAnimationFrame(tickDots);
-}
-
-// Track mouse relative to canvas
-window.addEventListener('mousemove', e => {
-  const rect = bgCanvas.getBoundingClientRect();
-  mouse.x = e.clientX - rect.left;
-  mouse.y = e.clientY - rect.top;
-});
-window.addEventListener('mouseleave', () => { mouse.x = -999; mouse.y = -999; });
-
-// Switch dot config when section changes
-function setBgSection(i) {
-  const cfg = sectionConfigs[Math.min(i, sectionConfigs.length - 1)];
-  targetConfig = { ...cfg };
-  // Rebuild grid at new spacing after a beat
-  setTimeout(() => {
-    buildDots(targetConfig);
-  }, 600);
-}
-
-window.addEventListener('resize', resizeCanvas);
 
 // ─── Nav & progress bar ───────────────────────────────────────
 const navBtns     = [...document.querySelectorAll('.nav-btn')];
@@ -177,7 +175,6 @@ function setActiveNav(i) {
   }
 }
 
-// Nav click → scroll to scene
 navBtns.forEach((btn, i) => {
   btn.addEventListener('click', () => {
     const sceneEl = scenes[i];
@@ -186,7 +183,7 @@ navBtns.forEach((btn, i) => {
   });
 });
 
-// ─── Mouse parallax on scene content only ────────────────────
+// ─── Mouse parallax on scene content ─────────────────────────
 document.addEventListener('mousemove', e => {
   const nx = (e.clientX / window.innerWidth  - 0.5);
   const ny = (e.clientY / window.innerHeight - 0.5);
@@ -198,43 +195,34 @@ document.addEventListener('mousemove', e => {
 // ─── Per-scene ScrollTrigger animations ──────────────────────
 function initSceneAnimations() {
   scenes.forEach((scene, i) => {
-    const content  = scene.querySelector('.scene-content');
-    const eyebrow  = scene.querySelector('.scene-eyebrow');
-    const titleEl  = scene.querySelector('.scene-title, .about-name');
-    const note     = scene.querySelector('.scene-note');
+    const eyebrow = scene.querySelector('.scene-eyebrow');
+    const titleEl = scene.querySelector('.scene-title, .about-name');
+    const note    = scene.querySelector('.scene-note');
 
-    // ── 1. SplitText on heading
     let splitTitle;
     if (titleEl) {
       splitTitle = SplitText.create(titleEl, {
         type: 'lines',
-        mask: 'lines',        // clip overflow per-line for reveal
+        mask: 'lines',
         linesClass: 'split-line-wrap',
       });
     }
 
-    // ── 3. Eyebrow
-    if (eyebrow) {
-      gsap.set(eyebrow, { y: 16, opacity: 0 });
-    }
+    if (eyebrow) gsap.set(eyebrow, { y: 16, opacity: 0 });
 
-    // ── 4. ScrollTrigger: enter
     ScrollTrigger.create({
       trigger: scene,
       start: 'top 80%',
       onEnter: () => {
         scene.classList.add('active');
         setActiveNav(i);
-        // eyebrow fade
         if (eyebrow) gsap.to(eyebrow, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', delay: 0.1 });
-        // title lines slide up
         if (splitTitle) {
           gsap.fromTo(splitTitle.lines,
             { y: '100%', opacity: 0 },
             { y: '0%', opacity: 1, duration: 0.9, ease: 'power4.out', stagger: 0.12, delay: 0.2 }
           );
         }
-        // note
         if (note) gsap.fromTo(note, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', delay: 0.55 });
       },
       onLeaveBack: () => {
@@ -245,13 +233,12 @@ function initSceneAnimations() {
       }
     });
 
-    // ── 5. Nav progress via continuous scrub
+    // Progress line scrub
     ScrollTrigger.create({
       trigger: scene,
       start: 'top top',
       end: 'bottom bottom',
       onUpdate: self => {
-        // weight each scene's contribution equally
         const progress = (i + self.progress) / scenes.length;
         gsap.set(navLineFill, { height: `${progress * 100}%` });
         if (self.progress > 0.05) setActiveNav(i);
@@ -262,88 +249,71 @@ function initSceneAnimations() {
 
 // ─── Card animations ──────────────────────────────────────────
 function initCardAnimations() {
-  // Work cards: staggered float-up
   ScrollTrigger.create({
     trigger: '#work-grid',
     start: 'top 85%',
     onEnter: () => {
       gsap.fromTo('.card',
         { y: 40, opacity: 0, rotation: 0.4 },
-        { y: 0,  opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }
+        { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }
       );
     }
   });
 
-  // Lab cards
   ScrollTrigger.create({
     trigger: '#lab-grid',
     start: 'top 85%',
     onEnter: () => {
       gsap.fromTo('.lab-card',
         { y: 36, opacity: 0, rotation: 0.3 },
-        { y: 0,  opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }
+        { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }
       );
     }
   });
 
-  // About right column
   ScrollTrigger.create({
     trigger: '.about-right',
     start: 'top 80%',
     onEnter: () => {
       gsap.fromTo('.about-right',
         { x: 30, opacity: 0 },
-        { x: 0,  opacity: 1, duration: 1.0, ease: 'power3.out' }
+        { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' }
       );
       gsap.fromTo('.about-bio, .about-loc',
         { y: 20, opacity: 0 },
-        { y: 0,  opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 }
+        { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 }
       );
       gsap.fromTo('.about-link',
         { x: -10, opacity: 0 },
-        { x: 0,   opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 }
+        { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 }
       );
     }
   });
 
-  // Cards: GSAP controls lift + shadow + tilt
+  // Card lift + tilt (LOCKED — Ben approved this exact behaviour)
   document.querySelectorAll('.card, .lab-card').forEach(card => {
     card.addEventListener('mouseenter', () => {
       gsap.to(card, {
         y: -28,
         boxShadow: '0 12px 32px rgba(0,0,0,0.10)',
-        duration: 0.45,
-        ease: 'power3.out',
-        overwrite: 'auto',
-        zIndex: 2,
+        duration: 0.45, ease: 'power3.out', overwrite: 'auto', zIndex: 2,
       });
     });
-
     card.addEventListener('mousemove', e => {
       const r  = card.getBoundingClientRect();
-      const nx = (e.clientX - r.left - r.width  / 2) / (r.width  / 2); // -1 to 1
-      const ny = (e.clientY - r.top  - r.height / 2) / (r.height / 2); // -1 to 1
+      const nx = (e.clientX - r.left - r.width  / 2) / (r.width  / 2);
+      const ny = (e.clientY - r.top  - r.height / 2) / (r.height / 2);
       gsap.to(card, {
-        rotationY:  nx * 4,   // ±4° horizontal
-        rotationX: -ny * 3,   // ±3° vertical
+        rotationY: nx * 4, rotationX: -ny * 3,
         transformPerspective: 900,
-        duration: 0.3,
-        ease: 'power2.out',
-        // don't overwrite y/shadow — only touch rotation
-        overwrite: false,
+        duration: 0.3, ease: 'power2.out', overwrite: false,
       });
     });
-
     card.addEventListener('mouseleave', () => {
       gsap.to(card, {
-        y: 0,
-        rotationX: 0,
-        rotationY: 0,
+        y: 0, rotationX: 0, rotationY: 0,
         boxShadow: '0 0px 0px rgba(0,0,0,0)',
-        duration: 0.55,
-        ease: 'power3.out',
-        overwrite: 'auto',
-        zIndex: 1,
+        duration: 0.55, ease: 'power3.out', overwrite: 'auto', zIndex: 1,
       });
     });
   });
@@ -399,18 +369,14 @@ function renderAbout(meta) {
 
 // ─── Init ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  // Init canvas background
   resizeCanvas();
   tickDots();
 
   await loadContent();
-  bindCursorHovers(); // bind after cards are in DOM
+  bindCursorHovers();
 
-  // Small delay so fonts + layout are settled before GSAP measures
   await new Promise(r => setTimeout(r, 120));
-
   initSceneAnimations();
   initCardAnimations();
-
   ScrollTrigger.refresh();
 });
