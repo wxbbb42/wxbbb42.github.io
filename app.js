@@ -172,21 +172,26 @@ function renderDots() {
 }
 
 // ─── Input handling ────────────────────────────────────────────
-// Wheel / trackpad — debounced
+// Wheel / trackpad — robust cooldown-based
 let wheelTimer = null;
 let wheelAcc = 0;
-window.addEventListener('wheel', e => {
-  e.preventDefault();
-  wheelAcc += e.deltaX + e.deltaY;
+let wheelLocked = false;
 
+function onWheel(e) {
+  if (wheelLocked) return;
+  wheelAcc += e.deltaX + e.deltaY;
   clearTimeout(wheelTimer);
   wheelTimer = setTimeout(() => {
-    if (Math.abs(wheelAcc) > 30) {
+    if (Math.abs(wheelAcc) > 20) {
+      wheelLocked = true;
       goTo(wheelAcc > 0 ? current + 1 : current - 1);
+      setTimeout(() => { wheelLocked = false; }, 900);
     }
     wheelAcc = 0;
-  }, 60);
-}, { passive: false });
+  }, 50);
+}
+
+window.addEventListener('wheel', onWheel, { passive: false });
 
 // Keyboard
 window.addEventListener('keydown', e => {
