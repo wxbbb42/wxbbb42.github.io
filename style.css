@@ -548,7 +548,8 @@ body.cursor-active .cursor-center {
   .nav { display: none; }
   .mobile-nav { display: flex; }
   .mobile-header { display: flex; }
-  .site-controls { display: none; }   /* replaced by mobile header */
+  .site-controls { display: none; }
+  .mobile-nav { display: none; }   /* replaced by header progress bar */
   .scroll-track, .footer { margin-left: 0; }
   .cursor { display: none; }
   body, a, button { cursor: auto; }
