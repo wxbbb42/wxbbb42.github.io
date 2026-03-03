@@ -271,6 +271,12 @@ body.cursor-active .cursor-center       { transform: translate(-50%,-50%) scale(
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   background: var(--border);
+  /* when a card is hovered, dim siblings */
+  transition: opacity 0.3s;
+}
+.cards-grid:has(.card:hover) .card:not(:hover) {
+  opacity: 0.45;
+  filter: brightness(0.97);
 }
 
 .card {
@@ -279,11 +285,19 @@ body.cursor-active .cursor-center       { transform: translate(-50%,-50%) scale(
   position: relative;
   overflow: hidden;
   display: block;
-  transition: box-shadow 0.3s var(--ease-out);
-  will-change: transform;
+  /* base: flush, flat */
+  box-shadow: none;
+  transform: translateY(0);
+  transition:
+    transform   0.30s var(--ease-out),
+    box-shadow  0.30s var(--ease-out),
+    opacity     0.30s,
+    filter      0.30s;
+  will-change: transform, box-shadow;
 }
 
-.card::after {
+/* Top accent line — always present but collapsed */
+.card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -293,11 +307,17 @@ body.cursor-active .cursor-center       { transform: translate(-50%,-50%) scale(
   transform-origin: left;
   transition: transform 0.35s var(--ease-out);
 }
-.card:hover::after { transform: scaleX(1); }
+
+/* Lift + shadow on hover */
 .card:hover {
-  box-shadow: 0 16px 40px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04);
+  transform: translateY(-10px);
+  box-shadow:
+    0  2px  4px rgba(0,0,0,0.04),
+    0  8px  20px rgba(0,0,0,0.08),
+    0 24px  48px rgba(0,0,0,0.06);
   z-index: 2;
 }
+.card:hover::before { transform: scaleX(1); }
 
 .card-year  { font-size: 11px; color: var(--ink-muted); margin-bottom: 18px; letter-spacing: 0.06em; }
 .card-title { font-family: var(--font-serif); font-size: 22px; line-height: 1.2; margin-bottom: 10px; }
@@ -318,21 +338,48 @@ body.cursor-active .cursor-center       { transform: translate(-50%,-50%) scale(
 .lab-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 1px;
+  background: var(--border);
+}
+.lab-grid:has(.lab-card:hover) .lab-card:not(:hover) {
+  opacity: 0.45;
+  filter: brightness(0.97);
 }
 
 .lab-card {
   background: var(--bg);
-  border: 1px solid var(--border);
   padding: 28px 28px 24px;
   position: relative;
-  transition: box-shadow 0.3s, border-color 0.2s;
-  will-change: transform;
+  transform: translateY(0);
+  box-shadow: none;
+  transition:
+    transform   0.30s var(--ease-out),
+    box-shadow  0.30s var(--ease-out),
+    opacity     0.30s,
+    filter      0.30s;
+  will-change: transform, box-shadow;
 }
+
+.lab-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s var(--ease-out);
+}
+
 .lab-card:hover {
-  box-shadow: 0 12px 32px rgba(0,0,0,0.06);
-  border-color: var(--accent-soft);
+  transform: translateY(-10px);
+  box-shadow:
+    0  2px  4px rgba(0,0,0,0.04),
+    0  8px  20px rgba(0,0,0,0.08),
+    0 24px  48px rgba(0,0,0,0.06);
+  z-index: 2;
 }
+.lab-card:hover::before { transform: scaleX(1); }
 
 .lab-status {
   display: inline-flex; align-items: center; gap: 7px;

@@ -208,32 +208,33 @@ function initCardAnimations() {
     }
   });
 
-  // Card 3D tilt on hover
+  // Card hover — CSS handles the lift, GSAP only adds subtle tilt
   document.querySelectorAll('.card').forEach(card => {
     card.addEventListener('mousemove', e => {
       const r  = card.getBoundingClientRect();
-      const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -5;
-      const ry = ((e.clientX - r.left - r.width/2)  / (r.width/2))  *  5;
+      const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -3;
+      const ry = ((e.clientX - r.left - r.width/2)  / (r.width/2))  *  3;
       gsap.to(card, {
-        y: -7, rotation: -0.4,
         rotationX: rx, rotationY: ry,
-        transformPerspective: 700,
-        duration: 0.4, ease: 'power2.out',
-        overwrite: 'auto'
+        transformPerspective: 800,
+        duration: 0.4, ease: 'power2.out', overwrite: 'auto'
       });
     });
     card.addEventListener('mouseleave', () => {
-      gsap.to(card, { y: 0, rotation: 0, rotationX: 0, rotationY: 0, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
+      gsap.to(card, { rotationX: 0, rotationY: 0, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
     });
   });
 
-  // Lab card hover
+  // Lab card hover — same clean lift via CSS, no extra tilt
   document.querySelectorAll('.lab-card').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-      gsap.to(card, { y: -5, rotation: -0.3, duration: 0.35, ease: 'power2.out' });
+    card.addEventListener('mousemove', e => {
+      const r  = card.getBoundingClientRect();
+      const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -2;
+      const ry = ((e.clientX - r.left - r.width/2)  / (r.width/2))  *  2;
+      gsap.to(card, { rotationX: rx, rotationY: ry, transformPerspective: 800, duration: 0.4, ease: 'power2.out', overwrite: 'auto' });
     });
     card.addEventListener('mouseleave', () => {
-      gsap.to(card, { y: 0, rotation: 0, duration: 0.5, ease: 'power3.out' });
+      gsap.to(card, { rotationX: 0, rotationY: 0, duration: 0.5, ease: 'power3.out', overwrite: 'auto' });
     });
   });
 }
