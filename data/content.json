@@ -8,13 +8,42 @@
     "links": {
       "github": "https://github.com/wxbbb42",
       "email": ""
+    },
+    "cn": {
+      "tagline": "用代码说话的设计师。",
+      "bio": "微软高级产品设计师。我在设计与 AI 的交叉点上做产品、写代码——有时候会借助一些 AI agent 的帮助。",
+      "location": "上海"
+    }
+  },
+  "sections": {
+    "en": {
+      "work_eyebrow": "Selected Projects",
+      "work_title": "Things",
+      "work_title_em": "I've built",
+      "lab_eyebrow": "AI Lab",
+      "lab_title": "Agent",
+      "lab_title_em": "Experiments",
+      "lab_note": "Maintained by my AI agent.",
+      "about_eyebrow": "About"
+    },
+    "cn": {
+      "work_eyebrow": "精选项目",
+      "work_title": "我做过的",
+      "work_title_em": "那些事",
+      "lab_eyebrow": "AI 实验室",
+      "lab_title": "智能体",
+      "lab_title_em": "实验",
+      "lab_note": "由我的 AI agent 维护。",
+      "about_eyebrow": "关于我"
     }
   },
   "work": [
     {
       "id": "project-1",
       "title": "Project One",
+      "title_cn": "项目一",
       "description": "A placeholder for something interesting you've built.",
+      "description_cn": "这里放你做过的有意思的东西。",
       "tags": ["Design", "Product"],
       "link": "#",
       "year": "2024"
@@ -22,7 +51,9 @@
     {
       "id": "project-2",
       "title": "Project Two",
+      "title_cn": "项目二",
       "description": "Another placeholder. This one's probably even better.",
+      "description_cn": "另一个占位项目，这个可能更好。",
       "tags": ["Research", "UX"],
       "link": "#",
       "year": "2024"
@@ -30,7 +61,9 @@
     {
       "id": "project-3",
       "title": "Project Three",
+      "title_cn": "项目三",
       "description": "The third project. Bold and experimental.",
+      "description_cn": "第三个项目，大胆而实验性。",
       "tags": ["Exploration"],
       "link": "#",
       "year": "2023"
@@ -40,7 +73,9 @@
     {
       "id": "ai-1",
       "title": "OpenClaw Personal OS",
+      "title_cn": "OpenClaw 个人操作系统",
       "description": "An AI agent system that manages my digital life — messages, calendar, research, and yes, this website.",
+      "description_cn": "一个管理我数字生活的 AI agent 系统——消息、日历、研究，还有这个网站。",
       "tags": ["Agent", "Automation"],
       "status": "live",
       "year": "2025"
@@ -48,7 +83,9 @@
     {
       "id": "ai-2",
       "title": "AI Lab Experiment #2",
+      "title_cn": "AI 实验室 #2",
       "description": "Placeholder for the next weird thing the agent and I build together.",
+      "description_cn": "下一个我和 agent 一起做的奇怪东西。",
       "tags": ["Generative", "Creative"],
       "status": "building",
       "year": "2025"

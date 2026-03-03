@@ -666,8 +666,8 @@ function renderWork(projects) {
     <div class="card-slot">
       <a class="card" href="${escAttr(p.link)}" aria-label="${esc(p.title)}">
         <div class="card-year">${esc(p.year)}</div>
-        <div class="card-title">${esc(p.title)}</div>
-        <div class="card-desc">${esc(p.description)}</div>
+        <div class="card-title" data-title-en="${escAttr(p.title)}" data-title-cn="${escAttr(p.title_cn||p.title)}">${esc(p.title)}</div>
+        <div class="card-desc"  data-desc-en="${escAttr(p.description)}" data-desc-cn="${escAttr(p.description_cn||p.description)}">${esc(p.description)}</div>
         <div class="card-tags">${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
         <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
@@ -679,16 +679,30 @@ function renderLab(items) {
     <div class="card-slot">
       <div class="lab-card" data-status="${escAttr(item.status)}">
         <div class="lab-status"><span class="status-dot"></span>${esc(item.status)}</div>
-        <div class="card-title">${esc(item.title)}</div>
-        <div class="card-desc">${esc(item.description)}</div>
+        <div class="card-title" data-title-en="${escAttr(item.title)}" data-title-cn="${escAttr(item.title_cn||item.title)}">${esc(item.title)}</div>
+        <div class="card-desc"  data-desc-en="${escAttr(item.description)}" data-desc-cn="${escAttr(item.description_cn||item.description)}">${esc(item.description)}</div>
         <div class="card-tags">${item.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}<span class="tag">${esc(item.year)}</span></div>
       </div>
     </div>`).join('');
 }
 
 function renderAbout(meta) {
-  document.getElementById('bio-text').textContent = meta.bio;
-  document.getElementById('about-location').textContent = `📍 ${meta.location}`;
+  const bioEl = document.getElementById('bio-text');
+  bioEl.textContent = meta.bio;
+  bioEl.dataset.en  = meta.bio;
+  bioEl.dataset.cn  = meta.cn?.bio || meta.bio;
+
+  const locEl = document.getElementById('about-location');
+  locEl.textContent = `📍 ${meta.location}`;
+  locEl.dataset.en  = meta.location;
+  locEl.dataset.cn  = meta.cn?.location || meta.location;
+
+  const taglineEl = document.querySelector('.about-tagline');
+  if (taglineEl) {
+    taglineEl.dataset.en = meta.tagline || taglineEl.textContent;
+    taglineEl.dataset.cn = meta.cn?.tagline || taglineEl.textContent;
+  }
+
   const links = [];
   if (meta.links.github) links.push({ label: 'GitHub', href: meta.links.github });
   if (meta.links.email)  links.push({ label: 'Email',  href: `mailto:${meta.links.email}` });
@@ -701,6 +715,8 @@ function renderAbout(meta) {
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
   await loadContent();
+  // Apply saved language immediately after content renders
+  applyLang(localStorage.getItem('lang') || 'en');
 
   if (prefersReducedMotion) {
     // Show all content immediately, no animations
@@ -719,4 +735,108 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSceneAnimations();
   initCardAnimations();
   ScrollTrigger.refresh();
+
+  initThemeLang();
 });
+
+// ══════════════════════════════════════════════════════════════
+// THEME & LANGUAGE TOGGLE
+// ══════════════════════════════════════════════════════════════
+function initThemeLang() {
+  const themeBtn = document.getElementById('theme-toggle');
+  const langBtn  = document.getElementById('lang-toggle');
+  if (!themeBtn || !langBtn) return;
+
+  // ── Theme ──────────────────────────────────────────────────
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+  themeBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    }
+  });
+
+  // ── Language ───────────────────────────────────────────────
+  let currentLang = localStorage.getItem('lang') || 'en';
+  applyLang(currentLang);
+
+  langBtn.addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'cn' : 'en';
+    localStorage.setItem('lang', currentLang);
+    applyLang(currentLang);
+  });
+}
+
+function applyLang(lang) {
+  const langBtn = document.getElementById('lang-toggle');
+  if (langBtn) langBtn.textContent = lang === 'en' ? 'EN' : '中';
+
+  // Update data-lang attribute for CSS hooks if needed
+  document.documentElement.setAttribute('data-lang', lang);
+
+  // Section labels
+  const labels = {
+    en: {
+      work_eyebrow: 'Selected Projects',
+      work_title: 'Things', work_title_em: "I've built",
+      lab_eyebrow: 'AI Lab',
+      lab_title: 'Agent', lab_title_em: 'Experiments',
+      lab_note: 'Maintained by my AI agent.',
+      about_eyebrow: 'About',
+      footer_copy: '© 2025 Xiaoben Wang',
+      footer_agent: 'Maintained by'
+    },
+    cn: {
+      work_eyebrow: '精选项目',
+      work_title: '我做过的', work_title_em: '那些事',
+      lab_eyebrow: 'AI 实验室',
+      lab_title: '智能体', lab_title_em: '实验',
+      lab_note: '由我的 AI agent 维护。',
+      about_eyebrow: '关于我',
+      footer_copy: '© 2025 王小本',
+      footer_agent: '由'
+    }
+  };
+  const L = labels[lang];
+
+  // Scene eyebrows
+  const eyebrows = document.querySelectorAll('.scene-eyebrow');
+  const eyebrowKeys = ['work_eyebrow', 'lab_eyebrow', 'about_eyebrow'];
+  eyebrows.forEach((el, i) => { if (eyebrowKeys[i]) el.textContent = L[eyebrowKeys[i]]; });
+
+  // Scene titles (Work)
+  const workTitle = document.querySelector('#scene-0 .scene-title');
+  if (workTitle) workTitle.innerHTML = `${L.work_title}<br/><em>${L.work_title_em}</em>`;
+
+  // Scene titles (Lab)
+  const labTitle = document.querySelector('#scene-1 .scene-title');
+  if (labTitle) labTitle.innerHTML = `${L.lab_title}<br/><em>${L.lab_title_em}</em>`;
+
+  // Lab note
+  const labNote = document.querySelector('.scene-note');
+  if (labNote) labNote.textContent = L.lab_note;
+
+  // Cards — toggle between title/title_cn, description/description_cn
+  document.querySelectorAll('[data-title-cn]').forEach(el => {
+    el.textContent = lang === 'cn' ? el.dataset.titleCn : el.dataset.titleEn;
+  });
+  document.querySelectorAll('[data-desc-cn]').forEach(el => {
+    el.textContent = lang === 'cn' ? el.dataset.descCn : el.dataset.descEn;
+  });
+
+  // About section
+  const bioEl  = document.getElementById('bio-text');
+  const locEl  = document.getElementById('about-location');
+  if (bioEl  && bioEl.dataset.cn)  bioEl.textContent  = lang === 'cn' ? bioEl.dataset.cn  : bioEl.dataset.en;
+  if (locEl  && locEl.dataset.cn)  locEl.textContent  = lang === 'cn' ? `📍 ${locEl.dataset.cn}` : `📍 ${locEl.dataset.en}`;
+
+  // About name tagline
+  const taglineEl = document.querySelector('.about-tagline');
+  if (taglineEl && taglineEl.dataset.cn) taglineEl.textContent = lang === 'cn' ? taglineEl.dataset.cn : taglineEl.dataset.en;
+}

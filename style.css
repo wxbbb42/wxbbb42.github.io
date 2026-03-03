@@ -16,6 +16,17 @@
   --ease-out:   cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+[data-theme="dark"] {
+  --bg:        #141412;
+  --bg-alt:    #1C1C1A;
+  --ink:       #F0EDE6;
+  --ink-soft:  #9A9790;
+  --ink-muted: #5A5855;
+  --accent:    #D48A45;
+  --accent-soft:#3A2A14;
+  --border:    #2A2A28;
+}
+
 html { height: 100%; }
 
 body {
@@ -514,3 +525,46 @@ body.cursor-active .cursor-center {
 /* ─── Focus visible — restore native cursor for keyboard ── */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 *:focus-visible { cursor: auto; }
+
+/* ─── Site controls (bottom-left) ────────────────────────── */
+.site-controls {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  transition: color 0.3s;
+}
+
+.ctrl-btn {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  color: var(--ink-muted);
+  cursor: none;
+  padding: 2px 0;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.ctrl-btn:hover,
+.ctrl-btn.active {
+  color: var(--ink);
+}
+
+.ctrl-divider {
+  color: var(--border);
+  user-select: none;
+}
+
+/* dark mode — canvas bg transition */
+body { transition: background 0.4s, color 0.4s; }
+#bg-canvas { transition: opacity 0.4s; }
