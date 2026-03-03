@@ -516,8 +516,7 @@ body.cursor-active .cursor-center {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .scene { height: 120vh; }
-  #bg-canvas { display: none; }
+  /* Keep scene height and canvas — just pause animations via JS */
   .cursor { display: none; }
   body, a, button { cursor: auto; }
 }
