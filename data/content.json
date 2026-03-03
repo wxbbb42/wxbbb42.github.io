@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "name": "Xiaoben Wang",
+    "handle": "Xiaoben",
+    "tagline": "Designer who builds.",
+    "bio": "Senior Product Designer at Microsoft. I design products and build things at the intersection of design and AI — sometimes with a little help from my agents.",
+    "location": "Shanghai",
+    "links": {
+      "github": "https://github.com/wxbbb42",
+      "email": ""
+    }
+  },
+  "work": [
+    {
+      "id": "project-1",
+      "title": "Project One",
+      "description": "A placeholder for something interesting you've built.",
+      "tags": ["Design", "Product"],
+      "link": "#",
+      "year": "2024"
+    },
+    {
+      "id": "project-2",
+      "title": "Project Two",
+      "description": "Another placeholder. This one's probably even better.",
+      "tags": ["Research", "UX"],
+      "link": "#",
+      "year": "2024"
+    },
+    {
+      "id": "project-3",
+      "title": "Project Three",
+      "description": "The third project. Bold and experimental.",
+      "tags": ["Exploration"],
+      "link": "#",
+      "year": "2023"
+    }
+  ],
+  "ailab": [
+    {
+      "id": "ai-1",
+      "title": "OpenClaw Personal OS",
+      "description": "An AI agent system that manages my digital life — messages, calendar, research, and yes, this website.",
+      "tags": ["Agent", "Automation"],
+      "status": "live",
+      "year": "2025"
+    },
+    {
+      "id": "ai-2",
+      "title": "AI Lab Experiment #2",
+      "description": "Placeholder for the next weird thing the agent and I build together.",
+      "tags": ["Generative", "Creative"],
+      "status": "building",
+      "year": "2025"
+    }
+  ]
+}
