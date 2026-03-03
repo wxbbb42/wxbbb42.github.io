@@ -439,31 +439,22 @@ function initSceneAnimations() {
 // CARD ANIMATIONS  (LOCKED — Ben approved)
 // ══════════════════════════════════════════════════════════════
 function initCardAnimations() {
-  // Only animate cards into view if they start below the viewport
-  function animateIn(selector, trigger, props) {
-    const els = document.querySelectorAll(selector);
-    if (!els.length) return;
-    // Check if trigger is already in view on load
-    const rect = document.querySelector(trigger)?.getBoundingClientRect();
-    if (rect && rect.top < window.innerHeight) {
-      // Already visible — skip the hidden initial state, just show immediately
-      gsap.set(selector, { opacity: 1, y: 0, x: 0, rotation: 0 });
-      return;
-    }
-    gsap.set(selector, props.from);
-    ScrollTrigger.create({
-      trigger, start: 'top 85%', once: true,
-      onEnter: () => gsap.to(selector, props.to)
-    });
-  }
+  // Use scene as trigger (reliable in sticky layout), not the grid itself
+  const workScene = scenes[0];
+  const labScene  = scenes[1];
 
-  animateIn('.card', '#work-grid', {
-    from: { y: 40, opacity: 0, rotation: 0.4 },
-    to:   { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }
+  ScrollTrigger.create({
+    trigger: workScene, start: 'top+=50% center', once: true,
+    onEnter: () => gsap.fromTo('.card',
+      { y: 40, opacity: 0, rotation: 0.4 },
+      { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 })
   });
-  animateIn('.lab-card', '#lab-grid', {
-    from: { y: 36, opacity: 0, rotation: 0.3 },
-    to:   { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }
+
+  ScrollTrigger.create({
+    trigger: labScene, start: 'top+=50% center', once: true,
+    onEnter: () => gsap.fromTo('.lab-card',
+      { y: 36, opacity: 0, rotation: 0.3 },
+      { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 })
   });
 
   ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', once: true, onEnter: () => {
@@ -534,11 +525,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadContent();
   bindCursorHovers();
 
-  // Wait for fonts + layout to settle before initializing scroll animations
   await new Promise(r => setTimeout(r, 200));
   scrollH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
   initSceneAnimations();
   initCardAnimations();
   await new Promise(r => setTimeout(r, 100));
   ScrollTrigger.refresh();
+
+  // Trigger card animations immediately since work cards are visible on load
+  gsap.fromTo('.card',
+    { y: 30, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', stagger: 0.10, delay: 0.3 });
 });
