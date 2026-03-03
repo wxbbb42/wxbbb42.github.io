@@ -379,7 +379,8 @@ function initSceneAnimations() {
     let splitTitle;
     if (titleEl) {
       splitTitle = SplitText.create(titleEl, {
-        type: 'lines', mask: 'lines', linesClass: 'split-line-wrap',
+        type: 'lines',
+        linesClass: 'split-line-wrap',
       });
     }
     if (eyebrow) gsap.set(eyebrow, { y: 16, opacity: 0 });

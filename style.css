@@ -284,8 +284,10 @@ body.cursor-active .cursor-center {
 
 /* SplitText: char/word wrapper for mask reveals */
 .split-line-wrap {
-  overflow: hidden;
+  overflow: visible !important;
   display: block;
+  padding: 0.06em 0.1em 0.18em;
+  margin: -0.06em -0.1em -0.18em;
 }
 
 /* ─── Work Grid ──────────────────────────────────────────── */
