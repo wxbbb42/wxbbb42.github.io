@@ -501,12 +501,72 @@ body.cursor-active .cursor-center {
   .nav { display: none; }
   .mobile-nav { display: flex; }
   .scroll-track, .footer { margin-left: 0; }
-  .scene-content { padding: 0 28px; }
-  .cards-grid { grid-template-columns: 1fr; }
-  .lab-grid { grid-template-columns: 1fr; }
-  .about-layout { grid-template-columns: 1fr; gap: 40px; }
   .cursor { display: none; }
   body, a, button { cursor: auto; }
+
+  /* ── Scene layout ── */
+  .scene { height: 100vh; }  /* 1 screen per section on mobile */
+  .scene-sticky {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    align-items: flex-start;
+    padding-top: 0;
+  }
+  .scene-content {
+    padding: 72px 24px 100px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* ── Typography ── */
+  .scene-eyebrow { font-size: 10px; letter-spacing: 0.14em; margin-bottom: 10px; }
+  .scene-title { font-size: clamp(36px, 11vw, 56px); line-height: 1.05; }
+  .scene-note { font-size: 11px; margin-top: 10px; }
+
+  /* ── Cards ── */
+  .cards-grid { grid-template-columns: 1fr; gap: 0; }
+  .lab-grid   { grid-template-columns: 1fr; }
+
+  .card { padding: 22px 20px; }
+  .card-title { font-size: 15px; }
+  .card-desc  { font-size: 12px; margin-top: 6px; }
+  .card-year  { font-size: 10px; }
+  .card-tags  { margin-top: 12px; gap: 4px; }
+
+  /* Card slot borders — full-width dividers instead of grid gaps */
+  .card-slot { border-bottom: 1px solid var(--border); }
+  .card-slot:last-child { border-bottom: none; }
+  .lab-grid .card-slot { border-right: none; border-bottom: 1px solid var(--border); }
+
+  /* ── About ── */
+  .about-layout { grid-template-columns: 1fr; gap: 28px; }
+  .about-name { font-size: clamp(40px, 13vw, 64px); }
+  .about-tagline { font-size: 13px; margin-top: 6px; }
+  .about-bio  { font-size: 13px; line-height: 1.65; }
+  .about-loc  { font-size: 12px; margin-top: 10px; }
+  .about-links { margin-top: 20px; gap: 10px; }
+  .about-link { font-size: 12px; padding: 8px 0; }
+
+  /* ── Canvas — lighter on mobile for perf ── */
+  #bg-canvas { opacity: 0.6; }
+
+  /* ── Footer ── */
+  .footer { padding: 14px 24px; font-size: 10px; flex-direction: column; gap: 4px; text-align: center; }
+
+  /* ── Site controls ── */
+  .site-controls { bottom: 16px; left: 50%; transform: translateX(-50%); }
+
+  /* ── Scene header spacing ── */
+  .scene-header { margin-bottom: 24px; }
+}
+
+/* ── Extra small (≤ 480px) ── */
+@media (max-width: 480px) {
+  .scene-content { padding: 64px 18px 90px; }
+  .scene-title { font-size: clamp(32px, 12vw, 48px); }
+  .about-name  { font-size: clamp(36px, 14vw, 56px); }
 }
 
 /* ─── Reduced motion ─────────────────────────────────────── */
