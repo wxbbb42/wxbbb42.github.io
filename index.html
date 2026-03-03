@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Xiaoben Wang</title>
-  <meta name="description" content="Designer who builds. Senior Product Designer at Microsoft exploring the edge of design and AI." />
+  <meta name="description" content="Designer who builds. Senior Product Designer at Microsoft." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -16,93 +16,70 @@
   <nav class="nav">
     <span class="nav-name">XW</span>
     <div class="nav-links">
-      <button class="nav-btn active" data-target="0">Home</button>
-      <button class="nav-btn" data-target="1">Work</button>
-      <button class="nav-btn" data-target="2">AI Lab</button>
-      <button class="nav-btn" data-target="3">About</button>
+      <button class="nav-btn active" data-target="0">Work</button>
+      <button class="nav-btn" data-target="1">AI Lab</button>
+      <button class="nav-btn" data-target="2">About</button>
     </div>
     <div class="nav-progress">
       <div class="nav-progress-bar"></div>
     </div>
   </nav>
 
-  <!-- SLIDE CONTAINER -->
+  <!-- SLIDES -->
   <div class="slides-wrapper">
-    <div class="slides-track" id="slides-track">
 
-      <!-- SLIDE 0: HERO -->
-      <section class="slide" id="slide-home">
-        <div class="slide-inner">
-          <p class="hero-pre anim-item">Hello — I'm</p>
-          <h1 class="hero-name anim-item">Xiaoben<br/>Wang</h1>
-          <p class="hero-tagline anim-item"><em>Designer who builds.</em></p>
-          <p class="hero-sub anim-item">
-            Senior Product Designer at Microsoft.<br />
-            I design products and build experiments<br />
-            at the edge of design &amp; AI.
-          </p>
-          <button class="hero-cta anim-item" data-target="1">
-            View Work <span class="cta-arrow">→</span>
-          </button>
+    <!-- SLIDE 0: WORK -->
+    <section class="slide active" id="slide-work" data-index="0">
+      <div class="slide-bg"></div>
+      <div class="slide-content">
+        <div class="section-header">
+          <span class="section-label">Work</span>
+          <h2>Selected Projects</h2>
         </div>
-        <div class="hero-deco" aria-hidden="true">
-          <div class="deco-ring ring-1"></div>
-          <div class="deco-ring ring-2"></div>
-          <div class="deco-ring ring-3"></div>
-        </div>
-        <div class="slide-index">01</div>
-      </section>
+        <div class="grid" id="work-grid"></div>
+      </div>
+      <div class="slide-num">01</div>
+    </section>
 
-      <!-- SLIDE 1: WORK -->
-      <section class="slide" id="slide-work">
-        <div class="slide-inner wide">
-          <div class="section-header anim-item">
-            <span class="section-label">01 — Work</span>
-            <h2>Selected Projects</h2>
-          </div>
-          <div class="grid" id="work-grid"></div>
+    <!-- SLIDE 1: AI LAB -->
+    <section class="slide" id="slide-lab" data-index="1">
+      <div class="slide-bg"></div>
+      <div class="slide-content">
+        <div class="section-header">
+          <span class="section-label">AI Lab</span>
+          <h2>Agent Experiments</h2>
+          <p class="section-note">Maintained by my AI agent.</p>
         </div>
-        <div class="slide-index">02</div>
-      </section>
+        <div class="lab-grid" id="lab-grid"></div>
+      </div>
+      <div class="slide-num">02</div>
+    </section>
 
-      <!-- SLIDE 2: AI LAB -->
-      <section class="slide slide-lab" id="slide-lab">
-        <div class="slide-inner wide">
-          <div class="section-header anim-item">
-            <span class="section-label">02 — AI Lab</span>
-            <h2>Agent Experiments</h2>
-            <p class="section-note">This section is maintained by my AI agent.</p>
-          </div>
-          <div class="lab-grid" id="lab-grid"></div>
+    <!-- SLIDE 2: ABOUT -->
+    <section class="slide slide-about" id="slide-about" data-index="2">
+      <div class="slide-bg"></div>
+      <div class="slide-content about-content">
+        <div class="about-left">
+          <span class="section-label">About</span>
+          <h1 class="about-name">Xiaoben<br/><em>Wang</em></h1>
+          <p class="about-tagline">Designer who builds.</p>
         </div>
-        <div class="slide-index">03</div>
-      </section>
-
-      <!-- SLIDE 3: ABOUT -->
-      <section class="slide" id="slide-about">
-        <div class="slide-inner">
-          <div class="about-block">
-            <span class="section-label anim-item">03 — About</span>
-            <h2 class="anim-item">A bit<br/><em>about me</em></h2>
-            <p class="about-bio anim-item" id="bio-text"></p>
-            <p class="about-location anim-item" id="about-location"></p>
-            <div class="about-links anim-item" id="about-links"></div>
-          </div>
+        <div class="about-right">
+          <p class="about-bio" id="bio-text"></p>
+          <p class="about-location" id="about-location"></p>
+          <div class="about-links" id="about-links"></div>
         </div>
-        <div class="slide-index">04</div>
-      </section>
+      </div>
+      <div class="slide-num">03</div>
+    </section>
 
-    </div><!-- /slides-track -->
-  </div><!-- /slides-wrapper -->
+  </div>
 
   <!-- BOTTOM BAR -->
   <footer class="footer">
     <div class="footer-dots" id="footer-dots"></div>
-    <span class="footer-note">maintained by <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">an AI agent</a></span>
+    <span class="footer-copy">© 2025 Xiaoben Wang · <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">maintained by an AI agent</a></span>
   </footer>
-
-  <!-- TRANSITION CURTAIN -->
-  <div class="curtain" id="curtain"></div>
 
   <script src="app.js"></script>
 </body>
