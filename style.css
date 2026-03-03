@@ -560,7 +560,14 @@ body.cursor-active .cursor-center {
     height: auto !important;
     display: block !important;
   }
-  #bg-canvas { display: none; }  /* canvas off — not worth on mobile */
+  #bg-canvas { opacity: 0.5; }  /* keep canvas, just lighter */
+
+  /* Force cards visible — block any GSAP opacity:0 */
+  .card, .lab-card,
+  .about-right, .about-bio, .about-loc, .about-link {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 
   .scene-content {
     padding: 80px 22px 60px;
