@@ -93,9 +93,22 @@ function dot(x, y, r, alpha, color = '26,26,24') {
 }
 
 // ── SECTION 0: Coordinate System (Work) ───────────────────────
+// Smoothed mouse-parallax offsets for the coordinate grid
+let coordParallaxX = 0, coordParallaxY = 0;
+
 function drawCoordinates(alpha) {
   if (alpha < 0.005) return;
   const pad = PARALLAX_PX;
+
+  // Mouse parallax: gently shift the whole grid toward the cursor
+  const hasMouse = mouse.x > 0 && mouse.x < bgW;
+  const targetPX = hasMouse ? (mouse.x - bgW * 0.5) * 0.005 : 0;
+  const targetPY = hasMouse ? (mouse.y - bgH * 0.5) * 0.005 : 0;
+  coordParallaxX += (targetPX - coordParallaxX) * 0.08;
+  coordParallaxY += (targetPY - coordParallaxY) * 0.08;
+
+  bgCtx.save();
+  bgCtx.translate(coordParallaxX, coordParallaxY);
 
   // Derive tick spacing from card edges so grid aligns with cards
   // Use the gap between first two card edges as the canonical spacing
@@ -204,22 +217,24 @@ function drawCoordinates(alpha) {
   // Origin dot
   dot(cx, cy, 5, alpha * 0.45, '193,122,58');
 
-  // Mouse crosshair
+  // Floating measurement dots
+  for (let i = 0; i < 6; i++) {
+    const angle = (t * 0.003) + i * Math.PI / 3;
+    const r = tickSpacing * (2.5 + i * 1.2);
+    dot(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r * 0.5, 2, alpha * 0.28);
+  }
+
+  bgCtx.restore();
+
+  // Mouse crosshair (not parallaxed — stays locked to cursor)
   if (mouse.x > 0 && mouse.x < bgW) {
     bgCtx.setLineDash([4, 6]);
     line(mouse.x, -pad, mouse.x, bgH + pad, alpha * 0.12, 0.5);
     line(0, mouse.y, bgW, mouse.y, alpha * 0.12, 0.5);
     bgCtx.setLineDash([]);
     dot(mouse.x, mouse.y, 3, alpha * 0.6, '193,122,58');
-    dot(mouse.x, cy, 2.5, alpha * 0.4, '193,122,58');
-    dot(cx, mouse.y, 2.5, alpha * 0.4, '193,122,58');
-  }
-
-  // Floating measurement dots
-  for (let i = 0; i < 6; i++) {
-    const angle = (t * 0.003) + i * Math.PI / 3;
-    const r = tickSpacing * (2.5 + i * 1.2);
-    dot(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r * 0.5, 2, alpha * 0.28);
+    dot(mouse.x, cy + coordParallaxY, 2.5, alpha * 0.4, '193,122,58');
+    dot(cx + coordParallaxX, mouse.y, 2.5, alpha * 0.4, '193,122,58');
   }
 }
 
@@ -236,8 +251,8 @@ function drawOrbitals(alpha) {
 
   // Mouse pull: shift the entire system center toward mouse
   const hasMouse = mouse.x > 0 && mouse.x < bgW;
-  const pullX = hasMouse ? (mouse.x - bgW * 0.65) * 0.06 : 0;
-  const pullY = hasMouse ? (mouse.y - bgH * 0.50) * 0.06 : 0;
+  const pullX = hasMouse ? (mouse.x - bgW * 0.65) * 0.012 : 0;
+  const pullY = hasMouse ? (mouse.y - bgH * 0.50) * 0.012 : 0;
   const cx = bgW * 0.65 + pullX;
   const cy = bgH * 0.50 + pullY;
   const scale = Math.min(bgW, bgH) * 0.48;
