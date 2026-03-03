@@ -14,11 +14,13 @@ const mouse = { x: -9999, y: -9999 };
 
 let t = 0;
 
-// scrollBlend: 0 = full section A, 1 = full section B
-// scrollFrom / scrollTo: which sections are blending
-let scrollBlend = 0;
-let scrollFrom  = 0;
-let scrollTo    = 0;
+// Scroll-driven state — updated every frame from lenis scroll
+let scrollY    = 0;  // raw scroll position
+let scrollH    = 1;  // total scrollable height (document - viewport)
+
+// Per-section alpha driven by scroll position
+// Each section occupies 1/3 of total scroll range
+// Pattern parallax: offsetY shifts upward as you scroll within a section
 
 function resizeCanvas() {
   bgW = bgCanvas.offsetWidth;
@@ -59,41 +61,46 @@ function dot(x, y, r, alpha, color = '26,26,24') {
 // ── SECTION 0: Coordinate System (Work) ───────────────────────
 function drawCoordinates(alpha) {
   if (alpha < 0.005) return;
-  // Origin shifted to lower-right — stays out of left content area
   const cx = bgW * 0.68;
   const cy = bgH * 0.62;
   const size = Math.max(bgW, bgH) * 0.7;
-
   const tickCount = 16;
   const tickSpacing = size / tickCount;
 
-  // Full-canvas grid — alpha fades linearly from left (dim) to right (full)
-  for (let i = -tickCount; i <= tickCount; i++) {
-    const isMajor = i % 4 === 0;
-    // vertical lines: fade based on x position (left=dim, right=bright)
-    const gx = cx + i * tickSpacing;
-    const xRatio = Math.max(0, Math.min(1, gx / bgW)); // 0 at left edge, 1 at right
-    const fadeA = 0.15 + xRatio * 0.85; // 0.15 at left, 1.0 at right
-    const ga = (isMajor ? alpha * 0.22 : alpha * 0.10) * fadeA;
-    line(gx, 0, gx, bgH, ga, isMajor ? 0.8 : 0.4);
-  }
-  for (let i = -tickCount; i <= tickCount; i++) {
-    // horizontal lines: fade based on x of their intersection with the canvas center-ish
-    const isMajor = i % 4 === 0;
-    // use a gradient-ish approach: draw as two halves
-    const ga_left  = (isMajor ? alpha * 0.22 : alpha * 0.10) * 0.15;
-    const ga_right = (isMajor ? alpha * 0.22 : alpha * 0.10) * 1.00;
-    const gy = cy + i * tickSpacing;
-    // left half (dim)
-    line(0, gy, bgW * 0.45, gy, ga_left, isMajor ? 0.8 : 0.4);
-    // right half (bright) — gradient via midpoint
-    line(bgW * 0.45, gy, bgW, gy, ga_right, isMajor ? 0.8 : 0.4);
+  // Left-to-right fade mask via globalAlpha gradient trick:
+  // draw everything at full opacity then composite with a gradient overlay
+  // Actually: just multiply per-line alpha by xRatio smoothly
+  const fadeEdge = bgW * 0.50; // left of this: fully faded
+
+  function xFade(x) {
+    return Math.max(0.05, Math.min(1, (x - fadeEdge * 0.1) / (fadeEdge * 0.9)));
   }
 
-  // Main axes — also faded on left
-  line(0, cy, bgW * 0.45, cy, alpha * 0.10, 1.2);
-  line(bgW * 0.45, cy, bgW, cy, alpha * 0.45, 1.2);
-  line(cx, 0, cx, bgH, alpha * 0.45, 1.2);
+  // Vertical grid lines
+  for (let i = -tickCount; i <= tickCount; i++) {
+    const gx = cx + i * tickSpacing;
+    if (gx < -size || gx > bgW + size) continue;
+    const isMajor = i % 4 === 0;
+    const baseA = isMajor ? alpha * 0.22 : alpha * 0.10;
+    line(gx, 0, gx, bgH, baseA * xFade(gx), isMajor ? 0.8 : 0.4);
+  }
+
+  // Horizontal grid lines — fade via gradient on each segment
+  for (let i = -tickCount; i <= tickCount; i++) {
+    const gy = cy + i * tickSpacing;
+    if (gy < -10 || gy > bgH + 10) continue;
+    const isMajor = i % 4 === 0;
+    const baseA = isMajor ? alpha * 0.22 : alpha * 0.10;
+    // Left dim half
+    line(0, gy, fadeEdge, gy, baseA * 0.05, isMajor ? 0.8 : 0.4);
+    // Right bright half (with smooth ramp over 200px)
+    line(fadeEdge, gy, bgW, gy, baseA, isMajor ? 0.8 : 0.4);
+  }
+
+  // Main axes
+  line(0, cy, fadeEdge, cy, alpha * 0.04, 1.2);
+  line(fadeEdge, cy, bgW, cy, alpha * 0.45, 1.2);
+  line(cx, 0, cx, bgH, alpha * 0.45 * xFade(cx), 1.2);
 
   // Tick marks on axes
   for (let i = -tickCount; i <= tickCount; i++) {
@@ -101,16 +108,14 @@ function drawCoordinates(alpha) {
     const isMajor = i % 4 === 0;
     const ts = isMajor ? 10 : 5;
     const gx = cx + i * tickSpacing;
-    const xRatio = Math.max(0, Math.min(1, gx / bgW));
-    line(gx, cy - ts, gx, cy + ts, alpha * 0.40 * (0.15 + xRatio * 0.85), 0.8);
+    line(gx, cy - ts, gx, cy + ts, alpha * 0.40 * xFade(gx), 0.8);
     const gy = cy + i * tickSpacing;
-    line(cx - ts, gy, cx + ts, gy, alpha * 0.40, 0.8);
+    if (gy > 0 && gy < bgH) line(cx - ts, gy, cx + ts, gy, alpha * 0.40 * xFade(cx), 0.8);
   }
 
   // Arrowheads
   const aw = 7;
-  [[cx + size * 0.6, cy, 1, 0], [cx, cy - size * 0.6, 0, -1]].forEach(([x, y, dx, dy]) => {
-    if (x > bgW + 20 || y < -20) return;
+  [[Math.min(cx + size * 0.6, bgW - 10), cy, 1, 0], [cx, Math.max(cy - size * 0.6, 10), 0, -1]].forEach(([x, y, dx, dy]) => {
     bgCtx.beginPath();
     bgCtx.moveTo(x, y);
     bgCtx.lineTo(x - dx * 14 - dy * aw, y - dy * 14 + dx * aw);
@@ -119,8 +124,8 @@ function drawCoordinates(alpha) {
     bgCtx.fill();
   });
 
-  // Origin dot
-  dot(cx, cy, 5, alpha * 0.45, '193,122,58');
+  // Origin dot (amber)
+  dot(cx, cy, 5, alpha * 0.55, '193,122,58');
 
   // Mouse crosshair
   if (mouse.x > 0 && mouse.x < bgW) {
@@ -137,7 +142,9 @@ function drawCoordinates(alpha) {
   for (let i = 0; i < 6; i++) {
     const angle = (t * 0.003) + i * Math.PI / 3;
     const r = tickSpacing * (2.5 + i * 1.2);
-    dot(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r * 0.5, 2, alpha * 0.28);
+    const px = cx + Math.cos(angle) * r;
+    const py = cy + Math.sin(angle) * r * 0.5;
+    dot(px, py, 2, alpha * 0.28 * xFade(px));
   }
 }
 
@@ -175,11 +182,7 @@ function drawOrbitals(alpha) {
     dot(sx, sy, 1, alpha * pulse * 0.5);
   }
 
-  // Mouse → center attraction line (no amber dot)
-  if (hasMouse) {
-    const mdist = Math.sqrt((mouse.x - cx)**2 + (mouse.y - cy)**2);
-    line(mouse.x, mouse.y, cx, cy, alpha * Math.min(0.25, mdist / 400), 0.5);
-  }
+  // Mouse → center attraction line (removed per Ben)
 
   // Nucleus glow rings
   [20, 36, 56].forEach((r, i) => dot(cx, cy, r, alpha * [0.06, 0.04, 0.02][i], '193,122,58'));
@@ -260,25 +263,43 @@ function drawRadial(alpha) {
 }
 
 // ── Render loop ───────────────────────────────────────────────
-const DRAW_FNS = [drawCoordinates, drawOrbitals, drawRadial];
 
-// Ease function for blend
-function easeInOut(x) { return x < 0.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
+// Each section spans (scrollH / N) pixels of scroll
+// Within that span: first 60% = pattern fully visible + parallax up
+//                   last 40%  = fade out (and next fades in)
+
+function getSectionAlphaAndOffset(sectionIndex, nSections) {
+  const span     = scrollH / nSections;           // scroll px per section
+  const sStart   = sectionIndex * span;
+  const sEnd     = sStart + span;
+  const raw      = (scrollY - sStart) / span;     // -inf→0 entering, 0→1 inside, 1→inf leaving
+
+  // Fade in: 0→0.2 of span
+  // Full:    0.2→0.65
+  // Fade out: 0.65→1.0
+  const fadeIn  = Math.max(0, Math.min(1, raw / 0.20));
+  const fadeOut = Math.max(0, Math.min(1, (raw - 0.65) / 0.35));
+  const alpha   = fadeIn * (1 - fadeOut);
+
+  // Parallax: pattern drifts upward at 0.3× scroll speed within its section
+  const parallax = Math.max(0, raw) * span * 0.28;
+
+  return { alpha: Math.max(0, alpha), offsetY: -parallax };
+}
 
 function tickCanvas() {
   bgCtx.clearRect(0, 0, bgW, bgH);
   t++;
 
-  const blend = easeInOut(Math.max(0, Math.min(1, scrollBlend)));
-
-  if (scrollFrom === scrollTo || blend <= 0) {
-    DRAW_FNS[scrollFrom](1);
-  } else if (blend >= 1) {
-    DRAW_FNS[scrollTo](1);
-  } else {
-    DRAW_FNS[scrollFrom](1 - blend);
-    DRAW_FNS[scrollTo](blend);
-  }
+  const N = 3; // number of sections
+  [drawCoordinates, drawOrbitals, drawRadial].forEach((fn, i) => {
+    const { alpha, offsetY } = getSectionAlphaAndOffset(i, N);
+    if (alpha < 0.004) return;
+    bgCtx.save();
+    bgCtx.translate(0, offsetY);
+    fn(alpha);
+    bgCtx.restore();
+  });
 
   requestAnimationFrame(tickCanvas);
 }
@@ -324,7 +345,14 @@ window.addEventListener('mouseup',   () => document.body.classList.remove('curso
 const lenis = new Lenis({ duration: 1.4, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
 gsap.ticker.add(time => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on('scroll', ({ scroll }) => {
+  scrollY = scroll;
+  scrollH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  ScrollTrigger.update();
+});
+window.addEventListener('resize', () => {
+  scrollH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+});
 
 // ══════════════════════════════════════════════════════════════
 // NAV & PROGRESS
@@ -391,31 +419,7 @@ function initSceneAnimations() {
       }
     });
 
-    // ── Scroll-driven bg pattern transition ──────────────────
-    // Between scene i and scene i+1: scrub controls scrollBlend
-    if (i < scenes.length - 1) {
-      ScrollTrigger.create({
-        trigger: scene,
-        start: 'bottom-=30% bottom',  // start blending earlier — 70% through the scene
-        end:   'bottom top',
-        scrub: 0.5,
-        onUpdate: self => {
-          scrollFrom  = i;
-          scrollTo    = i + 1;
-          scrollBlend = self.progress;
-        },
-        onLeave: () => {
-          scrollFrom  = i + 1;
-          scrollTo    = i + 1;
-          scrollBlend = 0;
-        },
-        onLeaveBack: () => {
-          scrollFrom  = i;
-          scrollTo    = i;
-          scrollBlend = 0;
-        },
-      });
-    }
+    // ── Scroll-driven bg: now handled directly via scrollY in tickCanvas ──
   });
 }
 
