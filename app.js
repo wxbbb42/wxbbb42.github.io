@@ -209,7 +209,7 @@ function initCardAnimations() {
     }
   });
 
-  // Cards: GSAP controls lift + shadow
+  // Cards: GSAP controls lift + shadow + tilt
   document.querySelectorAll('.card, .lab-card').forEach(card => {
     card.addEventListener('mouseenter', () => {
       gsap.to(card, {
@@ -221,11 +221,29 @@ function initCardAnimations() {
         zIndex: 2,
       });
     });
+
+    card.addEventListener('mousemove', e => {
+      const r  = card.getBoundingClientRect();
+      const nx = (e.clientX - r.left - r.width  / 2) / (r.width  / 2); // -1 to 1
+      const ny = (e.clientY - r.top  - r.height / 2) / (r.height / 2); // -1 to 1
+      gsap.to(card, {
+        rotationY:  nx * 4,   // ±4° horizontal
+        rotationX: -ny * 3,   // ±3° vertical
+        transformPerspective: 900,
+        duration: 0.3,
+        ease: 'power2.out',
+        // don't overwrite y/shadow — only touch rotation
+        overwrite: false,
+      });
+    });
+
     card.addEventListener('mouseleave', () => {
       gsap.to(card, {
         y: 0,
+        rotationX: 0,
+        rotationY: 0,
         boxShadow: '0 0px 0px rgba(0,0,0,0)',
-        duration: 0.5,
+        duration: 0.55,
         ease: 'power3.out',
         overwrite: 'auto',
         zIndex: 1,
