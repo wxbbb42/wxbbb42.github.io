@@ -515,6 +515,7 @@ document.querySelector('.nav-logo')?.addEventListener('click', e => {
 const navBtns        = [...document.querySelectorAll('.nav-btn')];
 const mobileNavBtns  = [...document.querySelectorAll('.mobile-nav-btn')];
 const navLineFill    = document.querySelector('.nav-line-fill');
+const mobileBarFill  = document.querySelector('.mobile-header-bar');
 const scenes         = [...document.querySelectorAll('.scene')];
 let lastSection      = -1;
 
@@ -574,6 +575,7 @@ function initSceneAnimations() {
       trigger: scene, start: 'top top', end: 'bottom bottom',
       onUpdate: self => {
         gsap.set(navLineFill, { height: `${((i + self.progress) / scenes.length) * 100}%` });
+        if (mobileBarFill) mobileBarFill.style.width = `${((i + self.progress) / scenes.length) * 100}%`;
         if (self.progress > 0.05) setActiveNav(i);
         sectionProgress[i] = self.progress;
       }
@@ -743,19 +745,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 // THEME & LANGUAGE TOGGLE
 // ══════════════════════════════════════════════════════════════
 function initThemeLang() {
-  const themeBtn = document.getElementById('theme-toggle');
-  const langBtn  = document.getElementById('lang-toggle');
-  if (!themeBtn || !langBtn) return;
+  const themeBtn  = document.getElementById('theme-toggle');
+  const langBtn   = document.getElementById('lang-toggle');
+  const themeBtnM = document.getElementById('theme-toggle-m');
+  const langBtnM  = document.getElementById('lang-toggle-m');
+  if (!themeBtn && !themeBtnM) return;
 
   // ── Theme ──────────────────────────────────────────────────
   const savedTheme = localStorage.getItem('theme') || 'light';
   if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
-  themeBtn.addEventListener('click', () => {
+  function toggleTheme() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (isDark) {
       document.documentElement.removeAttribute('data-theme');
       localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+  themeBtn?.addEventListener('click', toggleTheme);
+  themeBtnM?.addEventListener('click', toggleTheme);
     } else {
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('theme', 'dark');
@@ -766,16 +777,21 @@ function initThemeLang() {
   let currentLang = localStorage.getItem('lang') || 'en';
   applyLang(currentLang);
 
-  langBtn.addEventListener('click', () => {
+  function toggleLang() {
     currentLang = currentLang === 'en' ? 'cn' : 'en';
     localStorage.setItem('lang', currentLang);
     applyLang(currentLang);
-  });
+  }
+  langBtn?.addEventListener('click', toggleLang);
+  langBtnM?.addEventListener('click', toggleLang);
 }
 
 function applyLang(lang) {
-  const langBtn = document.getElementById('lang-toggle');
-  if (langBtn) langBtn.textContent = lang === 'en' ? 'EN' : '中';
+  const langBtn  = document.getElementById('lang-toggle');
+  const langBtnM = document.getElementById('lang-toggle-m');
+  const label = lang === 'en' ? 'EN' : '中';
+  if (langBtn)  langBtn.textContent  = label;
+  if (langBtnM) langBtnM.textContent = label;
 
   // Update data-lang attribute for CSS hooks if needed
   document.documentElement.setAttribute('data-lang', lang);

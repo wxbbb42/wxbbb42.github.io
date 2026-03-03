@@ -495,17 +495,66 @@ body.cursor-active .cursor-center {
   box-shadow: 0 0 0 3px rgba(193,122,58,0.15);
 }
 
+/* ─── Mobile Header ──────────────────────────────────────── */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  background: var(--bg);
+  padding: 0 20px;
+  height: 52px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.mobile-header-name {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.mobile-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Progress bar at bottom of header */
+.mobile-header-progress {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1.5px;
+  background: var(--border);
+}
+.mobile-header-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.1s linear;
+}
+
 /* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 960px) {
   :root { --nav-w: 0px; }
   .nav { display: none; }
   .mobile-nav { display: flex; }
+  .mobile-header { display: flex; }
+  .site-controls { display: none; }   /* replaced by mobile header */
   .scroll-track, .footer { margin-left: 0; }
   .cursor { display: none; }
   body, a, button { cursor: auto; }
 
   /* ── Scene layout ── */
-  .scene { height: 100vh; }  /* 1 screen per section on mobile */
+  .scene { height: 100vh; }
   .scene-sticky {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -513,7 +562,7 @@ body.cursor-active .cursor-center {
     padding-top: 0;
   }
   .scene-content {
-    padding: 72px 24px 100px;
+    padding: 84px 24px 100px;   /* 84px = header height + gap */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -535,7 +584,6 @@ body.cursor-active .cursor-center {
   .card-year  { font-size: 10px; }
   .card-tags  { margin-top: 12px; gap: 4px; }
 
-  /* Card slot borders — full-width dividers instead of grid gaps */
   .card-slot { border-bottom: 1px solid var(--border); }
   .card-slot:last-child { border-bottom: none; }
   .lab-grid .card-slot { border-right: none; border-bottom: 1px solid var(--border); }
@@ -549,14 +597,11 @@ body.cursor-active .cursor-center {
   .about-links { margin-top: 20px; gap: 10px; }
   .about-link { font-size: 12px; padding: 8px 0; }
 
-  /* ── Canvas — lighter on mobile for perf ── */
+  /* ── Canvas ── */
   #bg-canvas { opacity: 0.6; }
 
   /* ── Footer ── */
   .footer { padding: 14px 24px; font-size: 10px; flex-direction: column; gap: 4px; text-align: center; }
-
-  /* ── Site controls ── */
-  .site-controls { bottom: 16px; left: 50%; transform: translateX(-50%); }
 
   /* ── Scene header spacing ── */
   .scene-header { margin-bottom: 24px; }
