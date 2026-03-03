@@ -209,7 +209,29 @@ function initCardAnimations() {
     }
   });
 
-  // Cards: CSS handles lift+shadow, no GSAP override needed
+  // Cards: GSAP controls lift + shadow
+  document.querySelectorAll('.card, .lab-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      gsap.to(card, {
+        y: -28,
+        boxShadow: '0 12px 32px rgba(0,0,0,0.10)',
+        duration: 0.45,
+        ease: 'power3.out',
+        overwrite: 'auto',
+        zIndex: 2,
+      });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, {
+        y: 0,
+        boxShadow: '0 0px 0px rgba(0,0,0,0)',
+        duration: 0.5,
+        ease: 'power3.out',
+        overwrite: 'auto',
+        zIndex: 1,
+      });
+    });
+  });
 }
 
 // ─── Load Content ─────────────────────────────────────────────

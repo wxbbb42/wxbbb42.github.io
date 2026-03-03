@@ -314,10 +314,7 @@ body.cursor-active .cursor-center {
   position: relative;
   overflow: hidden;
   display: block;
-  box-shadow: none;
-  transition:
-    transform   0.35s var(--ease-out),
-    box-shadow  0.35s var(--ease-out);
+  /* GSAP owns transform & box-shadow — no CSS transition on these */
   will-change: transform, box-shadow;
 }
 
@@ -329,16 +326,7 @@ body.cursor-active .cursor-center {
   background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.35s var(--ease-out);
-}
-
-.card:hover {
-  transform: translateY(-18px);
-  box-shadow:
-    0  2px  6px  rgba(0,0,0,0.05),
-    0 12px  28px rgba(0,0,0,0.10),
-    0 32px  60px rgba(0,0,0,0.08);
-  z-index: 2;
+  transition: transform 0.4s var(--ease-out);
 }
 .card:hover::before { transform: scaleX(1); }
 
@@ -369,10 +357,6 @@ body.cursor-active .cursor-center {
   background: var(--bg);
   padding: 28px 28px 24px;
   position: relative;
-  box-shadow: none;
-  transition:
-    transform   0.35s var(--ease-out),
-    box-shadow  0.35s var(--ease-out);
   will-change: transform, box-shadow;
 }
 
@@ -384,16 +368,7 @@ body.cursor-active .cursor-center {
   background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.35s var(--ease-out);
-}
-
-.lab-card:hover {
-  transform: translateY(-18px);
-  box-shadow:
-    0  2px  6px  rgba(0,0,0,0.05),
-    0 12px  28px rgba(0,0,0,0.10),
-    0 32px  60px rgba(0,0,0,0.08);
-  z-index: 2;
+  transition: transform 0.4s var(--ease-out);
 }
 .lab-card:hover::before { transform: scaleX(1); }
 
