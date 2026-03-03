@@ -295,17 +295,29 @@ body.cursor-active .cursor-center {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
+}
+
+.card-slot {
+  position: relative;
+  background: transparent;
+  transition: background 0.3s var(--ease-out);
+}
+.card-slot:hover {
   background: var(--border);
 }
 
 .card {
-  background: var(--bg);
+  background: transparent;
   padding: 32px 28px;
   position: relative;
   overflow: hidden;
   display: block;
+  transition: background 0.3s var(--ease-out);
   /* GSAP owns transform & box-shadow — no CSS transition on these */
   will-change: transform, box-shadow;
+}
+.card-slot:hover .card {
+  background: var(--bg);
 }
 
 .card::before {
@@ -318,7 +330,7 @@ body.cursor-active .cursor-center {
   transform-origin: left;
   transition: transform 0.4s var(--ease-out);
 }
-.card:hover::before { transform: scaleX(1); }
+.card-slot:hover .card::before { transform: scaleX(1); }
 
 .card-year  { font-size: 11px; color: var(--ink-muted); margin-bottom: 18px; letter-spacing: 0.06em; }
 .card-title { font-family: var(--font-serif); font-size: 22px; line-height: 1.2; margin-bottom: 10px; }
@@ -333,21 +345,24 @@ body.cursor-active .cursor-center {
   font-size: 15px; color: var(--ink-muted);
   transition: transform 0.25s, color 0.2s;
 }
-.card:hover .card-arrow { transform: translate(3px,-3px); color: var(--accent); }
+.card-slot:hover .card-arrow { transform: translate(3px,-3px); color: var(--accent); }
 
 /* ─── Lab Grid ───────────────────────────────────────────── */
 .lab-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1px;
-  background: var(--border);
 }
 
 .lab-card {
-  background: var(--bg);
+  background: transparent;
   padding: 28px 28px 24px;
   position: relative;
+  transition: background 0.3s var(--ease-out);
   will-change: transform, box-shadow;
+}
+.card-slot:hover .lab-card {
+  background: var(--bg);
 }
 
 .lab-card::before {
@@ -360,7 +375,7 @@ body.cursor-active .cursor-center {
   transform-origin: left;
   transition: transform 0.4s var(--ease-out);
 }
-.lab-card:hover::before { transform: scaleX(1); }
+.card-slot:hover .lab-card::before { transform: scaleX(1); }
 
 .lab-status {
   display: inline-flex; align-items: center; gap: 7px;
@@ -426,10 +441,42 @@ body.cursor-active .cursor-center {
 .footer a { color: var(--accent); }
 .footer a:hover { text-decoration: underline; }
 
+/* ─── Mobile Nav ─────────────────────────────────────────── */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-nav-btn {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; padding: 0;
+}
+
+.mobile-nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+  transition: background 0.3s, transform 0.3s var(--ease-out), box-shadow 0.3s;
+}
+
+.mobile-nav-btn.active .mobile-nav-dot {
+  background: var(--accent);
+  transform: scale(1.5);
+  box-shadow: 0 0 0 3px rgba(193,122,58,0.15);
+}
+
 /* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 960px) {
   :root { --nav-w: 0px; }
   .nav { display: none; }
+  .mobile-nav { display: flex; }
   .scroll-track, .footer { margin-left: 0; }
   .scene-content { padding: 0 28px; }
   .cards-grid { grid-template-columns: 1fr; }
@@ -438,3 +485,20 @@ body.cursor-active .cursor-center {
   .cursor { display: none; }
   body, a, button { cursor: auto; }
 }
+
+/* ─── Reduced motion ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .scene { height: 120vh; }
+  #bg-canvas { display: none; }
+  .cursor { display: none; }
+  body, a, button { cursor: auto; }
+}
+
+/* ─── Focus visible — restore native cursor for keyboard ── */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+*:focus-visible { cursor: auto; }

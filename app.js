@@ -4,6 +4,8 @@
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 // ══════════════════════════════════════════════════════════════
 // GEOMETRIC BACKGROUND CANVAS
 // ══════════════════════════════════════════════════════════════
@@ -20,12 +22,32 @@ let scrollBlend = 0;
 let scrollFrom  = 0;
 let scrollTo    = 0;
 
+// Per-section scroll progress (0–1) for vertical parallax drift
+const sectionProgress = [0, 0, 0];
+
+// Card-grid edge positions (relative to canvas left), updated on load/resize
+let cardEdges = [];  // x positions of card vertical edges on canvas
+
+function updateCardEdges() {
+  const grid = document.getElementById('work-grid');
+  if (!grid) return;
+  const canvasRect = bgCanvas.getBoundingClientRect();
+  const cards = grid.querySelectorAll('.card');
+  const edgeSet = new Set();
+  cards.forEach(c => {
+    const r = c.getBoundingClientRect();
+    edgeSet.add(Math.round(r.left - canvasRect.left));
+    edgeSet.add(Math.round(r.right - canvasRect.left));
+  });
+  cardEdges = [...edgeSet].sort((a, b) => a - b);
+}
+
 function resizeCanvas() {
   bgW = bgCanvas.offsetWidth;
   bgH = bgCanvas.offsetHeight;
   bgCanvas.width  = bgW * devicePixelRatio;
   bgCanvas.height = bgH * devicePixelRatio;
-  bgCtx.scale(devicePixelRatio, devicePixelRatio);
+  bgCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
 }
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -35,6 +57,20 @@ function line(x1, y1, x2, y2, alpha, width = 0.5) {
   bgCtx.moveTo(x1, y1);
   bgCtx.lineTo(x2, y2);
   bgCtx.strokeStyle = `rgba(26,26,24,${alpha})`;
+  bgCtx.lineWidth = width;
+  bgCtx.stroke();
+}
+
+function gradientLineH(y, alphaMin, alphaMax, width = 0.5) {
+  if (alphaMax < 0.005) return;
+  const grad = bgCtx.createLinearGradient(0, 0, bgW, 0);
+  grad.addColorStop(0,   `rgba(26,26,24,${alphaMin})`);
+  grad.addColorStop(0.5, `rgba(26,26,24,${(alphaMin + alphaMax) * 0.35})`);
+  grad.addColorStop(1,   `rgba(26,26,24,${alphaMax})`);
+  bgCtx.beginPath();
+  bgCtx.moveTo(0, y);
+  bgCtx.lineTo(bgW, y);
+  bgCtx.strokeStyle = grad;
   bgCtx.lineWidth = width;
   bgCtx.stroke();
 }
@@ -59,57 +95,103 @@ function dot(x, y, r, alpha, color = '26,26,24') {
 // ── SECTION 0: Coordinate System (Work) ───────────────────────
 function drawCoordinates(alpha) {
   if (alpha < 0.005) return;
-  // Origin shifted to lower-right — stays out of left content area
-  const cx = bgW * 0.68;
-  const cy = bgH * 0.62;
-  const size = Math.max(bgW, bgH) * 0.7;
+  const pad = PARALLAX_PX;
 
-  const tickCount = 16;
-  const tickSpacing = size / tickCount;
-
-  // Full-canvas grid — alpha fades linearly from left (dim) to right (full)
-  for (let i = -tickCount; i <= tickCount; i++) {
-    const isMajor = i % 4 === 0;
-    // vertical lines: fade based on x position (left=dim, right=bright)
-    const gx = cx + i * tickSpacing;
-    const xRatio = Math.max(0, Math.min(1, gx / bgW)); // 0 at left edge, 1 at right
-    const fadeA = 0.15 + xRatio * 0.85; // 0.15 at left, 1.0 at right
-    const ga = (isMajor ? alpha * 0.22 : alpha * 0.10) * fadeA;
-    line(gx, 0, gx, bgH, ga, isMajor ? 0.8 : 0.4);
-  }
-  for (let i = -tickCount; i <= tickCount; i++) {
-    // horizontal lines: fade based on x of their intersection with the canvas center-ish
-    const isMajor = i % 4 === 0;
-    // use a gradient-ish approach: draw as two halves
-    const ga_left  = (isMajor ? alpha * 0.22 : alpha * 0.10) * 0.15;
-    const ga_right = (isMajor ? alpha * 0.22 : alpha * 0.10) * 1.00;
-    const gy = cy + i * tickSpacing;
-    // left half (dim)
-    line(0, gy, bgW * 0.45, gy, ga_left, isMajor ? 0.8 : 0.4);
-    // right half (bright) — gradient via midpoint
-    line(bgW * 0.45, gy, bgW, gy, ga_right, isMajor ? 0.8 : 0.4);
+  // Derive tick spacing from card edges so grid aligns with cards
+  // Use the gap between first two card edges as the canonical spacing
+  let tickSpacing;
+  if (cardEdges.length >= 2) {
+    // Find the smallest gap between adjacent edges (= card column width)
+    let minGap = Infinity;
+    for (let e = 1; e < cardEdges.length; e++) {
+      const gap = cardEdges[e] - cardEdges[e - 1];
+      if (gap > 2) minGap = Math.min(minGap, gap);
+    }
+    tickSpacing = minGap < Infinity ? minGap : bgW / 8;
+  } else {
+    tickSpacing = bgW / 8;
   }
 
-  // Main axes — also faded on left
-  line(0, cy, bgW * 0.45, cy, alpha * 0.10, 1.2);
-  line(bgW * 0.45, cy, bgW, cy, alpha * 0.45, 1.2);
-  line(cx, 0, cx, bgH, alpha * 0.45, 1.2);
+  // Anchor: first card edge (grid-left)
+  const anchorX = cardEdges.length > 0 ? cardEdges[0] : 60;
 
-  // Tick marks on axes
-  for (let i = -tickCount; i <= tickCount; i++) {
-    if (i === 0) continue;
-    const isMajor = i % 4 === 0;
-    const ts = isMajor ? 10 : 5;
-    const gx = cx + i * tickSpacing;
+  // Origin / main axes — upper-right, away from content
+  const cx = bgW * 0.82;
+  const cy = bgH * 0.28;
+
+  // Subdivision: 4 fine lines between each major grid line
+  const subDiv = 4;
+  const subSpacing = tickSpacing / subDiv;
+
+  // ── Vertical grid lines — major (card-aligned) + subdivisions ──
+  const countLeft  = Math.ceil(anchorX / subSpacing) + 1;
+  const countRight = Math.ceil((bgW - anchorX) / subSpacing) + 1;
+
+  for (let i = -countLeft; i <= countRight; i++) {
+    const gx = anchorX + i * subSpacing;
+    if (gx < -subSpacing || gx > bgW + subSpacing) continue;
     const xRatio = Math.max(0, Math.min(1, gx / bgW));
+    const fadeA = 0.15 + xRatio * 0.85;
+
+    const isCardEdge = cardEdges.some(e => Math.abs(gx - e) < 1.5);
+    const isMajorSub = (i % subDiv === 0);
+
+    if (isCardEdge) {
+      line(gx, -pad, gx, bgH + pad, alpha * 0.35 * fadeA, 1.0);
+    } else if (isMajorSub) {
+      line(gx, -pad, gx, bgH + pad, alpha * 0.22 * fadeA, 0.5);
+    } else {
+      line(gx, -pad, gx, bgH + pad, alpha * 0.14 * fadeA, 0.35);
+    }
+  }
+
+  // ── Horizontal grid lines — major + subdivisions ──
+  const countUp   = Math.ceil((cy + pad) / subSpacing) + 1;
+  const countDown = Math.ceil((bgH - cy + pad) / subSpacing) + 1;
+
+  for (let i = -countUp; i <= countDown; i++) {
+    const gy = cy + i * subSpacing;
+    if (gy < -pad - subSpacing || gy > bgH + pad + subSpacing) continue;
+    const isMajorSub = (i % subDiv === 0);
+    const isAxis = (i === 0);
+
+    if (isAxis) {
+      gradientLineH(gy, alpha * 0.35 * 0.08, alpha * 0.35, 1.0);
+    } else if (isMajorSub) {
+      const baseA = alpha * 0.22;
+      gradientLineH(gy, baseA * 0.08, baseA, 0.5);
+    } else {
+      const baseA = alpha * 0.14;
+      gradientLineH(gy, baseA * 0.08, baseA, 0.35);
+    }
+  }
+
+  // Main axes
+  gradientLineH(cy, alpha * 0.04, alpha * 0.45, 1.2);
+  line(cx, -pad, cx, bgH + pad, alpha * 0.45, 1.2);
+
+  // Tick marks on main axes
+  for (let i = -countLeft; i <= countRight; i++) {
+    if (i === 0) continue;
+    const gx = anchorX + i * subSpacing;
+    if (gx < -subSpacing || gx > bgW + subSpacing) continue;
+    const isMajorSub = (i % subDiv === 0);
+    if (!isMajorSub) continue;
+    const xRatio = Math.max(0, Math.min(1, gx / bgW));
+    const isCardEdge = cardEdges.some(e => Math.abs(gx - e) < 1.5);
+    const ts = isCardEdge ? 10 : 5;
     line(gx, cy - ts, gx, cy + ts, alpha * 0.40 * (0.15 + xRatio * 0.85), 0.8);
-    const gy = cy + i * tickSpacing;
-    line(cx - ts, gy, cx + ts, gy, alpha * 0.40, 0.8);
+  }
+  for (let i = -countUp; i <= countDown; i++) {
+    if (i === 0 || i % subDiv !== 0) continue;
+    const gy = cy + i * subSpacing;
+    line(cx - 5, gy, cx + 5, gy, alpha * 0.40, 0.8);
   }
 
   // Arrowheads
   const aw = 7;
-  [[cx + size * 0.6, cy, 1, 0], [cx, cy - size * 0.6, 0, -1]].forEach(([x, y, dx, dy]) => {
+  const size = Math.max(bgW, bgH) * 0.7;
+  [[cx + size * 0.2, cy, 1, 0], [cx, cy - size * 0.3, 0, -1]].forEach(([x, y, dx, dy]) => {
     if (x > bgW + 20 || y < -20) return;
     bgCtx.beginPath();
     bgCtx.moveTo(x, y);
@@ -125,7 +207,7 @@ function drawCoordinates(alpha) {
   // Mouse crosshair
   if (mouse.x > 0 && mouse.x < bgW) {
     bgCtx.setLineDash([4, 6]);
-    line(mouse.x, 0, mouse.x, bgH, alpha * 0.12, 0.5);
+    line(mouse.x, -pad, mouse.x, bgH + pad, alpha * 0.12, 0.5);
     line(0, mouse.y, bgW, mouse.y, alpha * 0.12, 0.5);
     bgCtx.setLineDash([]);
     dot(mouse.x, mouse.y, 3, alpha * 0.6, '193,122,58');
@@ -142,6 +224,13 @@ function drawCoordinates(alpha) {
 }
 
 // ── SECTION 1: Orbital System (Lab) ──────────────────────────
+
+// Bullet-time: tracks smoothed slowdown factor (1 = normal, → 0 = frozen)
+let bulletTime = 1;
+let prevMouseX = -9999, prevMouseY = -9999;
+// Accumulated orbital angle (decoupled from frame count so bullet-time works)
+let orbitalT = 0;
+
 function drawOrbitals(alpha) {
   if (alpha < 0.005) return;
 
@@ -153,18 +242,31 @@ function drawOrbitals(alpha) {
   const cy = bgH * 0.50 + pullY;
   const scale = Math.min(bgW, bgH) * 0.48;
 
-  // Mouse distance from center (normalized 0–1)
-  const mouseDist = hasMouse
-    ? Math.min(1, Math.sqrt((mouse.x - bgW*0.5)**2 + (mouse.y - bgH*0.5)**2) / (bgW * 0.4))
-    : 0;
-  const speedBoost = 1 + mouseDist * 2.5; // orbit faster when mouse is further from center
+  // ── Bullet-time: mouse movement → slowdown ──
+  const dx = mouse.x - prevMouseX;
+  const dy = mouse.y - prevMouseY;
+  const mouseSpeed = Math.sqrt(dx * dx + dy * dy);
+  prevMouseX = mouse.x;
+  prevMouseY = mouse.y;
+
+  // Map mouse speed to a target slowdown (fast mouse → near 0, still → 1)
+  const targetBullet = hasMouse ? Math.max(0.04, 1 - Math.min(1, mouseSpeed / 30) * 0.96) : 1;
+  // Smooth interpolation: slow down quickly, recover slowly
+  const lerpSpeed = bulletTime > targetBullet ? 0.18 : 0.03;
+  bulletTime += (targetBullet - bulletTime) * lerpSpeed;
+
+  // Advance orbital clock by bullet-time-scaled delta
+  orbitalT += bulletTime;
 
   const orbits = [
-    { rx: scale * 0.18, ry: scale * 0.10, tilt: 0.25,  speed: 0.010, dotR: 4,   color: '193,122,58' },
-    { rx: scale * 0.38, ry: scale * 0.24, tilt: -0.50, speed: 0.006, dotR: 3.5, color: '26,26,24' },
-    { rx: scale * 0.58, ry: scale * 0.38, tilt: 0.65,  speed: 0.0038,dotR: 3,   color: '26,26,24' },
-    { rx: scale * 0.80, ry: scale * 0.52, tilt: -0.28, speed: 0.0022,dotR: 2.5, color: '26,26,24' },
-    { rx: scale * 1.00, ry: scale * 0.64, tilt: 0.48,  speed: 0.0014,dotR: 2,   color: '26,26,24' },
+    { rx: scale * 0.18, ry: scale * 0.10, tilt: 0.25,  speed: 0.010, dotR: 4,   color: '193,122,58', alphaM: 1.0 },
+    { rx: scale * 0.38, ry: scale * 0.24, tilt: -0.50, speed: 0.006, dotR: 3.5, color: '26,26,24',   alphaM: 0.95 },
+    { rx: scale * 0.58, ry: scale * 0.38, tilt: 0.65,  speed: 0.0038,dotR: 3,   color: '26,26,24',   alphaM: 0.85 },
+    { rx: scale * 0.80, ry: scale * 0.52, tilt: -0.28, speed: 0.0022,dotR: 2.5, color: '26,26,24',   alphaM: 0.75 },
+    { rx: scale * 1.00, ry: scale * 0.64, tilt: 0.48,  speed: 0.0014,dotR: 2.2, color: '26,26,24',   alphaM: 0.65 },
+    { rx: scale * 1.25, ry: scale * 0.80, tilt: -0.15, speed: 0.0009,dotR: 2.0, color: '26,26,24',   alphaM: 0.50 },
+    { rx: scale * 1.55, ry: scale * 1.00, tilt: 0.35,  speed: 0.0006,dotR: 1.8, color: '26,26,24',   alphaM: 0.35 },
+    { rx: scale * 1.90, ry: scale * 1.22, tilt: -0.55, speed: 0.0004,dotR: 1.5, color: '26,26,24',   alphaM: 0.22 },
   ];
 
   // Star field
@@ -175,41 +277,37 @@ function drawOrbitals(alpha) {
     dot(sx, sy, 1, alpha * pulse * 0.5);
   }
 
-  // Mouse → center attraction line (no amber dot)
-  if (hasMouse) {
-    const mdist = Math.sqrt((mouse.x - cx)**2 + (mouse.y - cy)**2);
-    line(mouse.x, mouse.y, cx, cy, alpha * Math.min(0.25, mdist / 400), 0.5);
-  }
-
   // Nucleus glow rings
   [20, 36, 56].forEach((r, i) => dot(cx, cy, r, alpha * [0.06, 0.04, 0.02][i], '193,122,58'));
   dot(cx, cy, 6, alpha * 0.65, '193,122,58');
 
   orbits.forEach((o, i) => {
-    // Ellipse
+    const oa = alpha * o.alphaM;
+
+    // Ellipse — outer rings get a stronger line to stay visible
     bgCtx.save();
     bgCtx.translate(cx, cy);
     bgCtx.rotate(o.tilt);
     bgCtx.beginPath();
     bgCtx.ellipse(0, 0, o.rx, o.ry, 0, 0, Math.PI * 2);
-    bgCtx.strokeStyle = `rgba(26,26,24,${alpha * 0.10})`;
+    bgCtx.strokeStyle = `rgba(26,26,24,${alpha * 0.12})`;
     bgCtx.lineWidth = 0.6;
     bgCtx.stroke();
     bgCtx.restore();
 
-    // Orbiting dot (speed boosted by mouse distance)
-    const angle = t * o.speed * speedBoost + i * 1.4;
+    // Orbiting dot — uses orbitalT (bullet-time aware)
+    const angle = orbitalT * o.speed + i * 1.4;
     const px = cx + Math.cos(angle) * o.rx * Math.cos(o.tilt) - Math.sin(angle) * o.ry * Math.sin(o.tilt);
     const py = cy + Math.cos(angle) * o.rx * Math.sin(o.tilt) + Math.sin(angle) * o.ry * Math.cos(o.tilt);
 
     // Trail
     for (let tr = 1; tr <= 8; tr++) {
-      const ta = angle - tr * 0.10 * speedBoost;
+      const ta = angle - tr * 0.10;
       const tpx = cx + Math.cos(ta) * o.rx * Math.cos(o.tilt) - Math.sin(ta) * o.ry * Math.sin(o.tilt);
       const tpy = cy + Math.cos(ta) * o.rx * Math.sin(o.tilt) + Math.sin(ta) * o.ry * Math.cos(o.tilt);
-      dot(tpx, tpy, o.dotR * (1 - tr * 0.1), alpha * 0.18 * (1 - tr * 0.11), o.color);
+      dot(tpx, tpy, o.dotR * (1 - tr * 0.1), oa * 0.18 * (1 - tr * 0.11), o.color);
     }
-    dot(px, py, o.dotR, alpha * 0.80, o.color);
+    dot(px, py, o.dotR, oa * 0.80, o.color);
   });
 }
 
@@ -265,6 +363,22 @@ const DRAW_FNS = [drawCoordinates, drawOrbitals, drawRadial];
 // Ease function for blend
 function easeInOut(x) { return x < 0.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
 
+// How many px the pattern drifts up over a full section scroll
+const PARALLAX_PX = 120;
+// Extra px the incoming pattern rises from below during fade-in
+const ENTRANCE_PX = 60;
+
+function drawWithOffset(index, alpha, entranceBlend) {
+  if (alpha < 0.005) return;
+  // entranceBlend: 0 = just entering (offset below), 1 = fully settled
+  const parallaxY = -sectionProgress[index] * PARALLAX_PX;
+  const entranceY = (1 - entranceBlend) * ENTRANCE_PX;
+  bgCtx.save();
+  bgCtx.translate(0, parallaxY + entranceY);
+  DRAW_FNS[index](alpha);
+  bgCtx.restore();
+}
+
 function tickCanvas() {
   bgCtx.clearRect(0, 0, bgW, bgH);
   t++;
@@ -272,12 +386,14 @@ function tickCanvas() {
   const blend = easeInOut(Math.max(0, Math.min(1, scrollBlend)));
 
   if (scrollFrom === scrollTo || blend <= 0) {
-    DRAW_FNS[scrollFrom](1);
+    drawWithOffset(scrollFrom, 1, 1);
   } else if (blend >= 1) {
-    DRAW_FNS[scrollTo](1);
+    drawWithOffset(scrollTo, 1, 1);
   } else {
-    DRAW_FNS[scrollFrom](1 - blend);
-    DRAW_FNS[scrollTo](blend);
+    // Outgoing: fully settled (entranceBlend=1), fading out
+    drawWithOffset(scrollFrom, 1 - blend, 1);
+    // Incoming: rising up from below as it fades in
+    drawWithOffset(scrollTo, blend, blend);
   }
 
   requestAnimationFrame(tickCanvas);
@@ -289,7 +405,7 @@ window.addEventListener('mousemove', e => {
   mouse.y = e.clientY - rect.top;
 });
 window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize', () => { resizeCanvas(); updateCardEdges(); });
 
 // ══════════════════════════════════════════════════════════════
 // CURSOR
@@ -329,20 +445,24 @@ lenis.on('scroll', ScrollTrigger.update);
 // ══════════════════════════════════════════════════════════════
 // NAV & PROGRESS
 // ══════════════════════════════════════════════════════════════
-const navBtns     = [...document.querySelectorAll('.nav-btn')];
-const navLineFill = document.querySelector('.nav-line-fill');
-const scenes      = [...document.querySelectorAll('.scene')];
-let lastSection   = -1;
+const navBtns        = [...document.querySelectorAll('.nav-btn')];
+const mobileNavBtns  = [...document.querySelectorAll('.mobile-nav-btn')];
+const navLineFill    = document.querySelector('.nav-line-fill');
+const scenes         = [...document.querySelectorAll('.scene')];
+let lastSection      = -1;
 
 function setActiveNav(i) {
   navBtns.forEach((b, bi) => b.classList.toggle('active', bi === i));
+  mobileNavBtns.forEach((b, bi) => b.classList.toggle('active', bi === i));
   if (i !== lastSection) { lastSection = i; }
 }
 
-navBtns.forEach((btn, i) => {
-  btn.addEventListener('click', () => {
-    const sceneEl = scenes[i];
-    lenis.scrollTo(sceneEl.offsetTop + (sceneEl.offsetHeight - window.innerHeight) * 0.12, { duration: 1.6 });
+[navBtns, mobileNavBtns].forEach(btns => {
+  btns.forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      const sceneEl = scenes[i];
+      lenis.scrollTo(sceneEl.offsetTop + (sceneEl.offsetHeight - window.innerHeight) * 0.12, { duration: 1.6 });
+    });
   });
 });
 
@@ -382,12 +502,13 @@ function initSceneAnimations() {
       }
     });
 
-    // Progress bar
+    // Progress bar + canvas parallax offset
     ScrollTrigger.create({
       trigger: scene, start: 'top top', end: 'bottom bottom',
       onUpdate: self => {
         gsap.set(navLineFill, { height: `${((i + self.progress) / scenes.length) * 100}%` });
         if (self.progress > 0.05) setActiveNav(i);
+        sectionProgress[i] = self.progress;
       }
     });
 
@@ -396,8 +517,8 @@ function initSceneAnimations() {
     if (i < scenes.length - 1) {
       ScrollTrigger.create({
         trigger: scene,
-        start: 'bottom-=30% bottom',  // start blending earlier — 70% through the scene
-        end:   'bottom top',
+        start: 'bottom-=15% bottom',  // blend starts late — short overlap
+        end:   'bottom top+=15%',
         scrub: 0.5,
         onUpdate: self => {
           scrollFrom  = i;
@@ -433,14 +554,16 @@ function initCardAnimations() {
     gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
   }});
 
-  document.querySelectorAll('.card, .lab-card').forEach(card => {
-    card.addEventListener('mouseenter', () =>
+  document.querySelectorAll('.card-slot').forEach(slot => {
+    const card = slot.querySelector('.card, .lab-card');
+    if (!card) return;
+    slot.addEventListener('mouseenter', () =>
       gsap.to(card, { y: -28, boxShadow: '0 12px 32px rgba(0,0,0,0.10)', duration: 0.45, ease: 'power3.out', overwrite: 'auto', zIndex: 2 }));
-    card.addEventListener('mousemove', e => {
-      const r = card.getBoundingClientRect();
+    slot.addEventListener('mousemove', e => {
+      const r = slot.getBoundingClientRect();
       gsap.to(card, { rotationY: ((e.clientX-r.left-r.width/2)/(r.width/2))*4, rotationX: -((e.clientY-r.top-r.height/2)/(r.height/2))*3, transformPerspective: 900, duration: 0.3, ease: 'power2.out', overwrite: false });
     });
-    card.addEventListener('mouseleave', () =>
+    slot.addEventListener('mouseleave', () =>
       gsap.to(card, { y: 0, rotationX: 0, rotationY: 0, boxShadow: '0 0px 0px rgba(0,0,0,0)', duration: 0.55, ease: 'power3.out', overwrite: 'auto', zIndex: 1 }));
   });
 }
@@ -448,30 +571,51 @@ function initCardAnimations() {
 // ══════════════════════════════════════════════════════════════
 // CONTENT
 // ══════════════════════════════════════════════════════════════
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function escAttr(str) {
+  return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 async function loadContent() {
-  const res = await fetch('./data/content.json');
-  const data = await res.json();
-  renderWork(data.work); renderLab(data.ailab); renderAbout(data.meta);
+  try {
+    const res = await fetch('./data/content.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    renderWork(data.work); renderLab(data.ailab); renderAbout(data.meta);
+  } catch (e) {
+    console.error('Failed to load content:', e);
+    document.getElementById('work-grid').innerHTML =
+      '<p style="grid-column:1/-1;padding:40px;color:var(--ink-muted);font-size:14px;">Could not load projects. Please refresh.</p>';
+  }
 }
 
 function renderWork(projects) {
   document.getElementById('work-grid').innerHTML = projects.map(p => `
-    <a class="card" href="${p.link}">
-      <div class="card-year">${p.year}</div>
-      <div class="card-title">${p.title}</div>
-      <div class="card-desc">${p.description}</div>
-      <div class="card-tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-      <span class="card-arrow">↗</span>
-    </a>`).join('');
+    <div class="card-slot">
+      <a class="card" href="${escAttr(p.link)}" aria-label="${esc(p.title)}">
+        <div class="card-year">${esc(p.year)}</div>
+        <div class="card-title">${esc(p.title)}</div>
+        <div class="card-desc">${esc(p.description)}</div>
+        <div class="card-tags">${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+        <span class="card-arrow" aria-hidden="true">↗</span>
+      </a>
+    </div>`).join('');
 }
 
 function renderLab(items) {
   document.getElementById('lab-grid').innerHTML = items.map(item => `
-    <div class="lab-card" data-status="${item.status}">
-      <div class="lab-status"><span class="status-dot"></span>${item.status}</div>
-      <div class="card-title">${item.title}</div>
-      <div class="card-desc">${item.description}</div>
-      <div class="card-tags">${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}<span class="tag">${item.year}</span></div>
+    <div class="card-slot">
+      <div class="lab-card" data-status="${escAttr(item.status)}">
+        <div class="lab-status"><span class="status-dot"></span>${esc(item.status)}</div>
+        <div class="card-title">${esc(item.title)}</div>
+        <div class="card-desc">${esc(item.description)}</div>
+        <div class="card-tags">${item.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}<span class="tag">${esc(item.year)}</span></div>
+      </div>
     </div>`).join('');
 }
 
@@ -482,17 +626,26 @@ function renderAbout(meta) {
   if (meta.links.github) links.push({ label: 'GitHub', href: meta.links.github });
   if (meta.links.email)  links.push({ label: 'Email',  href: `mailto:${meta.links.email}` });
   document.getElementById('about-links').innerHTML = links.map(l =>
-    `<a class="about-link" href="${l.href}" target="_blank" rel="noopener"><span>${l.label}</span><span class="about-link-arrow">↗</span></a>`).join('');
+    `<a class="about-link" href="${escAttr(l.href)}" target="_blank" rel="noopener"><span>${esc(l.label)}</span><span class="about-link-arrow" aria-hidden="true">↗</span></a>`).join('');
 }
 
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
-  resizeCanvas();
-  tickCanvas();
-
   await loadContent();
+
+  if (prefersReducedMotion) {
+    // Show all content immediately, no animations
+    document.querySelectorAll('.scene-eyebrow').forEach(el => { el.style.opacity = 1; });
+    document.querySelectorAll('.card, .lab-card').forEach(el => { el.style.opacity = 1; });
+    document.querySelectorAll('.about-right, .about-bio, .about-loc, .about-link').forEach(el => { el.style.opacity = 1; });
+    return;
+  }
+
+  resizeCanvas();
+  updateCardEdges();
+  tickCanvas();
   bindCursorHovers();
 
   await new Promise(r => setTimeout(r, 120));
