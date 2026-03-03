@@ -14,13 +14,11 @@ const mouse = { x: -9999, y: -9999 };
 
 let t = 0;
 
-// Scroll-driven state — updated every frame from lenis scroll
-let scrollY    = 0;  // raw scroll position
-let scrollH    = 1;  // total scrollable height (document - viewport)
-
-// Per-section alpha driven by scroll position
-// Each section occupies 1/3 of total scroll range
-// Pattern parallax: offsetY shifts upward as you scroll within a section
+// scrollBlend: 0 = full section A, 1 = full section B
+// scrollFrom / scrollTo: which sections are blending
+let scrollBlend = 0;
+let scrollFrom  = 0;
+let scrollTo    = 0;
 
 function resizeCanvas() {
   bgW = bgCanvas.offsetWidth;
@@ -61,52 +59,41 @@ function dot(x, y, r, alpha, color = '26,26,24') {
 // ── SECTION 0: Coordinate System (Work) ───────────────────────
 function drawCoordinates(alpha) {
   if (alpha < 0.005) return;
+  // Origin shifted to lower-right — stays out of left content area
   const cx = bgW * 0.68;
   const cy = bgH * 0.62;
   const size = Math.max(bgW, bgH) * 0.7;
+
   const tickCount = 16;
   const tickSpacing = size / tickCount;
 
-  // Left-to-right gradient fade: transparent at x=fadeStart, fully opaque at x=fadeEnd
-  const fadeStart = 0;
-  const fadeEnd   = bgW * 0.48;
-
-  function xFade(x) {
-    return Math.max(0, Math.min(1, (x - fadeStart) / (fadeEnd - fadeStart)));
-  }
-
-  // Vertical grid lines
+  // Full-canvas grid — alpha fades linearly from left (dim) to right (full)
   for (let i = -tickCount; i <= tickCount; i++) {
+    const isMajor = i % 4 === 0;
+    // vertical lines: fade based on x position (left=dim, right=bright)
     const gx = cx + i * tickSpacing;
-    if (gx < -size || gx > bgW + size) continue;
-    const isMajor = i % 4 === 0;
-    const baseA = isMajor ? alpha * 0.22 : alpha * 0.10;
-    line(gx, 0, gx, bgH, baseA * xFade(gx), isMajor ? 0.8 : 0.4);
+    const xRatio = Math.max(0, Math.min(1, gx / bgW)); // 0 at left edge, 1 at right
+    const fadeA = 0.15 + xRatio * 0.85; // 0.15 at left, 1.0 at right
+    const ga = (isMajor ? alpha * 0.22 : alpha * 0.10) * fadeA;
+    line(gx, 0, gx, bgH, ga, isMajor ? 0.8 : 0.4);
   }
-
-  // Horizontal grid lines — true canvas gradient (no hard edge)
   for (let i = -tickCount; i <= tickCount; i++) {
-    const gy = cy + i * tickSpacing;
-    if (gy < -10 || gy > bgH + 10) continue;
+    // horizontal lines: fade based on x of their intersection with the canvas center-ish
     const isMajor = i % 4 === 0;
-    const baseA = isMajor ? alpha * 0.22 : alpha * 0.10;
-    const grad = bgCtx.createLinearGradient(0, 0, bgW, 0);
-    grad.addColorStop(0,                         `rgba(26,26,24,0)`);
-    grad.addColorStop(fadeEnd / bgW * 0.5,       `rgba(26,26,24,0)`);
-    grad.addColorStop(Math.min(1, fadeEnd / bgW),`rgba(26,26,24,${baseA})`);
-    grad.addColorStop(1,                         `rgba(26,26,24,${baseA})`);
-    bgCtx.beginPath();
-    bgCtx.moveTo(0, gy);
-    bgCtx.lineTo(bgW, gy);
-    bgCtx.strokeStyle = grad;
-    bgCtx.lineWidth = isMajor ? 0.8 : 0.4;
-    bgCtx.stroke();
+    // use a gradient-ish approach: draw as two halves
+    const ga_left  = (isMajor ? alpha * 0.22 : alpha * 0.10) * 0.15;
+    const ga_right = (isMajor ? alpha * 0.22 : alpha * 0.10) * 1.00;
+    const gy = cy + i * tickSpacing;
+    // left half (dim)
+    line(0, gy, bgW * 0.45, gy, ga_left, isMajor ? 0.8 : 0.4);
+    // right half (bright) — gradient via midpoint
+    line(bgW * 0.45, gy, bgW, gy, ga_right, isMajor ? 0.8 : 0.4);
   }
 
-  // Main axes
-  line(0, cy, fadeEdge, cy, alpha * 0.04, 1.2);
-  line(fadeEdge, cy, bgW, cy, alpha * 0.45, 1.2);
-  line(cx, 0, cx, bgH, alpha * 0.45 * xFade(cx), 1.2);
+  // Main axes — also faded on left
+  line(0, cy, bgW * 0.45, cy, alpha * 0.10, 1.2);
+  line(bgW * 0.45, cy, bgW, cy, alpha * 0.45, 1.2);
+  line(cx, 0, cx, bgH, alpha * 0.45, 1.2);
 
   // Tick marks on axes
   for (let i = -tickCount; i <= tickCount; i++) {
@@ -114,14 +101,16 @@ function drawCoordinates(alpha) {
     const isMajor = i % 4 === 0;
     const ts = isMajor ? 10 : 5;
     const gx = cx + i * tickSpacing;
-    line(gx, cy - ts, gx, cy + ts, alpha * 0.40 * xFade(gx), 0.8);
+    const xRatio = Math.max(0, Math.min(1, gx / bgW));
+    line(gx, cy - ts, gx, cy + ts, alpha * 0.40 * (0.15 + xRatio * 0.85), 0.8);
     const gy = cy + i * tickSpacing;
-    if (gy > 0 && gy < bgH) line(cx - ts, gy, cx + ts, gy, alpha * 0.40 * xFade(cx), 0.8);
+    line(cx - ts, gy, cx + ts, gy, alpha * 0.40, 0.8);
   }
 
   // Arrowheads
   const aw = 7;
-  [[Math.min(cx + size * 0.6, bgW - 10), cy, 1, 0], [cx, Math.max(cy - size * 0.6, 10), 0, -1]].forEach(([x, y, dx, dy]) => {
+  [[cx + size * 0.6, cy, 1, 0], [cx, cy - size * 0.6, 0, -1]].forEach(([x, y, dx, dy]) => {
+    if (x > bgW + 20 || y < -20) return;
     bgCtx.beginPath();
     bgCtx.moveTo(x, y);
     bgCtx.lineTo(x - dx * 14 - dy * aw, y - dy * 14 + dx * aw);
@@ -130,8 +119,8 @@ function drawCoordinates(alpha) {
     bgCtx.fill();
   });
 
-  // Origin dot (amber)
-  dot(cx, cy, 5, alpha * 0.55, '193,122,58');
+  // Origin dot
+  dot(cx, cy, 5, alpha * 0.45, '193,122,58');
 
   // Mouse crosshair
   if (mouse.x > 0 && mouse.x < bgW) {
@@ -148,9 +137,7 @@ function drawCoordinates(alpha) {
   for (let i = 0; i < 6; i++) {
     const angle = (t * 0.003) + i * Math.PI / 3;
     const r = tickSpacing * (2.5 + i * 1.2);
-    const px = cx + Math.cos(angle) * r;
-    const py = cy + Math.sin(angle) * r * 0.5;
-    dot(px, py, 2, alpha * 0.28 * xFade(px));
+    dot(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r * 0.5, 2, alpha * 0.28);
   }
 }
 
@@ -170,14 +157,14 @@ function drawOrbitals(alpha) {
   const mouseDist = hasMouse
     ? Math.min(1, Math.sqrt((mouse.x - bgW*0.5)**2 + (mouse.y - bgH*0.5)**2) / (bgW * 0.4))
     : 0;
-  const speedBoost = hasMouse ? Math.max(0.15, 1 - mouseDist * 0.85) : 1; // bullet-time: mouse presence slows orbits
+  const speedBoost = 1 + mouseDist * 2.5; // orbit faster when mouse is further from center
 
   const orbits = [
-    { rx: scale * 0.18, ry: scale * 0.10, tilt: 0.25,  speed: 0.005,  dotR: 4,   color: '193,122,58' },
-    { rx: scale * 0.38, ry: scale * 0.24, tilt: -0.50, speed: 0.003,  dotR: 3.5, color: '26,26,24' },
-    { rx: scale * 0.58, ry: scale * 0.38, tilt: 0.65,  speed: 0.0019, dotR: 3,   color: '26,26,24' },
-    { rx: scale * 0.80, ry: scale * 0.52, tilt: -0.28, speed: 0.0011, dotR: 2.5, color: '26,26,24' },
-    { rx: scale * 1.00, ry: scale * 0.64, tilt: 0.48,  speed: 0.0007, dotR: 2,   color: '26,26,24' },
+    { rx: scale * 0.18, ry: scale * 0.10, tilt: 0.25,  speed: 0.010, dotR: 4,   color: '193,122,58' },
+    { rx: scale * 0.38, ry: scale * 0.24, tilt: -0.50, speed: 0.006, dotR: 3.5, color: '26,26,24' },
+    { rx: scale * 0.58, ry: scale * 0.38, tilt: 0.65,  speed: 0.0038,dotR: 3,   color: '26,26,24' },
+    { rx: scale * 0.80, ry: scale * 0.52, tilt: -0.28, speed: 0.0022,dotR: 2.5, color: '26,26,24' },
+    { rx: scale * 1.00, ry: scale * 0.64, tilt: 0.48,  speed: 0.0014,dotR: 2,   color: '26,26,24' },
   ];
 
   // Star field
@@ -188,7 +175,11 @@ function drawOrbitals(alpha) {
     dot(sx, sy, 1, alpha * pulse * 0.5);
   }
 
-  // Mouse → center attraction line (removed per Ben)
+  // Mouse → center attraction line (no amber dot)
+  if (hasMouse) {
+    const mdist = Math.sqrt((mouse.x - cx)**2 + (mouse.y - cy)**2);
+    line(mouse.x, mouse.y, cx, cy, alpha * Math.min(0.25, mdist / 400), 0.5);
+  }
 
   // Nucleus glow rings
   [20, 36, 56].forEach((r, i) => dot(cx, cy, r, alpha * [0.06, 0.04, 0.02][i], '193,122,58'));
@@ -225,9 +216,9 @@ function drawOrbitals(alpha) {
 // ── SECTION 2: Radial / Compass (About) ──────────────────────
 function drawRadial(alpha) {
   if (alpha < 0.005) return;
-  const cx = bgW * 0.65;
-  const cy = bgH * 0.50;
-  const maxR = Math.max(bgW, bgH) * 0.55;
+  const cx = bgW * 0.5;
+  const cy = bgH * 0.5;
+  const maxR = Math.max(bgW, bgH) * 0.55; // extend beyond canvas edge
 
   const lineCount = 48;
   const rot = t * 0.0012;
@@ -269,49 +260,25 @@ function drawRadial(alpha) {
 }
 
 // ── Render loop ───────────────────────────────────────────────
+const DRAW_FNS = [drawCoordinates, drawOrbitals, drawRadial];
 
-// Each section spans (scrollH / N) pixels of scroll
-// Within that span: first 60% = pattern fully visible + parallax up
-//                   last 40%  = fade out (and next fades in)
-
-function getSectionAlphaAndOffset(sectionIndex, nSections) {
-  const span   = scrollH / nSections;
-  const sStart = sectionIndex * span;
-  const raw    = (scrollY - sStart) / span; // 0→1 inside section
-
-  let alpha;
-  if (sectionIndex === 0) {
-    // Section 0: visible immediately, no fade-in, only fade-out at end
-    const fadeOut = Math.max(0, Math.min(1, (raw - 0.60) / 0.40));
-    alpha = Math.max(0, 1 - fadeOut);
-  } else {
-    const fadeIn  = Math.max(0, Math.min(1, raw / 0.25));
-    const fadeOut = Math.max(0, Math.min(1, (raw - 0.65) / 0.35));
-    alpha = fadeIn * (1 - fadeOut);
-  }
-
-  // Eased parallax: fast at start of section, slows as cards appear (~mid section)
-  // Use power2 ease-out so displacement decelerates
-  const clampedRaw = Math.max(0, Math.min(1, raw));
-  const easedRaw   = 1 - Math.pow(1 - clampedRaw, 2); // ease-out quad
-  const parallax   = easedRaw * span * 0.22;
-
-  return { alpha: Math.max(0, alpha), offsetY: -parallax };
-}
+// Ease function for blend
+function easeInOut(x) { return x < 0.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
 
 function tickCanvas() {
   bgCtx.clearRect(0, 0, bgW, bgH);
   t++;
 
-  const N = 3; // number of sections
-  [drawCoordinates, drawOrbitals, drawRadial].forEach((fn, i) => {
-    const { alpha, offsetY } = getSectionAlphaAndOffset(i, N);
-    if (alpha < 0.004) return;
-    bgCtx.save();
-    bgCtx.translate(0, offsetY);
-    fn(alpha);
-    bgCtx.restore();
-  });
+  const blend = easeInOut(Math.max(0, Math.min(1, scrollBlend)));
+
+  if (scrollFrom === scrollTo || blend <= 0) {
+    DRAW_FNS[scrollFrom](1);
+  } else if (blend >= 1) {
+    DRAW_FNS[scrollTo](1);
+  } else {
+    DRAW_FNS[scrollFrom](1 - blend);
+    DRAW_FNS[scrollTo](blend);
+  }
 
   requestAnimationFrame(tickCanvas);
 }
@@ -357,14 +324,7 @@ window.addEventListener('mouseup',   () => document.body.classList.remove('curso
 const lenis = new Lenis({ duration: 1.4, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
 gsap.ticker.add(time => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
-lenis.on('scroll', ({ scroll }) => {
-  scrollY = scroll;
-  scrollH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-  ScrollTrigger.update();
-});
-window.addEventListener('resize', () => {
-  scrollH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-});
+lenis.on('scroll', ScrollTrigger.update);
 
 // ══════════════════════════════════════════════════════════════
 // NAV & PROGRESS
@@ -431,7 +391,31 @@ function initSceneAnimations() {
       }
     });
 
-    // ── Scroll-driven bg: now handled directly via scrollY in tickCanvas ──
+    // ── Scroll-driven bg pattern transition ──────────────────
+    // Between scene i and scene i+1: scrub controls scrollBlend
+    if (i < scenes.length - 1) {
+      ScrollTrigger.create({
+        trigger: scene,
+        start: 'bottom-=30% bottom',  // start blending earlier — 70% through the scene
+        end:   'bottom top',
+        scrub: 0.5,
+        onUpdate: self => {
+          scrollFrom  = i;
+          scrollTo    = i + 1;
+          scrollBlend = self.progress;
+        },
+        onLeave: () => {
+          scrollFrom  = i + 1;
+          scrollTo    = i + 1;
+          scrollBlend = 0;
+        },
+        onLeaveBack: () => {
+          scrollFrom  = i;
+          scrollTo    = i;
+          scrollBlend = 0;
+        },
+      });
+    }
   });
 }
 
@@ -439,7 +423,16 @@ function initSceneAnimations() {
 // CARD ANIMATIONS  (LOCKED — Ben approved)
 // ══════════════════════════════════════════════════════════════
 function initCardAnimations() {
-  // Hover lift effect on cards
+  ScrollTrigger.create({ trigger: '#work-grid', start: 'top 85%', onEnter: () =>
+    gsap.fromTo('.card', { y: 40, opacity: 0, rotation: 0.4 }, { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }) });
+  ScrollTrigger.create({ trigger: '#lab-grid', start: 'top 85%', onEnter: () =>
+    gsap.fromTo('.lab-card', { y: 36, opacity: 0, rotation: 0.3 }, { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }) });
+  ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', onEnter: () => {
+    gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
+    gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
+    gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
+  }});
+
   document.querySelectorAll('.card, .lab-card').forEach(card => {
     card.addEventListener('mouseenter', () =>
       gsap.to(card, { y: -28, boxShadow: '0 12px 32px rgba(0,0,0,0.10)', duration: 0.45, ease: 'power3.out', overwrite: 'auto', zIndex: 2 }));
@@ -450,13 +443,6 @@ function initCardAnimations() {
     card.addEventListener('mouseleave', () =>
       gsap.to(card, { y: 0, rotationX: 0, rotationY: 0, boxShadow: '0 0px 0px rgba(0,0,0,0)', duration: 0.55, ease: 'power3.out', overwrite: 'auto', zIndex: 1 }));
   });
-
-  // About section scroll animations
-  ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', once: true, onEnter: () => {
-    gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
-    gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
-    gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
-  }});
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -509,10 +495,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadContent();
   bindCursorHovers();
 
-  await new Promise(r => setTimeout(r, 200));
-  scrollH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  await new Promise(r => setTimeout(r, 120));
   initSceneAnimations();
   initCardAnimations();
-  await new Promise(r => setTimeout(r, 100));
   ScrollTrigger.refresh();
 });
