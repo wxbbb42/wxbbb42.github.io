@@ -4,31 +4,40 @@
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
-// ─── Custom Cursor ─────────────────────────────────────────────
-const cursorDot  = document.querySelector('.cursor-dot');
-const cursorRing = document.querySelector('.cursor-ring');
+// ─── Crosshair cursor ─────────────────────────────────────────
+const cursorEl    = document.querySelector('.cursor');
+const cursorLabel = document.getElementById('cursor-label');
 
-let mx = window.innerWidth / 2;
-let my = window.innerHeight / 2;
-let rx = mx, ry = my;
+let mx = window.innerWidth / 2, my = window.innerHeight / 2;
 
-window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-
-// Dot snaps instantly, ring lerps with inertia
-gsap.ticker.add(() => {
-  const lerp = 0.10;
-  rx += (mx - rx) * lerp;
-  ry += (my - ry) * lerp;
-
-  gsap.set(cursorDot,  { x: mx, y: my });
-  gsap.set(cursorRing, { x: rx, y: ry });
+window.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  // cursor snaps directly — no lag, precision feel
+  gsap.set(cursorEl, { x: mx, y: my });
 });
 
-// Hover state on interactive elements
-document.querySelectorAll('a, button, .card, .lab-card, .nav-btn, .nav-logo').forEach(el => {
-  el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
-  el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+// Context labels per element type
+const labelMap = [
+  { selector: '.card',      label: 'View ↗' },
+  { selector: '.lab-card',  label: 'View ↗' },
+  { selector: '.nav-btn',   label: 'Go' },
+  { selector: '.nav-logo',  label: 'Top' },
+  { selector: '.about-link',label: 'Open ↗' },
+];
+
+labelMap.forEach(({ selector, label }) => {
+  document.querySelectorAll(selector).forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      document.body.classList.add('cursor-hover');
+      cursorLabel.textContent = label;
+    });
+    el.addEventListener('mouseleave', () => {
+      document.body.classList.remove('cursor-hover');
+      cursorLabel.textContent = '';
+    });
+  });
 });
+
 window.addEventListener('mousedown', () => document.body.classList.add('cursor-active'));
 window.addEventListener('mouseup',   () => document.body.classList.remove('cursor-active'));
 

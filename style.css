@@ -31,44 +31,78 @@ a, button { cursor: none; }
 a { color: inherit; text-decoration: none; }
 button { background: none; border: none; font-family: inherit; }
 
-/* ─── Custom cursor ───────────────────────────────────────── */
-.cursor-dot,
-.cursor-ring {
+/* ─── Custom cursor: crosshair + label ───────────────────── */
+.cursor {
   position: fixed;
   top: 0; left: 0;
-  border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: opacity 0.3s;
   will-change: transform;
 }
 
-.cursor-dot {
-  width: 5px; height: 5px;
+/* Centre dot */
+.cursor-center {
+  position: absolute;
+  width: 3px; height: 3px;
   background: var(--ink);
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  transition: background 0.2s, transform 0.15s;
 }
 
-.cursor-ring {
-  width: 36px; height: 36px;
-  border: 1px solid rgba(26,26,24,0.35);
-  transition: width 0.25s var(--ease-out),
-              height 0.25s var(--ease-out),
-              border-color 0.25s,
-              background-color 0.25s,
-              opacity 0.3s;
+/* Four crosshair arms */
+.cursor-arm {
+  position: absolute;
+  background: var(--ink);
+  transition: background 0.2s, transform 0.2s var(--ease-out), opacity 0.2s;
+}
+/* horizontal arms */
+.cursor-arm.h {
+  width: 10px; height: 1px;
+  top: 50%; margin-top: -0.5px;
+}
+.cursor-arm.h.left  { right: calc(50% + 5px); }
+.cursor-arm.h.right { left:  calc(50% + 5px); }
+/* vertical arms */
+.cursor-arm.v {
+  width: 1px; height: 10px;
+  left: 50%; margin-left: -0.5px;
+}
+.cursor-arm.v.top    { bottom: calc(50% + 5px); }
+.cursor-arm.v.bottom { top:    calc(50% + 5px); }
+
+/* Label that floats top-right */
+.cursor-label {
+  position: absolute;
+  left: 12px;
+  top: -18px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s, transform 0.2s var(--ease-out), color 0.2s;
 }
 
-/* Hover states */
-body.cursor-hover .cursor-ring {
-  width: 56px; height: 56px;
-  border-color: var(--accent);
-  background: rgba(193,122,58,0.06);
-}
-body.cursor-active .cursor-ring {
-  width: 28px; height: 28px;
-  background: rgba(26,26,24,0.08);
-}
+/* ── Hover state: arms spread, label appears ── */
+body.cursor-hover .cursor-arm.h.left   { transform: translateX(-6px); }
+body.cursor-hover .cursor-arm.h.right  { transform: translateX(6px); }
+body.cursor-hover .cursor-arm.v.top    { transform: translateY(-6px); }
+body.cursor-hover .cursor-arm.v.bottom { transform: translateY(6px); }
+body.cursor-hover .cursor-label        { opacity: 1; transform: translateY(0); }
+body.cursor-hover .cursor-arm          { background: var(--accent); }
+body.cursor-hover .cursor-center       { background: var(--accent); transform: translate(-50%,-50%) scale(1.8); }
+
+/* ── Active (click): arms snap in ── */
+body.cursor-active .cursor-arm.h.left   { transform: translateX(2px); }
+body.cursor-active .cursor-arm.h.right  { transform: translateX(-2px); }
+body.cursor-active .cursor-arm.v.top    { transform: translateY(2px); }
+body.cursor-active .cursor-arm.v.bottom { transform: translateY(-2px); }
+body.cursor-active .cursor-center       { transform: translate(-50%,-50%) scale(2.4); }
 
 /* ─── Left Nav ───────────────────────────────────────────── */
 .nav {
@@ -373,6 +407,6 @@ body.cursor-active .cursor-ring {
   .cards-grid { grid-template-columns: 1fr; }
   .lab-grid { grid-template-columns: 1fr; }
   .about-layout { grid-template-columns: 1fr; gap: 40px; }
-  .cursor-dot, .cursor-ring { display: none; }
-  body { cursor: auto; }
+  .cursor { display: none; }
+  body, a, button { cursor: auto; }
 }
