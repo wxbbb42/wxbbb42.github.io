@@ -1,274 +1,165 @@
 /* ─────────────────────────────────────────────────────────────
-   app.js  —  Lenis + GSAP ScrollTrigger + SplitText + cursor + canvas
+   app.js  —  Lenis + GSAP + SplitText + cursor + Flow Field canvas
 ───────────────────────────────────────────────────────────── */
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 // ══════════════════════════════════════════════════════════════
-// BACKGROUND CANVAS
+// PERLIN NOISE (lightweight implementation)
+// ══════════════════════════════════════════════════════════════
+const P = (() => {
+  const perm = new Uint8Array(512);
+  const p256 = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) p256[i] = i;
+  for (let i = 255; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [p256[i], p256[j]] = [p256[j], p256[i]];
+  }
+  for (let i = 0; i < 512; i++) perm[i] = p256[i & 255];
+
+  const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+  const lerp  = (a, b, t) => a + t * (b - a);
+  const grad  = (h, x, y) => {
+    const g = h & 3;
+    const u = g < 2 ? x : y, v = g < 2 ? y : x;
+    return (g & 1 ? -u : u) + (g & 2 ? -v : v);
+  };
+
+  return (x, y) => {
+    const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+    x -= Math.floor(x); y -= Math.floor(y);
+    const u = fade(x), v = fade(y);
+    const a = perm[X] + Y, b = perm[X + 1] + Y;
+    return lerp(
+      lerp(grad(perm[a],   x,   y), grad(perm[b],   x-1, y),   u),
+      lerp(grad(perm[a+1], x,   y-1), grad(perm[b+1], x-1, y-1), u),
+      v
+    );
+  };
+})();
+
+// ══════════════════════════════════════════════════════════════
+// FLOW FIELD CANVAS
 // ══════════════════════════════════════════════════════════════
 const bgCanvas = document.getElementById('bg-canvas');
 const bgCtx    = bgCanvas.getContext('2d');
 let bgW, bgH;
-const mouse = { x: -9999, y: -9999 };
+const mouse = { x: -9999, y: -9999, vx: 0, vy: 0, px: -9999, py: -9999 };
 
-// ── Grid config per section ───────────────────────────────────
-const gridCfgs = [
-  { spacing: 34, dotSize: 2.0, dotAlpha: 0.12, lineAlpha: 0.05 },
-  { spacing: 34, dotSize: 2.0, dotAlpha: 0.10, lineAlpha: 0.04 },
-  { spacing: 34, dotSize: 2.0, dotAlpha: 0.12, lineAlpha: 0.05 },
-];
-const INK    = '26,26,24';
-let curGrid  = { ...gridCfgs[0] };
-let tgtGrid  = { ...gridCfgs[0] };
-
-// ── Background dots (tiny, at every intersection) ─────────────
-let bgDots = [];
-function buildBgDots(sp) {
-  bgDots = [];
-  const cols = Math.ceil(bgW / sp) + 2;
-  const rows = Math.ceil(bgH / sp) + 2;
-  for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols; c++)
-      bgDots.push({ x: c * sp, y: r * sp });
-}
-
-// ── Pixel shapes ──────────────────────────────────────────────
-const CELL = 22; // px per pixel-art cell (smaller = more detail)
-
-const BITMAPS = [
-  // 0 · Work — arrow ↗ (16×12)
-  [
-    [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],
-    [0,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1],
-    [1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1],
-    [0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1],
-    [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-    [0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0],
-    [0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
-  ],
-  // 1 · Lab — circuit node / octagon ring (16×16)
-  [
-    [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
-    [0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0],
-    [0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0],
-    [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
-    [1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1],
-    [1,1,0,0,0,1,1,1,1,1,1,0,0,0,1,1],
-    [1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1],
-    [1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1],
-    [1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1],
-    [1,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1],
-    [1,1,0,0,0,1,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1],
-    [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
-    [0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0],
-    [0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0],
-    [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
-  ],
-  // 2 · About — bold X (14×14)
-  [
-    [1,1,1,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,1,0,0,0,0,0,0,1,1,1,1],
-    [0,1,1,1,1,0,0,0,0,1,1,1,1,0],
-    [0,0,1,1,1,1,0,0,1,1,1,1,0,0],
-    [0,0,0,1,1,1,1,1,1,1,1,0,0,0],
-    [0,0,0,0,1,1,1,1,1,1,0,0,0,0],
-    [0,0,0,0,0,1,1,1,1,0,0,0,0,0],
-    [0,0,0,0,0,1,1,1,1,0,0,0,0,0],
-    [0,0,0,0,1,1,1,1,1,1,0,0,0,0],
-    [0,0,0,1,1,1,1,1,1,1,1,0,0,0],
-    [0,0,1,1,1,1,0,0,1,1,1,1,0,0],
-    [0,1,1,1,1,0,0,0,0,1,1,1,1,0],
-    [1,1,1,1,0,0,0,0,0,0,1,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,1,1,1],
-  ],
+// Per-section flow field configs
+const SECTION_CFGS = [
+  // Work: slow elegant spiral, dark ink trails
+  {
+    particleCount: 320,
+    speed: 1.4,
+    fieldScale: 0.0018,
+    angleOffset: 0,
+    angleMultiplier: Math.PI * 2.5,
+    zStep: 0.0004,
+    trailAlpha: 0.03,
+    particleAlpha: 0.55,
+    color: '26,26,24',
+    lineWidth: 0.8,
+    mouseInfluence: 120,
+  },
+  // Lab: faster turbulent flow, amber
+  {
+    particleCount: 280,
+    speed: 2.0,
+    fieldScale: 0.0025,
+    angleOffset: Math.PI * 0.5,
+    angleMultiplier: Math.PI * 3.5,
+    zStep: 0.0007,
+    trailAlpha: 0.025,
+    particleAlpha: 0.5,
+    color: '193,122,58',
+    lineWidth: 0.7,
+    mouseInfluence: 150,
+  },
+  // About: fine, calm, horizontal drift
+  {
+    particleCount: 260,
+    speed: 0.9,
+    fieldScale: 0.0013,
+    angleOffset: Math.PI * 0.1,
+    angleMultiplier: Math.PI * 1.8,
+    zStep: 0.0002,
+    trailAlpha: 0.035,
+    particleAlpha: 0.45,
+    color: '26,26,24',
+    lineWidth: 0.6,
+    mouseInfluence: 100,
+  },
 ];
 
-// Pixel particle state
-let pixels     = [];    // { tx, ty, x, y, vx, vy, alpha }
-let activeShape = -1;
-
-function buildShape(idx) {
-  const bm    = BITMAPS[idx];
-  const rows  = bm.length;
-  const cols  = bm[0].length;
-  const shapeW = cols * CELL;
-  const shapeH = rows * CELL;
-  const originX = bgW * 0.60 - shapeW / 2;
-  const originY = bgH * 0.50 - shapeH / 2;
-
-  // Find shape centroid for distance-based halftone scaling
-  let sumX = 0, sumY = 0, count = 0;
-  for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols; c++)
-      if (bm[r][c]) { sumX += c; sumY += r; count++; }
-  const centCol = sumX / count;
-  const centRow = sumY / count;
-  const maxDist = Math.sqrt(centCol ** 2 + centRow ** 2) * 1.2 || 1;
-
-  const targets = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (!bm[r][c]) continue;
-      // Distance from centroid → controls size & alpha (halftone effect)
-      const dr   = r - centRow;
-      const dc   = c - centCol;
-      const dist = Math.sqrt(dr * dr + dc * dc);
-      const t    = 1 - Math.min(dist / maxDist, 1); // 1=center, 0=edge
-      const scale = 0.35 + t * 0.65;  // edge: 35% size → center: 100%
-      const alpha = 0.45 + t * 0.55;  // edge: 45% opacity → center: 100%
-      targets.push({
-        tx: originX + c * CELL + CELL / 2,
-        ty: originY + r * CELL + CELL / 2,
-        scale,
-        alpha,
-      });
-    }
-  }
-  return targets;
-}
-
-function scatterPixels(onDone) {
-  pixels.forEach(p => {
-    // Explode outward from center
-    const cx = bgW * 0.62, cy = bgH * 0.5;
-    const angle = Math.atan2(p.ty - cy, p.tx - cx) + (Math.random() - 0.5) * 1.2;
-    const dist  = 300 + Math.random() * 400;
-    gsap.to(p, {
-      x: cx + Math.cos(angle) * dist,
-      y: cy + Math.sin(angle) * dist,
-      alpha: 0,
-      duration: 0.7 + Math.random() * 0.4,
-      ease: 'power3.in',
-    });
-  });
-  setTimeout(onDone, 900);
-}
-
-function assembleShape(idx) {
-  const targets = buildShape(idx);
-  const cx = bgW * 0.60, cy = bgH * 0.5;
-
-  pixels = targets.map(t => ({
-    tx: t.tx, ty: t.ty,
-    tScale: t.scale, tAlpha: t.alpha,
-    x: cx + (Math.random() - 0.5) * bgW * 0.9,
-    y: cy + (Math.random() - 0.5) * bgH * 0.9,
-    vx: 0, vy: 0,
-    alpha: 0,
-    scale: t.scale,
-  }));
-
-  pixels.forEach((p, i) => {
-    gsap.to(p, {
-      x: p.tx, y: p.ty, alpha: p.tAlpha,
-      duration: 0.9 + Math.random() * 0.35,
-      ease: 'power3.out',
-      delay: i * 0.008,
-    });
-  });
-}
-
+let cfg = { ...SECTION_CFGS[0] };
+let tgtCfg = { ...SECTION_CFGS[0] };
+let particles = [];
+let zOff = 0;
+let activeSection = 0;
 let transitioning = false;
-function setBgSection(idx) {
-  tgtGrid = { ...gridCfgs[Math.min(idx, gridCfgs.length - 1)] };
 
-  if (idx === activeShape) return;
-  if (transitioning) return;
-  transitioning = true;
+class Particle {
+  constructor() { this.reset(true); }
 
-  if (activeShape === -1) {
-    activeShape = idx;
-    transitioning = false;
-    assembleShape(idx);
-  } else {
-    scatterPixels(() => {
-      activeShape = idx;
-      transitioning = false;
-      assembleShape(idx);
-    });
+  reset(random = false) {
+    this.x  = random ? Math.random() * bgW : (Math.random() < 0.5 ? 0 : bgW);
+    this.y  = random ? Math.random() * bgH : Math.random() * bgH;
+    this.px = this.x;
+    this.py = this.y;
+    this.life    = Math.random() * 180 + 60;
+    this.maxLife = this.life;
+    this.speed   = cfg.speed * (0.6 + Math.random() * 0.8);
+  }
+
+  update() {
+    this.px = this.x;
+    this.py = this.y;
+
+    // Flow field angle
+    const nx    = this.x * cfg.fieldScale;
+    const ny    = this.y * cfg.fieldScale;
+    const noise = P(nx, ny + zOff);
+    let angle   = noise * cfg.angleMultiplier + cfg.angleOffset;
+
+    // Mouse vortex: nearby particles swirl around cursor
+    const mdx  = this.x - mouse.x;
+    const mdy  = this.y - mouse.y;
+    const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+    if (mdist < cfg.mouseInfluence && mdist > 1) {
+      const pull   = (1 - mdist / cfg.mouseInfluence) * 2.2;
+      const vortex = Math.atan2(mdy, mdx) + Math.PI * 0.5;
+      angle = angle + (vortex - angle) * pull * 0.6;
+      // Also push away slightly
+      this.x += (mdx / mdist) * pull * 0.8;
+      this.y += (mdy / mdist) * pull * 0.8;
+    }
+
+    this.x += Math.cos(angle) * this.speed;
+    this.y += Math.sin(angle) * this.speed;
+    this.life--;
+
+    if (this.life <= 0 || this.x < -10 || this.x > bgW + 10 || this.y < -10 || this.y > bgH + 10) {
+      this.reset();
+    }
+  }
+
+  draw() {
+    const lifeRatio = this.life / this.maxLife;
+    const a = Math.min(lifeRatio * 3, 1) * cfg.particleAlpha;
+    if (a < 0.01) return;
+
+    bgCtx.beginPath();
+    bgCtx.moveTo(this.px, this.py);
+    bgCtx.lineTo(this.x, this.y);
+    bgCtx.strokeStyle = `rgba(${cfg.color},${a})`;
+    bgCtx.lineWidth   = cfg.lineWidth;
+    bgCtx.stroke();
   }
 }
 
-// ── Physics constants ─────────────────────────────────────────
-const REPEL_R  = 90;
-const REPEL_F  = 0.18;
-const RETURN_S = 0.07;
-const DAMP     = 0.78;
-
-// ── Main render loop ─────────────────────────────────────────
-function tickCanvas() {
-  bgCtx.clearRect(0, 0, bgW, bgH);
-
-  // Lerp grid config
-  curGrid.spacing   += (tgtGrid.spacing   - curGrid.spacing)   * 0.04;
-  curGrid.dotAlpha  += (tgtGrid.dotAlpha  - curGrid.dotAlpha)  * 0.04;
-  curGrid.lineAlpha += (tgtGrid.lineAlpha - curGrid.lineAlpha) * 0.04;
-
-  const sp = curGrid.spacing;
-
-  // Grid lines
-  bgCtx.strokeStyle = `rgba(${INK},${curGrid.lineAlpha})`;
-  bgCtx.lineWidth = 0.5;
-  for (let x = 0; x <= bgW + sp; x += sp) {
-    bgCtx.beginPath(); bgCtx.moveTo(x, 0); bgCtx.lineTo(x, bgH); bgCtx.stroke();
-  }
-  for (let y = 0; y <= bgH + sp; y += sp) {
-    bgCtx.beginPath(); bgCtx.moveTo(0, y); bgCtx.lineTo(bgW, y); bgCtx.stroke();
-  }
-
-  // Tiny background intersection dots
-  bgCtx.fillStyle = `rgba(${INK},${curGrid.dotAlpha})`;
-  bgDots.forEach(d => {
-    bgCtx.beginPath();
-    bgCtx.arc(d.x, d.y, curGrid.dotSize, 0, Math.PI * 2);
-    bgCtx.fill();
-  });
-
-  // Pixel particles with halftone sizing + mouse repulsion
-  const ACCENT = '193,122,58';
-  pixels.forEach(p => {
-    if (p.alpha <= 0.01) return;
-
-    // Mouse repulsion
-    const dx   = p.x - mouse.x;
-    const dy   = p.y - mouse.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < REPEL_R && dist > 0) {
-      const force = (1 - dist / REPEL_R) * REPEL_F;
-      p.vx += (dx / dist) * force * REPEL_R;
-      p.vy += (dy / dist) * force * REPEL_R;
-    }
-
-    // Spring back to target
-    p.vx += (p.tx - p.x) * RETURN_S;
-    p.vy += (p.ty - p.y) * RETURN_S;
-    p.vx *= DAMP;
-    p.vy *= DAMP;
-    p.x  += p.vx;
-    p.y  += p.vy;
-
-    // Halftone: per-pixel scale + rotation from displacement
-    const disp    = Math.sqrt((p.x - p.tx) ** 2 + (p.y - p.ty) ** 2);
-    const rot     = Math.min(disp * 0.03, 0.9);
-    const sz      = CELL * p.scale * (0.76 + Math.min(disp / 120, 0.2));
-    const half    = sz / 2;
-
-    bgCtx.save();
-    bgCtx.translate(p.x, p.y);
-    bgCtx.rotate(rot);
-    bgCtx.fillStyle = `rgba(${ACCENT},${p.alpha})`;
-    bgCtx.fillRect(-half, -half, sz, sz);
-    bgCtx.restore();
-  });
-
-  requestAnimationFrame(tickCanvas);
+function buildParticles(count) {
+  particles = Array.from({ length: count }, () => new Particle());
 }
 
 function resizeCanvas() {
@@ -277,16 +168,52 @@ function resizeCanvas() {
   bgCanvas.width  = bgW * devicePixelRatio;
   bgCanvas.height = bgH * devicePixelRatio;
   bgCtx.scale(devicePixelRatio, devicePixelRatio);
-  buildBgDots(gridCfgs[0].spacing);
+  bgCtx.fillStyle = 'rgba(247,245,240,1)';
+  bgCtx.fillRect(0, 0, bgW, bgH);
+  buildParticles(cfg.particleCount);
+}
+
+function lerpCfg(key, speed = 0.03) {
+  cfg[key] += (tgtCfg[key] - cfg[key]) * speed;
+}
+
+function tickFlow() {
+  // Fade trail
+  bgCtx.fillStyle = `rgba(247,245,240,${cfg.trailAlpha})`;
+  bgCtx.fillRect(0, 0, bgW, bgH);
+
+  // Lerp numeric config values
+  ['speed','fieldScale','angleOffset','angleMultiplier','zStep',
+   'trailAlpha','particleAlpha','lineWidth','mouseInfluence'].forEach(k => lerpCfg(k, 0.025));
+
+  zOff += cfg.zStep;
+
+  // Mouse velocity
+  mouse.vx = mouse.x - mouse.px;
+  mouse.vy = mouse.y - mouse.py;
+  mouse.px = mouse.x;
+  mouse.py = mouse.y;
+
+  particles.forEach(p => { p.update(); p.draw(); });
+
+  requestAnimationFrame(tickFlow);
 }
 
 window.addEventListener('mousemove', e => {
   const rect = bgCanvas.getBoundingClientRect();
-  mouse.x = e.clientX - rect.left;
-  mouse.y = e.clientY - rect.top;
+  mouse.px = mouse.x;
+  mouse.py = mouse.y;
+  mouse.x  = e.clientX - rect.left;
+  mouse.y  = e.clientY - rect.top;
 });
 window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize', () => { resizeCanvas(); });
+
+function setBgSection(i) {
+  if (i === activeSection && !transitioning) return;
+  activeSection = i;
+  tgtCfg = { ...SECTION_CFGS[Math.min(i, SECTION_CFGS.length - 1)] };
+}
 
 // ══════════════════════════════════════════════════════════════
 // CURSOR
@@ -324,7 +251,7 @@ window.addEventListener('mousedown', () => document.body.classList.add('cursor-a
 window.addEventListener('mouseup',   () => document.body.classList.remove('cursor-active'));
 
 // ══════════════════════════════════════════════════════════════
-// LENIS SMOOTH SCROLL
+// LENIS
 // ══════════════════════════════════════════════════════════════
 const lenis = new Lenis({
   duration: 1.4,
@@ -358,7 +285,6 @@ navBtns.forEach((btn, i) => {
   });
 });
 
-// Mouse parallax on active scene content
 document.addEventListener('mousemove', e => {
   const nx = (e.clientX / window.innerWidth  - 0.5);
   const ny = (e.clientY / window.innerHeight - 0.5);
@@ -386,8 +312,7 @@ function initSceneAnimations() {
     if (eyebrow) gsap.set(eyebrow, { y: 16, opacity: 0 });
 
     ScrollTrigger.create({
-      trigger: scene,
-      start: 'top 80%',
+      trigger: scene, start: 'top 80%',
       onEnter: () => {
         scene.classList.add('active');
         setActiveNav(i);
@@ -417,7 +342,7 @@ function initSceneAnimations() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// CARD ANIMATIONS  (LOCKED — Ben approved exact behaviour)
+// CARD ANIMATIONS  (LOCKED — Ben approved)
 // ══════════════════════════════════════════════════════════════
 function initCardAnimations() {
   ScrollTrigger.create({
@@ -441,7 +366,6 @@ function initCardAnimations() {
     }
   });
 
-  // Card lift + tilt
   document.querySelectorAll('.card, .lab-card').forEach(card => {
     card.addEventListener('mouseenter', () => {
       gsap.to(card, { y: -28, boxShadow: '0 12px 32px rgba(0,0,0,0.10)', duration: 0.45, ease: 'power3.out', overwrite: 'auto', zIndex: 2 });
@@ -459,7 +383,7 @@ function initCardAnimations() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// CONTENT LOADING
+// CONTENT
 // ══════════════════════════════════════════════════════════════
 async function loadContent() {
   const res  = await fetch('./data/content.json');
@@ -513,7 +437,7 @@ function renderAbout(meta) {
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
   resizeCanvas();
-  tickCanvas();
+  tickFlow();
 
   await loadContent();
   bindCursorHovers();
