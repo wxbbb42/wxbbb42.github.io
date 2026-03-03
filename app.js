@@ -428,20 +428,67 @@ window.addEventListener('resize', () => { resizeCanvas(); updateCardEdges(); });
 const cursorEl    = document.querySelector('.cursor');
 const cursorLabel = document.getElementById('cursor-label');
 
-window.addEventListener('mousemove', e => gsap.set(cursorEl, { x: e.clientX, y: e.clientY }));
+// Magnetic cursor: snaps to logo center when nearby
+let logoMagnet = false;
+let rawMouseX = -100, rawMouseY = -100;
+
+window.addEventListener('mousemove', e => {
+  rawMouseX = e.clientX;
+  rawMouseY = e.clientY;
+});
+
+// Smoothed cursor position for magnetic lerp
+let cursorPosX = -100, cursorPosY = -100, cursorInited = false;
+
+gsap.ticker.add(() => {
+  if (!cursorInited && rawMouseX > -50) { cursorPosX = rawMouseX; cursorPosY = rawMouseY; cursorInited = true; }
+
+  let tx = rawMouseX, ty = rawMouseY;
+  let lerpSpeed = 0.35; // default: fast follow
+  const logoSvg = document.querySelector('.nav-logo svg');
+
+  if (logoSvg) {
+    const r = logoSvg.getBoundingClientRect();
+    const logoCX = r.left + r.width / 2;
+    const logoCY = r.top + r.height / 2;
+    const dx = rawMouseX - logoCX;
+    const dy = rawMouseY - logoCY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const radius = 60;
+
+    if (dist < radius) {
+      // Snap directly to logo center; lerp provides the smooth animation
+      tx = logoCX;
+      ty = logoCY;
+      lerpSpeed = 0.12; // slower lerp = smooth magnetic glide
+      if (!logoMagnet) {
+        logoMagnet = true;
+        document.body.classList.add('cursor-hover');
+        cursorLabel.textContent = 'Top';
+      }
+    } else if (logoMagnet) {
+      logoMagnet = false;
+      document.body.classList.remove('cursor-hover');
+      cursorLabel.textContent = '';
+    }
+  }
+
+  cursorPosX += (tx - cursorPosX) * lerpSpeed;
+  cursorPosY += (ty - cursorPosY) * lerpSpeed;
+  gsap.set(cursorEl, { x: cursorPosX, y: cursorPosY });
+});
 
 function bindCursorHovers() {
   const labelMap = [
     { selector: '.card',       label: 'View ↗' },
     { selector: '.lab-card',   label: 'View ↗' },
     { selector: '.nav-btn',    label: 'Go' },
-    { selector: '.nav-logo',   label: 'Top' },
     { selector: '.about-link', label: 'Open ↗' },
   ];
   labelMap.forEach(({ selector, label }) => {
     document.querySelectorAll(selector).forEach(el => {
-      el.addEventListener('mouseenter', () => { document.body.classList.add('cursor-hover'); cursorLabel.textContent = label; });
-      el.addEventListener('mouseleave', () => { document.body.classList.remove('cursor-hover'); cursorLabel.textContent = ''; });
+      el.addEventListener('mouseenter', () => { if (!logoMagnet) { document.body.classList.add('cursor-hover'); cursorLabel.textContent = label; } });
+      el.addEventListener('mouseleave', () => { if (!logoMagnet) { document.body.classList.remove('cursor-hover'); cursorLabel.textContent = ''; } });
     });
   });
 }
@@ -456,6 +503,11 @@ const lenis = new Lenis({ duration: 1.4, easing: t => Math.min(1, 1.001 - Math.p
 gsap.ticker.add(time => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 lenis.on('scroll', ScrollTrigger.update);
+
+document.querySelector('.nav-logo')?.addEventListener('click', e => {
+  e.preventDefault();
+  lenis.scrollTo(0, { duration: 1.6 });
+});
 
 // ══════════════════════════════════════════════════════════════
 // NAV & PROGRESS

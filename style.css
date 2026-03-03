@@ -154,11 +154,15 @@ body.cursor-active .cursor-center {
 }
 
 .nav-logo {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  letter-spacing: 0.02em;
   color: var(--ink);
   margin-bottom: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.nav-logo svg {
+  width: 36px;
+  height: 36px;
 }
 
 .nav-items {
