@@ -613,15 +613,21 @@ function initSceneAnimations() {
 // CARD ANIMATIONS  (LOCKED — Ben approved)
 // ══════════════════════════════════════════════════════════════
 function initCardAnimations() {
-  ScrollTrigger.create({ trigger: '#work-grid', start: 'top 85%', onEnter: () =>
-    gsap.fromTo('.card', { y: 40, opacity: 0, rotation: 0.4 }, { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }) });
-  ScrollTrigger.create({ trigger: '#lab-grid', start: 'top 85%', onEnter: () =>
-    gsap.fromTo('.lab-card', { y: 36, opacity: 0, rotation: 0.3 }, { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }) });
-  ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', onEnter: () => {
-    gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
-    gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
-    gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
-  }});
+  const isMobile = window.innerWidth <= 960;
+
+  if (!isMobile) {
+    // Desktop: fly-in on scroll
+    ScrollTrigger.create({ trigger: '#work-grid', start: 'top 85%', onEnter: () =>
+      gsap.fromTo('.card', { y: 40, opacity: 0, rotation: 0.4 }, { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }) });
+    ScrollTrigger.create({ trigger: '#lab-grid', start: 'top 85%', onEnter: () =>
+      gsap.fromTo('.lab-card', { y: 36, opacity: 0, rotation: 0.3 }, { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }) });
+    ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', onEnter: () => {
+      gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
+      gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
+      gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
+    }});
+  }
+  // Mobile: cards always visible — no opacity:0 trap
 
   document.querySelectorAll('.card-slot').forEach(slot => {
     const card = slot.querySelector('.card, .lab-card');
