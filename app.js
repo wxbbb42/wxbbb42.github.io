@@ -69,22 +69,22 @@ function drawCoordinates(alpha) {
   // Full-canvas grid
   for (let i = -tickCount; i <= tickCount; i++) {
     const isMajor = i % 4 === 0;
-    const a = isMajor ? alpha * 0.09 : alpha * 0.04;
-    line(cx + i * tickSpacing, cy - size, cx + i * tickSpacing, cy + size, a, isMajor ? 0.6 : 0.3);
-    line(cx - size, cy + i * tickSpacing, cx + size, cy + i * tickSpacing, a, isMajor ? 0.6 : 0.3);
+    const a = isMajor ? alpha * 0.22 : alpha * 0.10;
+    line(cx + i * tickSpacing, cy - size, cx + i * tickSpacing, cy + size, a, isMajor ? 0.8 : 0.5);
+    line(cx - size, cy + i * tickSpacing, cx + size, cy + i * tickSpacing, a, isMajor ? 0.8 : 0.5);
   }
 
   // Main axes
-  line(cx - size, cy, cx + size, cy, alpha * 0.20, 0.8);
-  line(cx, cy - size, cx, cy + size, alpha * 0.20, 0.8);
+  line(cx - size, cy, cx + size, cy, alpha * 0.45, 1.2);
+  line(cx, cy - size, cx, cy + size, alpha * 0.45, 1.2);
 
   // Tick marks on axes
   for (let i = -tickCount; i <= tickCount; i++) {
     if (i === 0) continue;
     const isMajor = i % 4 === 0;
     const ts = isMajor ? 10 : 5;
-    line(cx + i * tickSpacing, cy - ts, cx + i * tickSpacing, cy + ts, alpha * 0.22, 0.6);
-    line(cx - ts, cy + i * tickSpacing, cx + ts, cy + i * tickSpacing, alpha * 0.22, 0.6);
+    line(cx + i * tickSpacing, cy - ts, cx + i * tickSpacing, cy + ts, alpha * 0.40, 0.8);
+    line(cx - ts, cy + i * tickSpacing, cx + ts, cy + i * tickSpacing, alpha * 0.40, 0.8);
   }
 
   // Arrowheads
