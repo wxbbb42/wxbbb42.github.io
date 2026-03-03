@@ -495,154 +495,18 @@ body.cursor-active .cursor-center {
   box-shadow: 0 0 0 3px rgba(193,122,58,0.15);
 }
 
-/* ─── Mobile Header ──────────────────────────────────────── */
-.mobile-header {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 200;
-  background: var(--bg);
-  padding: 0 20px;
-  height: 52px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.mobile-header-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--ink);
-}
-.mobile-header-name {
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
-.mobile-header-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Progress bar at bottom of header */
-.mobile-header-progress {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 1.5px;
-  background: var(--border);
-}
-.mobile-header-bar {
-  height: 100%;
-  width: 0%;
-  background: var(--accent);
-  transition: width 0.1s linear;
-}
-
 /* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 960px) {
   :root { --nav-w: 0px; }
   .nav { display: none; }
-  .mobile-header { display: flex; }
-  .site-controls { display: none; }
-  .mobile-nav { display: none; }
+  .mobile-nav { display: flex; }
   .scroll-track, .footer { margin-left: 0; }
+  .scene-content { padding: 0 28px; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .lab-grid { grid-template-columns: 1fr; }
+  .about-layout { grid-template-columns: 1fr; gap: 40px; }
   .cursor { display: none; }
   body, a, button { cursor: auto; }
-
-  /* ── Disable sticky scroll on mobile — plain stacked sections ── */
-  .scene { height: auto !important; }
-  .scene-sticky {
-    position: static !important;
-    height: auto !important;
-    display: block !important;
-  }
-  #bg-canvas { opacity: 0.5; }  /* keep canvas, just lighter */
-
-  /* Force cards visible — block any GSAP opacity:0 */
-  .card, .lab-card,
-  .about-right, .about-bio, .about-loc, .about-link {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  .scene-content {
-    padding: 80px 22px 60px;
-    min-height: 0;
-  }
-
-  /* ── Typography ── */
-  .scene-eyebrow { font-size: 10px; letter-spacing: 0.14em; margin-bottom: 10px; }
-  .scene-title { font-size: clamp(34px, 10vw, 52px); line-height: 1.05; }
-  .scene-note { font-size: 11px; margin-top: 10px; }
-
-  /* ── Cards ── */
-  .cards-grid { grid-template-columns: 1fr; gap: 0; }
-  .lab-grid   { grid-template-columns: 1fr; }
-  .card { padding: 20px 18px; }
-  .card-title { font-size: 15px; }
-  .card-desc  { font-size: 12px; margin-top: 6px; }
-  .card-year  { font-size: 10px; }
-  .card-tags  { margin-top: 12px; gap: 4px; }
-  .card-slot { border-bottom: 1px solid var(--border); }
-  .card-slot:last-child { border-bottom: none; }
-  .lab-grid .card-slot { border-right: none; border-bottom: 1px solid var(--border); }
-
-  /* ── About ── */
-  .about-layout { grid-template-columns: 1fr; gap: 28px; }
-  .about-name { font-size: clamp(40px, 12vw, 60px); }
-  .about-tagline { font-size: 13px; margin-top: 6px; }
-  .about-bio  { font-size: 13px; line-height: 1.65; }
-  .about-loc  { font-size: 12px; margin-top: 10px; }
-  .about-links { margin-top: 20px; gap: 10px; }
-  .about-link { font-size: 12px; padding: 8px 0; }
-
-  /* ── Footer ── */
-  .footer { padding: 14px 22px; font-size: 10px; flex-direction: column; gap: 4px; text-align: center; }
-
-  /* ── Scene separator ── */
-  .scene + .scene { border-top: 1px solid var(--border); }
-  .scene-header { margin-bottom: 24px; }
-}
-  .lab-grid   { grid-template-columns: 1fr; }
-
-  .card { padding: 22px 20px; }
-  .card-title { font-size: 15px; }
-  .card-desc  { font-size: 12px; margin-top: 6px; }
-  .card-year  { font-size: 10px; }
-  .card-tags  { margin-top: 12px; gap: 4px; }
-
-  .card-slot { border-bottom: 1px solid var(--border); }
-  .card-slot:last-child { border-bottom: none; }
-  .lab-grid .card-slot { border-right: none; border-bottom: 1px solid var(--border); }
-
-  /* ── About ── */
-  .about-layout { grid-template-columns: 1fr; gap: 28px; }
-  .about-name { font-size: clamp(40px, 13vw, 64px); }
-  .about-tagline { font-size: 13px; margin-top: 6px; }
-  .about-bio  { font-size: 13px; line-height: 1.65; }
-  .about-loc  { font-size: 12px; margin-top: 10px; }
-  .about-links { margin-top: 20px; gap: 10px; }
-  .about-link { font-size: 12px; padding: 8px 0; }
-
-  /* ── Canvas ── */
-  #bg-canvas { opacity: 0.6; }
-
-  /* ── Footer ── */
-  .footer { padding: 14px 24px; font-size: 10px; flex-direction: column; gap: 4px; text-align: center; }
-
-  /* ── Scene header spacing ── */
-  .scene-header { margin-bottom: 24px; }
-}
-
-/* ── Extra small (≤ 480px) ── */
-@media (max-width: 480px) {
-  .scene-content { padding: 64px 18px 90px; }
-  .scene-title { font-size: clamp(32px, 12vw, 48px); }
-  .about-name  { font-size: clamp(36px, 14vw, 56px); }
 }
 
 /* ─── Reduced motion ─────────────────────────────────────── */

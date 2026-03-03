@@ -515,7 +515,6 @@ document.querySelector('.nav-logo')?.addEventListener('click', e => {
 const navBtns        = [...document.querySelectorAll('.nav-btn')];
 const mobileNavBtns  = [...document.querySelectorAll('.mobile-nav-btn')];
 const navLineFill    = document.querySelector('.nav-line-fill');
-const mobileBarFill  = document.querySelector('.mobile-header-bar');
 const scenes         = [...document.querySelectorAll('.scene')];
 let lastSection      = -1;
 
@@ -575,7 +574,6 @@ function initSceneAnimations() {
       trigger: scene, start: 'top top', end: 'bottom bottom',
       onUpdate: self => {
         gsap.set(navLineFill, { height: `${((i + self.progress) / scenes.length) * 100}%` });
-        if (mobileBarFill) mobileBarFill.style.width = `${((i + self.progress) / scenes.length) * 100}%`;
         if (self.progress > 0.05) setActiveNav(i);
         sectionProgress[i] = self.progress;
       }
@@ -613,21 +611,15 @@ function initSceneAnimations() {
 // CARD ANIMATIONS  (LOCKED — Ben approved)
 // ══════════════════════════════════════════════════════════════
 function initCardAnimations() {
-  const isMobile = window.innerWidth <= 960;
-
-  if (!isMobile) {
-    // Desktop: fly-in on scroll
-    ScrollTrigger.create({ trigger: '#work-grid', start: 'top 85%', onEnter: () =>
-      gsap.fromTo('.card', { y: 40, opacity: 0, rotation: 0.4 }, { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }) });
-    ScrollTrigger.create({ trigger: '#lab-grid', start: 'top 85%', onEnter: () =>
-      gsap.fromTo('.lab-card', { y: 36, opacity: 0, rotation: 0.3 }, { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }) });
-    ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', onEnter: () => {
-      gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
-      gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
-      gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
-    }});
-  }
-  // Mobile: cards always visible — no opacity:0 trap
+  ScrollTrigger.create({ trigger: '#work-grid', start: 'top 85%', onEnter: () =>
+    gsap.fromTo('.card', { y: 40, opacity: 0, rotation: 0.4 }, { y: 0, opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', stagger: 0.10 }) });
+  ScrollTrigger.create({ trigger: '#lab-grid', start: 'top 85%', onEnter: () =>
+    gsap.fromTo('.lab-card', { y: 36, opacity: 0, rotation: 0.3 }, { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12 }) });
+  ScrollTrigger.create({ trigger: '.about-right', start: 'top 80%', onEnter: () => {
+    gsap.fromTo('.about-right', { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 1.0, ease: 'power3.out' });
+    gsap.fromTo('.about-bio, .about-loc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.15, delay: 0.25 });
+    gsap.fromTo('.about-link', { x: -10, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
+  }});
 
   document.querySelectorAll('.card-slot').forEach(slot => {
     const card = slot.querySelector('.card, .lab-card');
@@ -726,6 +718,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Apply saved language immediately after content renders
   applyLang(localStorage.getItem('lang') || 'en');
 
+  if (prefersReducedMotion) {
+    // Show all content immediately, no animations
+    document.querySelectorAll('.scene-eyebrow').forEach(el => { el.style.opacity = 1; });
+    document.querySelectorAll('.card, .lab-card').forEach(el => { el.style.opacity = 1; });
+    document.querySelectorAll('.about-right, .about-bio, .about-loc, .about-link').forEach(el => { el.style.opacity = 1; });
+    return;
+  }
+
   resizeCanvas();
   updateCardEdges();
   tickCanvas();
@@ -737,35 +737,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   ScrollTrigger.refresh();
 
   initThemeLang();
-  initMobileProgress();
 });
 
 // ══════════════════════════════════════════════════════════════
 // THEME & LANGUAGE TOGGLE
 // ══════════════════════════════════════════════════════════════
 function initThemeLang() {
-  const themeBtn  = document.getElementById('theme-toggle');
-  const langBtn   = document.getElementById('lang-toggle');
-  const themeBtnM = document.getElementById('theme-toggle-m');
-  const langBtnM  = document.getElementById('lang-toggle-m');
-  if (!themeBtn && !themeBtnM) return;
+  const themeBtn = document.getElementById('theme-toggle');
+  const langBtn  = document.getElementById('lang-toggle');
+  if (!themeBtn || !langBtn) return;
 
   // ── Theme ──────────────────────────────────────────────────
   const savedTheme = localStorage.getItem('theme') || 'light';
   if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
-  function toggleTheme() {
+  themeBtn.addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (isDark) {
       document.documentElement.removeAttribute('data-theme');
       localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-    }
-  }
-  themeBtn?.addEventListener('click', toggleTheme);
-  themeBtnM?.addEventListener('click', toggleTheme);
     } else {
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('theme', 'dark');
@@ -776,21 +766,16 @@ function initThemeLang() {
   let currentLang = localStorage.getItem('lang') || 'en';
   applyLang(currentLang);
 
-  function toggleLang() {
+  langBtn.addEventListener('click', () => {
     currentLang = currentLang === 'en' ? 'cn' : 'en';
     localStorage.setItem('lang', currentLang);
     applyLang(currentLang);
-  }
-  langBtn?.addEventListener('click', toggleLang);
-  langBtnM?.addEventListener('click', toggleLang);
+  });
 }
 
 function applyLang(lang) {
-  const langBtn  = document.getElementById('lang-toggle');
-  const langBtnM = document.getElementById('lang-toggle-m');
-  const label = lang === 'en' ? 'EN' : '中';
-  if (langBtn)  langBtn.textContent  = label;
-  if (langBtnM) langBtnM.textContent = label;
+  const langBtn = document.getElementById('lang-toggle');
+  if (langBtn) langBtn.textContent = lang === 'en' ? 'EN' : '中';
 
   // Update data-lang attribute for CSS hooks if needed
   document.documentElement.setAttribute('data-lang', lang);
@@ -854,16 +839,4 @@ function applyLang(lang) {
   // About name tagline
   const taglineEl = document.querySelector('.about-tagline');
   if (taglineEl && taglineEl.dataset.cn) taglineEl.textContent = lang === 'cn' ? taglineEl.dataset.cn : taglineEl.dataset.en;
-}
-
-// --------------------------------------------------------------
-// MOBILE SCROLL PROGRESS (no sticky � use window scroll)
-// --------------------------------------------------------------
-function initMobileProgress() {
-  const bar = document.querySelector('.mobile-header-bar');
-  if (!bar || window.innerWidth > 960) return;
-  window.addEventListener('scroll', () => {
-    const total = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.width = total > 0 ? `${(window.scrollY / total) * 100}%` : '0%';
-  }, { passive: true });
 }
