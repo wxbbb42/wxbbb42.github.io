@@ -59,47 +59,68 @@ function dot(x, y, r, alpha, color = '26,26,24') {
 // ── SECTION 0: Coordinate System (Work) ───────────────────────
 function drawCoordinates(alpha) {
   if (alpha < 0.005) return;
-  const cx = bgW * 0.5;
-  const cy = bgH * 0.5;
-  const size = Math.max(bgW, bgH) * 0.6; // fill the canvas
+  // Origin shifted to lower-right — stays out of left content area
+  const cx = bgW * 0.68;
+  const cy = bgH * 0.62;
+  const size = Math.max(bgW, bgH) * 0.7;
 
   const tickCount = 16;
   const tickSpacing = size / tickCount;
 
-  // Full-canvas grid
+  // Full-canvas grid — alpha fades linearly from left (dim) to right (full)
   for (let i = -tickCount; i <= tickCount; i++) {
     const isMajor = i % 4 === 0;
-    const a = isMajor ? alpha * 0.22 : alpha * 0.10;
-    line(cx + i * tickSpacing, cy - size, cx + i * tickSpacing, cy + size, a, isMajor ? 0.8 : 0.5);
-    line(cx - size, cy + i * tickSpacing, cx + size, cy + i * tickSpacing, a, isMajor ? 0.8 : 0.5);
+    // vertical lines: fade based on x position (left=dim, right=bright)
+    const gx = cx + i * tickSpacing;
+    const xRatio = Math.max(0, Math.min(1, gx / bgW)); // 0 at left edge, 1 at right
+    const fadeA = 0.15 + xRatio * 0.85; // 0.15 at left, 1.0 at right
+    const ga = (isMajor ? alpha * 0.22 : alpha * 0.10) * fadeA;
+    line(gx, 0, gx, bgH, ga, isMajor ? 0.8 : 0.4);
+  }
+  for (let i = -tickCount; i <= tickCount; i++) {
+    // horizontal lines: fade based on x of their intersection with the canvas center-ish
+    const isMajor = i % 4 === 0;
+    // use a gradient-ish approach: draw as two halves
+    const ga_left  = (isMajor ? alpha * 0.22 : alpha * 0.10) * 0.15;
+    const ga_right = (isMajor ? alpha * 0.22 : alpha * 0.10) * 1.00;
+    const gy = cy + i * tickSpacing;
+    // left half (dim)
+    line(0, gy, bgW * 0.45, gy, ga_left, isMajor ? 0.8 : 0.4);
+    // right half (bright) — gradient via midpoint
+    line(bgW * 0.45, gy, bgW, gy, ga_right, isMajor ? 0.8 : 0.4);
   }
 
-  // Main axes
-  line(cx - size, cy, cx + size, cy, alpha * 0.45, 1.2);
-  line(cx, cy - size, cx, cy + size, alpha * 0.45, 1.2);
+  // Main axes — also faded on left
+  line(0, cy, bgW * 0.45, cy, alpha * 0.10, 1.2);
+  line(bgW * 0.45, cy, bgW, cy, alpha * 0.45, 1.2);
+  line(cx, 0, cx, bgH, alpha * 0.45, 1.2);
 
   // Tick marks on axes
   for (let i = -tickCount; i <= tickCount; i++) {
     if (i === 0) continue;
     const isMajor = i % 4 === 0;
     const ts = isMajor ? 10 : 5;
-    line(cx + i * tickSpacing, cy - ts, cx + i * tickSpacing, cy + ts, alpha * 0.40, 0.8);
-    line(cx - ts, cy + i * tickSpacing, cx + ts, cy + i * tickSpacing, alpha * 0.40, 0.8);
+    const gx = cx + i * tickSpacing;
+    const xRatio = Math.max(0, Math.min(1, gx / bgW));
+    line(gx, cy - ts, gx, cy + ts, alpha * 0.40 * (0.15 + xRatio * 0.85), 0.8);
+    const gy = cy + i * tickSpacing;
+    line(cx - ts, gy, cx + ts, gy, alpha * 0.40, 0.8);
   }
 
   // Arrowheads
   const aw = 7;
-  [[cx + size, cy, 1, 0], [cx, cy - size, 0, -1]].forEach(([x, y, dx, dy]) => {
+  [[cx + size * 0.6, cy, 1, 0], [cx, cy - size * 0.6, 0, -1]].forEach(([x, y, dx, dy]) => {
+    if (x > bgW + 20 || y < -20) return;
     bgCtx.beginPath();
     bgCtx.moveTo(x, y);
     bgCtx.lineTo(x - dx * 14 - dy * aw, y - dy * 14 + dx * aw);
     bgCtx.lineTo(x - dx * 14 + dy * aw, y - dy * 14 - dx * aw);
-    bgCtx.fillStyle = `rgba(26,26,24,${alpha * 0.20})`;
+    bgCtx.fillStyle = `rgba(26,26,24,${alpha * 0.30})`;
     bgCtx.fill();
   });
 
   // Origin dot
-  dot(cx, cy, 4, alpha * 0.35);
+  dot(cx, cy, 5, alpha * 0.45, '193,122,58');
 
   // Mouse crosshair
   if (mouse.x > 0 && mouse.x < bgW) {
@@ -126,10 +147,10 @@ function drawOrbitals(alpha) {
 
   // Mouse pull: shift the entire system center toward mouse
   const hasMouse = mouse.x > 0 && mouse.x < bgW;
-  const pullX = hasMouse ? (mouse.x - bgW * 0.5) * 0.08 : 0;
-  const pullY = hasMouse ? (mouse.y - bgH * 0.5) * 0.08 : 0;
-  const cx = bgW * 0.5 + pullX;
-  const cy = bgH * 0.5 + pullY;
+  const pullX = hasMouse ? (mouse.x - bgW * 0.65) * 0.06 : 0;
+  const pullY = hasMouse ? (mouse.y - bgH * 0.50) * 0.06 : 0;
+  const cx = bgW * 0.65 + pullX;
+  const cy = bgH * 0.50 + pullY;
   const scale = Math.min(bgW, bgH) * 0.48;
 
   // Mouse distance from center (normalized 0–1)
@@ -154,12 +175,10 @@ function drawOrbitals(alpha) {
     dot(sx, sy, 1, alpha * pulse * 0.5);
   }
 
-  // Mouse → center attraction line
+  // Mouse → center attraction line (no amber dot)
   if (hasMouse) {
     const mdist = Math.sqrt((mouse.x - cx)**2 + (mouse.y - cy)**2);
-    const lineAlpha = alpha * Math.min(0.35, mdist / 300);
-    line(mouse.x, mouse.y, cx, cy, lineAlpha, 0.6);
-    dot(mouse.x, mouse.y, 3, alpha * 0.5, '193,122,58');
+    line(mouse.x, mouse.y, cx, cy, alpha * Math.min(0.25, mdist / 400), 0.5);
   }
 
   // Nucleus glow rings
@@ -377,13 +396,18 @@ function initSceneAnimations() {
     if (i < scenes.length - 1) {
       ScrollTrigger.create({
         trigger: scene,
-        start: 'bottom bottom',  // starts when bottom of scene hits bottom of viewport
-        end:   'bottom top',     // ends when bottom of scene leaves top
-        scrub: true,
+        start: 'bottom-=30% bottom',  // start blending earlier — 70% through the scene
+        end:   'bottom top',
+        scrub: 0.5,
         onUpdate: self => {
           scrollFrom  = i;
           scrollTo    = i + 1;
           scrollBlend = self.progress;
+        },
+        onLeave: () => {
+          scrollFrom  = i + 1;
+          scrollTo    = i + 1;
+          scrollBlend = 0;
         },
         onLeaveBack: () => {
           scrollFrom  = i;
@@ -392,21 +416,6 @@ function initSceneAnimations() {
         },
       });
     }
-
-    // When fully in a section (not transitioning), lock it
-    ScrollTrigger.create({
-      trigger: scene, start: 'top bottom', end: 'bottom bottom',
-      onUpdate: self => {
-        if (self.progress < 1) {
-          // Still entering — if previous transition done, lock to this section
-          if (i === 0 || scrollBlend >= 1) {
-            scrollFrom  = i;
-            scrollTo    = i;
-            scrollBlend = 0;
-          }
-        }
-      }
-    });
   });
 }
 
