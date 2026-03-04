@@ -560,12 +560,27 @@ document.querySelector('.mobile-header-logo')?.addEventListener('click', e => {
 const navBtns        = [...document.querySelectorAll('.nav-btn')];
 const mobileNavBtns  = [...document.querySelectorAll('.mobile-nav-btn')];
 const navLineFill    = document.querySelector('.nav-line-fill');
+const mobileProgressFill = document.getElementById('mobile-progress-fill');
+const mobileSectionName  = document.getElementById('mobile-section-name');
+const mobileMenuOptions  = [...document.querySelectorAll('.mobile-section-option')];
 const scenes         = [...document.querySelectorAll('.scene')];
 let lastSection      = -1;
+
+const sectionNames = {
+  en: ['Work', 'AI Lab', 'About'],
+  cn: ['作品', 'AI 实验室', '关于']
+};
 
 function setActiveNav(i) {
   navBtns.forEach((b, bi) => b.classList.toggle('active', bi === i));
   mobileNavBtns.forEach((b, bi) => b.classList.toggle('active', bi === i));
+  // Update mobile header section name
+  if (mobileSectionName) {
+    const lang = document.documentElement.getAttribute('data-lang') || 'en';
+    mobileSectionName.textContent = sectionNames[lang]?.[i] || sectionNames.en[i];
+  }
+  // Update section menu active state
+  mobileMenuOptions.forEach((opt, oi) => opt.classList.toggle('active', oi === i));
   if (i !== lastSection) { lastSection = i; }
 }
 
@@ -573,7 +588,11 @@ function setActiveNav(i) {
   btns.forEach((btn, i) => {
     btn.addEventListener('click', () => {
       const sceneEl = scenes[i];
-      lenis.scrollTo(sceneEl.offsetTop + (sceneEl.offsetHeight - window.innerHeight) * 0.12, { duration: 1.6 });
+      if (isMobile) {
+        lenis.scrollTo(sceneEl, { offset: -60, duration: 1.0 });
+      } else {
+        lenis.scrollTo(sceneEl.offsetTop + (sceneEl.offsetHeight - window.innerHeight) * 0.12, { duration: 1.6 });
+      }
     });
   });
 });
@@ -618,9 +637,13 @@ function initSceneAnimations() {
 
     // Progress bar + canvas parallax offset
     ScrollTrigger.create({
-      trigger: scene, start: 'top top', end: 'bottom bottom',
+      trigger: scene,
+      start: isMobile ? 'top 80%' : 'top top',
+      end: isMobile ? 'bottom 20%' : 'bottom bottom',
       onUpdate: self => {
-        gsap.set(navLineFill, { height: `${((i + self.progress) / scenes.length) * 100}%` });
+        if (!isMobile) {
+          gsap.set(navLineFill, { height: `${((i + self.progress) / scenes.length) * 100}%` });
+        }
         if (self.progress > 0.05) setActiveNav(i);
         sectionProgress[i] = self.progress;
       }
@@ -631,8 +654,8 @@ function initSceneAnimations() {
     if (i < scenes.length - 1) {
       ScrollTrigger.create({
         trigger: scene,
-        start: 'bottom-=15% bottom',  // blend starts late — short overlap
-        end:   'bottom top+=15%',
+        start: isMobile ? 'bottom bottom' : 'bottom-=15% bottom',
+        end:   isMobile ? 'bottom top+=5%' : 'bottom top+=15%',
         scrub: 0.5,
         onUpdate: self => {
           scrollFrom  = i;
@@ -651,6 +674,96 @@ function initSceneAnimations() {
         },
       });
     }
+  });
+
+  // Mobile: horizontal progress bar under header
+  if (isMobile && mobileProgressFill) {
+    ScrollTrigger.create({
+      trigger: '.scroll-track',
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate: self => {
+        mobileProgressFill.style.width = `${self.progress * 100}%`;
+      }
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// MOBILE HEADER
+// ══════════════════════════════════════════════════════════════
+function initMobileHeader() {
+  if (!isMobile) return;
+
+  const trigger  = document.getElementById('mobile-section-trigger');
+  const menu     = document.getElementById('mobile-section-menu');
+  const backdrop = document.getElementById('mobile-section-backdrop');
+
+  if (!trigger || !menu || !backdrop) return;
+
+  function openMenu() {
+    menu.classList.add('open');
+    backdrop.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeMenu() {
+    menu.classList.remove('open');
+    backdrop.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+  }
+
+  trigger.addEventListener('click', () => {
+    menu.classList.contains('open') ? closeMenu() : openMenu();
+  });
+
+  backdrop.addEventListener('click', closeMenu);
+
+  // Section menu options — scroll to section on tap
+  document.querySelectorAll('.mobile-section-option').forEach((opt, i) => {
+    opt.addEventListener('click', () => {
+      closeMenu();
+      const sceneEl = scenes[i];
+      if (sceneEl) {
+        lenis.scrollTo(sceneEl, { offset: -60, duration: 1.0 });
+      }
+    });
+  });
+
+  // Wire mobile theme toggle
+  const mobileThemeBtn = document.getElementById('mobile-theme-toggle');
+  if (mobileThemeBtn) {
+    mobileThemeBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+  }
+
+  // Wire mobile lang toggle
+  const mobileLangBtn = document.getElementById('mobile-lang-toggle');
+  if (mobileLangBtn) {
+    let currentLang = localStorage.getItem('lang') || 'en';
+    mobileLangBtn.textContent = currentLang === 'en' ? 'EN' : '中';
+
+    mobileLangBtn.addEventListener('click', () => {
+      currentLang = currentLang === 'en' ? 'cn' : 'en';
+      localStorage.setItem('lang', currentLang);
+      applyLang(currentLang);
+      mobileLangBtn.textContent = currentLang === 'en' ? 'EN' : '中';
+    });
+  }
+
+  // Close menu on scroll
+  lenis.on('scroll', () => {
+    if (menu.classList.contains('open')) closeMenu();
   });
 }
 
@@ -784,6 +897,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   ScrollTrigger.refresh();
 
   initThemeLang();
+  initMobileHeader();
 });
 
 // ══════════════════════════════════════════════════════════════
@@ -824,8 +938,21 @@ function applyLang(lang) {
   const langBtn = document.getElementById('lang-toggle');
   if (langBtn) langBtn.textContent = lang === 'en' ? 'EN' : '中';
 
+  // Sync mobile lang button
+  const mobileLangBtn = document.getElementById('mobile-lang-toggle');
+  if (mobileLangBtn) mobileLangBtn.textContent = lang === 'en' ? 'EN' : '中';
+
   // Update data-lang attribute for CSS hooks if needed
   document.documentElement.setAttribute('data-lang', lang);
+
+  // Update mobile section name and menu option labels
+  if (mobileSectionName && lastSection >= 0) {
+    mobileSectionName.textContent = sectionNames[lang]?.[lastSection] || sectionNames.en[lastSection];
+  }
+  const menuLabels = sectionNames[lang] || sectionNames.en;
+  mobileMenuOptions.forEach((opt, i) => {
+    if (menuLabels[i]) opt.textContent = menuLabels[i];
+  });
 
   // Section labels
   const labels = {

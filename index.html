@@ -24,7 +24,29 @@
         </g>
       </svg>
     </a>
+    <button class="mobile-section-trigger" id="mobile-section-trigger" aria-label="Switch section" aria-expanded="false">
+      <span class="mobile-section-name" id="mobile-section-name">Work</span>
+      <svg class="mobile-section-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="mobile-header-controls">
+      <button class="ctrl-btn" id="mobile-lang-toggle" aria-label="Toggle language">EN</button>
+      <span class="ctrl-divider">/</span>
+      <button class="ctrl-btn" id="mobile-theme-toggle" aria-label="Toggle dark mode">◐</button>
+    </div>
+    <div class="mobile-progress-bar" aria-hidden="true">
+      <div class="mobile-progress-fill" id="mobile-progress-fill"></div>
+    </div>
   </header>
+
+  <!-- Section dropdown menu -->
+  <div class="mobile-section-menu" id="mobile-section-menu" role="menu" aria-hidden="true">
+    <button class="mobile-section-option active" data-section="0" role="menuitem">Work</button>
+    <button class="mobile-section-option" data-section="1" role="menuitem">AI Lab</button>
+    <button class="mobile-section-option" data-section="2" role="menuitem">About</button>
+  </div>
+  <div class="mobile-section-backdrop" id="mobile-section-backdrop" aria-hidden="true"></div>
 
   <!-- Custom cursor: X → crosshair -->
   <div class="cursor" aria-hidden="true">
