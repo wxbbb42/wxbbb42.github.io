@@ -530,7 +530,7 @@ body.cursor-active .cursor-center {
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
   font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -552,7 +552,8 @@ body.cursor-active .cursor-center {
 }
 
 .ctrl-btn:hover,
-.ctrl-btn.active {
+.ctrl-btn.active,
+.ctrl-btn.magnet-hover {
   color: var(--ink);
 }
 

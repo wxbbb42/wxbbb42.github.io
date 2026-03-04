@@ -442,9 +442,9 @@ let cursorPosX = -100, cursorPosY = -100, cursorInited = false;
 
 // Magnetic snap targets: { selector, label, radius }
 const magnetTargets = [
-  { selector: '.nav-logo svg', label: 'Top',    radius: 60 },
-  { selector: '#lang-toggle',  label: 'Lang',   radius: 45 },
-  { selector: '#theme-toggle', label: 'Theme',  radius: 45 },
+  { selector: '.nav-logo svg', label: 'Top',    radius: 50 },
+  { selector: '#lang-toggle',  label: 'Lang',   radius: 28 },
+  { selector: '#theme-toggle', label: 'Theme',  radius: 28 },
 ];
 let activeMagnet = null; // currently snapped target element or null
 
@@ -455,6 +455,7 @@ gsap.ticker.add(() => {
   let lerpSpeed = 0.35;
   let snapped = null;
 
+  let bestDist = Infinity;
   for (const { selector, label, radius } of magnetTargets) {
     const el = document.querySelector(selector);
     if (!el) continue;
@@ -465,20 +466,24 @@ gsap.ticker.add(() => {
     const dy = rawMouseY - cy;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < radius) {
+    if (dist < radius && dist < bestDist) {
+      bestDist = dist;
       tx = cx;
       ty = cy;
       lerpSpeed = 0.12;
       snapped = { el, label };
-      break; // closest match wins
     }
   }
 
   if (snapped && activeMagnet !== snapped.el) {
+    // Remove hover from previous target
+    if (activeMagnet) activeMagnet.classList.remove('magnet-hover');
     activeMagnet = snapped.el;
+    activeMagnet.classList.add('magnet-hover');
     document.body.classList.add('cursor-hover');
     cursorLabel.textContent = snapped.label;
   } else if (!snapped && activeMagnet) {
+    activeMagnet.classList.remove('magnet-hover');
     activeMagnet = null;
     document.body.classList.remove('cursor-hover');
     cursorLabel.textContent = '';
@@ -488,6 +493,23 @@ gsap.ticker.add(() => {
   cursorPosY += (ty - cursorPosY) * lerpSpeed;
   gsap.set(cursorEl, { x: cursorPosX, y: cursorPosY });
 });
+
+// Redirect clicks: when snapped to a magnet target, click that element instead
+let magnetClickInProgress = false;
+window.addEventListener('click', e => {
+  if (magnetClickInProgress) return; // avoid infinite loop from .click()
+  if (activeMagnet) {
+    const clickTarget = activeMagnet.closest('a, button') || activeMagnet;
+    // Only redirect if the real click target is NOT the magnet target
+    if (!clickTarget.contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+      magnetClickInProgress = true;
+      clickTarget.click();
+      magnetClickInProgress = false;
+    }
+  }
+}, true);
 
 function bindCursorHovers() {
   const labelMap = [
