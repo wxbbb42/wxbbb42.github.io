@@ -440,37 +440,48 @@ window.addEventListener('mousemove', e => {
 // Smoothed cursor position for magnetic lerp
 let cursorPosX = -100, cursorPosY = -100, cursorInited = false;
 
+// Magnetic snap targets: { selector, label, radius }
+const magnetTargets = [
+  { selector: '.nav-logo svg', label: 'Top',    radius: 60 },
+  { selector: '#lang-toggle',  label: 'Lang',   radius: 45 },
+  { selector: '#theme-toggle', label: 'Theme',  radius: 45 },
+];
+let activeMagnet = null; // currently snapped target element or null
+
 gsap.ticker.add(() => {
   if (!cursorInited && rawMouseX > -50) { cursorPosX = rawMouseX; cursorPosY = rawMouseY; cursorInited = true; }
 
   let tx = rawMouseX, ty = rawMouseY;
-  let lerpSpeed = 0.35; // default: fast follow
-  const logoSvg = document.querySelector('.nav-logo svg');
+  let lerpSpeed = 0.35;
+  let snapped = null;
 
-  if (logoSvg) {
-    const r = logoSvg.getBoundingClientRect();
-    const logoCX = r.left + r.width / 2;
-    const logoCY = r.top + r.height / 2;
-    const dx = rawMouseX - logoCX;
-    const dy = rawMouseY - logoCY;
+  for (const { selector, label, radius } of magnetTargets) {
+    const el = document.querySelector(selector);
+    if (!el) continue;
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    const dx = rawMouseX - cx;
+    const dy = rawMouseY - cy;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    const radius = 60;
 
     if (dist < radius) {
-      // Snap directly to logo center; lerp provides the smooth animation
-      tx = logoCX;
-      ty = logoCY;
-      lerpSpeed = 0.12; // slower lerp = smooth magnetic glide
-      if (!logoMagnet) {
-        logoMagnet = true;
-        document.body.classList.add('cursor-hover');
-        cursorLabel.textContent = 'Top';
-      }
-    } else if (logoMagnet) {
-      logoMagnet = false;
-      document.body.classList.remove('cursor-hover');
-      cursorLabel.textContent = '';
+      tx = cx;
+      ty = cy;
+      lerpSpeed = 0.12;
+      snapped = { el, label };
+      break; // closest match wins
     }
+  }
+
+  if (snapped && activeMagnet !== snapped.el) {
+    activeMagnet = snapped.el;
+    document.body.classList.add('cursor-hover');
+    cursorLabel.textContent = snapped.label;
+  } else if (!snapped && activeMagnet) {
+    activeMagnet = null;
+    document.body.classList.remove('cursor-hover');
+    cursorLabel.textContent = '';
   }
 
   cursorPosX += (tx - cursorPosX) * lerpSpeed;
