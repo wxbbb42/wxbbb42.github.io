@@ -5,6 +5,7 @@
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile = window.matchMedia('(max-width: 960px)').matches;
 
 // ══════════════════════════════════════════════════════════════
 // GEOMETRIC BACKGROUND CANVAS
@@ -154,6 +155,7 @@ function drawCoordinates(alpha) {
     } else if (isMajorSub) {
       line(gx, -pad, gx, bgH + pad, alpha * 0.22 * fadeA, 0.5);
     } else {
+      if (isMobile) continue; // skip fine subdivision lines on mobile
       line(gx, -pad, gx, bgH + pad, alpha * 0.14 * fadeA, 0.35);
     }
   }
@@ -174,6 +176,7 @@ function drawCoordinates(alpha) {
       const baseA = alpha * 0.22;
       gradientLineH(gy, baseA * 0.08, baseA, 0.5);
     } else {
+      if (isMobile) continue; // skip fine subdivision lines on mobile
       const baseA = alpha * 0.14;
       gradientLineH(gy, baseA * 0.08, baseA, 0.35);
     }
@@ -421,6 +424,7 @@ window.addEventListener('mousemove', e => {
 });
 window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
 window.addEventListener('resize', () => { resizeCanvas(); updateCardEdges(); });
+window.matchMedia('(max-width: 960px)').addEventListener('change', () => ScrollTrigger.refresh());
 
 // ══════════════════════════════════════════════════════════════
 // CURSOR
@@ -532,14 +536,22 @@ window.addEventListener('mouseup',   () => document.body.classList.remove('curso
 // ══════════════════════════════════════════════════════════════
 // LENIS
 // ══════════════════════════════════════════════════════════════
-const lenis = new Lenis({ duration: 1.4, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+const lenis = new Lenis({
+  duration: isMobile ? 1.0 : 1.4,
+  easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+});
 gsap.ticker.add(time => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 lenis.on('scroll', ScrollTrigger.update);
 
+// Logo click → smooth scroll to top (desktop + mobile)
 document.querySelector('.nav-logo')?.addEventListener('click', e => {
   e.preventDefault();
   lenis.scrollTo(0, { duration: 1.6 });
+});
+document.querySelector('.mobile-header-logo')?.addEventListener('click', e => {
+  e.preventDefault();
+  lenis.scrollTo(0, { duration: 1.2 });
 });
 
 // ══════════════════════════════════════════════════════════════
@@ -566,12 +578,14 @@ function setActiveNav(i) {
   });
 });
 
-document.addEventListener('mousemove', e => {
-  const nx = (e.clientX / window.innerWidth  - 0.5);
-  const ny = (e.clientY / window.innerHeight - 0.5);
-  document.querySelectorAll('.scene.active .scene-content').forEach(el =>
-    gsap.to(el, { x: nx * 8, y: ny * 5, duration: 1.2, ease: 'power2.out' }));
-});
+if (!isMobile) {
+  document.addEventListener('mousemove', e => {
+    const nx = (e.clientX / window.innerWidth  - 0.5);
+    const ny = (e.clientY / window.innerHeight - 0.5);
+    document.querySelectorAll('.scene.active .scene-content').forEach(el =>
+      gsap.to(el, { x: nx * 8, y: ny * 5, duration: 1.2, ease: 'power2.out' }));
+  });
+}
 
 // ══════════════════════════════════════════════════════════════
 // SCENE ANIMATIONS
