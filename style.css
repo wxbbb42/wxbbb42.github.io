@@ -1,3 +1,12 @@
+/* ─── Self-hosted fonts ───────────────────────────────────── */
+@font-face {
+  font-family: 'Smiley Sans';
+  src: url('fonts/SmileySans-Oblique.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─── Reset ───────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -814,6 +823,11 @@ body { transition: background 0.4s, color 0.4s; }
 [data-lang="cn"] .scene-title,
 [data-lang="cn"] .about-name,
 [data-lang="cn"] .card-title {
-  font-family: 'Smiley Sans', 'LXGW WenKai Screen', system-ui, sans-serif;
+  font-family: 'Smiley Sans', 'LXGW WenKai Screen', system-ui, sans-serif !important;
+  font-style: normal;
+}
+[data-lang="cn"] .scene-title em,
+[data-lang="cn"] .about-name em {
+  font-family: 'Smiley Sans', 'LXGW WenKai Screen', system-ui, sans-serif !important;
   font-style: normal;
 }
