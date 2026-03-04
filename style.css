@@ -798,3 +798,22 @@ body.cursor-active .cursor-center {
 /* dark mode — canvas bg transition */
 body { transition: background 0.4s, color 0.4s; }
 #bg-canvas { transition: opacity 0.4s; }
+
+/* ─── Chinese language font overrides ────────────────────── */
+[data-lang="cn"] body,
+[data-lang="cn"] .card-desc,
+[data-lang="cn"] .about-bio,
+[data-lang="cn"] .about-loc,
+[data-lang="cn"] .about-tagline,
+[data-lang="cn"] .scene-eyebrow,
+[data-lang="cn"] .scene-note,
+[data-lang="cn"] .footer {
+  font-family: 'Noto Sans SC', 'Inter', system-ui, sans-serif;
+}
+
+[data-lang="cn"] .scene-title,
+[data-lang="cn"] .about-name,
+[data-lang="cn"] .card-title {
+  font-family: 'Smiley Sans', 'Noto Sans SC', system-ui, sans-serif;
+  font-style: normal;
+}
