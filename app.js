@@ -1022,21 +1022,23 @@ function applyLang(lang) {
   if (taglineEl && taglineEl.dataset.cn) taglineEl.textContent = lang === 'cn' ? taglineEl.dataset.cn : taglineEl.dataset.en;
 }
 
-// -- CLAWD WORLD MODAL --
+// -- CLAWD WORLD FULLSCREEN --
 function openWorldModal() {
-  const modal = document.getElementById('world-modal');
+  const overlay = document.getElementById('world-overlay');
   const iframe = document.getElementById('world-iframe');
   if (!iframe.src || iframe.src === window.location.href) iframe.src = iframe.dataset.src;
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden', 'false');
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
 }
 (function() {
-  const btn = document.getElementById('world-entry-btn');
-  const modal = document.getElementById('world-modal');
-  const closeBtn = document.getElementById('world-modal-close');
-  if (btn) btn.addEventListener('click', openWorldModal);
-  function closeModal() { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
-  closeBtn.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  const overlay = document.getElementById('world-overlay');
+  const exitBtn = document.getElementById('world-overlay-exit');
+  function closeWorld() {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  if (exitBtn) exitBtn.addEventListener('click', closeWorld);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWorld(); });
 })();
