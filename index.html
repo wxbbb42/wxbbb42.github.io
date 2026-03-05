@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -7,7 +7,7 @@
   <meta name="description" content="Designer who builds. Senior Product Designer at Microsoft." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -15,7 +15,7 @@
 
   <!-- MOBILE HEADER BAR -->
   <header class="mobile-header">
-    <a class="mobile-header-logo" href="#" aria-label="Xiaoben Wang — scroll to top">
+    <a class="mobile-header-logo" href="#" aria-label="Xiaoben Wang â€” scroll to top">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
         <g transform="rotate(45 14 14)" stroke="currentColor" stroke-width="1.2">
           <line x1="14" y1="2" x2="14" y2="10"/>
@@ -34,7 +34,7 @@
     <div class="mobile-header-controls">
       <button class="ctrl-btn" id="mobile-lang-toggle" aria-label="Toggle language">EN</button>
       <span class="ctrl-divider">/</span>
-      <button class="ctrl-btn" id="mobile-theme-toggle" aria-label="Toggle dark mode">◐</button>
+      <button class="ctrl-btn" id="mobile-theme-toggle" aria-label="Toggle dark mode">â—</button>
     </div>
     <div class="mobile-progress-bar" aria-hidden="true">
       <div class="mobile-progress-fill" id="mobile-progress-fill"></div>
@@ -49,7 +49,7 @@
   </div>
   <div class="mobile-section-backdrop" id="mobile-section-backdrop" aria-hidden="true"></div>
 
-  <!-- Custom cursor: X → crosshair -->
+  <!-- Custom cursor: X â†’ crosshair -->
   <div class="cursor" aria-hidden="true">
     <div class="cursor-inner">
       <div class="cursor-center"></div>
@@ -109,7 +109,7 @@
   <!-- SCROLL TRACK -->
   <div class="scroll-track">
 
-    <!-- ── SECTION 0: WORK ── -->
+    <!-- â”€â”€ SECTION 0: WORK â”€â”€ -->
     <div class="scene" id="scene-0">
       <div class="scene-sticky">
         <div class="scene-content">
@@ -122,7 +122,7 @@
       </div>
     </div>
 
-    <!-- ── SECTION 1: AI LAB ── -->
+    <!-- â”€â”€ SECTION 1: AI LAB â”€â”€ -->
     <div class="scene" id="scene-1">
       <div class="scene-sticky">
         <div class="scene-content">
@@ -136,7 +136,7 @@
       </div>
     </div>
 
-    <!-- ── SECTION 2: ABOUT ── -->
+    <!-- â”€â”€ SECTION 2: ABOUT â”€â”€ -->
     <div class="scene" id="scene-2">
       <div class="scene-sticky">
         <div class="scene-content about-layout">
@@ -155,10 +155,29 @@
     </div>
 
   </div><!-- /scroll-track -->
+  <!-- CLAWD WORLD ENTRY -->
+  <div class="world-entry-strip">
+    <button class="world-entry-btn" id="world-entry-btn" aria-label="Enter CLAWD WORLD">
+      <span class="world-entry-icon">🎮</span>
+      <span class="world-entry-text">
+        <span class="world-entry-title">CLAWD WORLD</span>
+        <span class="world-entry-sub">Meet the AI agents who maintain this site</span>
+      </span>
+      <span class="world-entry-arrow">→</span>
+    </button>
+  </div>
+
+  <!-- CLAWD WORLD MODAL -->
+  <div id="world-modal" class="world-modal" aria-hidden="true">
+    <div class="world-modal-inner">
+      <button class="world-modal-close" id="world-modal-close" aria-label="Close">✕</button>
+      <iframe id="world-iframe" src="" data-src="./world/index.html" title="CLAWD WORLD" allow="autoplay" loading="lazy"></iframe>
+    </div>
+  </div>
 
   <!-- FOOTER STRIP -->
   <footer class="footer">
-    <span>© 2025 Xiaoben Wang</span>
+    <span>Â© 2025 Xiaoben Wang</span>
     <span>Maintained by <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">an AI agent</a></span>
   </footer>
 
@@ -166,7 +185,7 @@
   <div class="site-controls">
     <button class="ctrl-btn" id="lang-toggle" aria-label="Toggle language">EN</button>
     <span class="ctrl-divider">/</span>
-    <button class="ctrl-btn" id="theme-toggle" aria-label="Toggle dark mode">◐</button>
+    <button class="ctrl-btn" id="theme-toggle" aria-label="Toggle dark mode">â—</button>
   </div>
 
   <!-- LIBRARIES -->
@@ -177,3 +196,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+

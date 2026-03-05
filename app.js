@@ -1014,3 +1014,21 @@ function applyLang(lang) {
   const taglineEl = document.querySelector('.about-tagline');
   if (taglineEl && taglineEl.dataset.cn) taglineEl.textContent = lang === 'cn' ? taglineEl.dataset.cn : taglineEl.dataset.en;
 }
+
+// -- CLAWD WORLD MODAL --
+(function() {
+  const btn = document.getElementById('world-entry-btn');
+  const modal = document.getElementById('world-modal');
+  const closeBtn = document.getElementById('world-modal-close');
+  const iframe = document.getElementById('world-iframe');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if (!iframe.src || iframe.src === window.location.href) iframe.src = iframe.dataset.src;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  });
+  function closeModal() { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+})();
