@@ -838,6 +838,7 @@ body { transition: background 0.4s, color 0.4s; }
   justify-content: center;
   padding: 48px 24px;
   background: var(--bg);
+  margin-left: var(--nav-w);
 }
 .world-entry-btn {
   display: flex;
