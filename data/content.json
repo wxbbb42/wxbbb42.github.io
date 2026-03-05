@@ -72,13 +72,14 @@
   "ailab": [
     {
       "id": "ai-1",
-      "title": "OpenClaw Personal OS",
-      "title_cn": "OpenClaw 个人操作系统",
-      "description": "An AI agent system that manages my digital life — messages, calendar, research, and yes, this website.",
-      "description_cn": "一个管理我数字生活的 AI agent 系统——消息、日历、研究，还有这个网站。",
-      "tags": ["Agent", "Automation"],
+      "title": "The Matrix",
+      "title_cn": "矩阵世界",
+      "description": "A living habitat for the AI agents that run my digital life. Enter to meet them.",
+      "description_cn": "运行我数字生活的 AI agent 们的栖息地。进入，与它们相遇。",
+      "tags": ["Agent", "Game"],
       "status": "live",
-      "year": "2025"
+      "year": "2025",
+      "world": true
     },
     {
       "id": "ai-2",

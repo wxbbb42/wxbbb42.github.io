@@ -837,13 +837,20 @@ function renderWork(projects) {
 function renderLab(items) {
   document.getElementById('lab-grid').innerHTML = items.map(item => `
     <div class="card-slot">
-      <div class="lab-card" data-status="${escAttr(item.status)}">
+      <div class="lab-card${item.world ? ' lab-card--world' : ''}" data-status="${escAttr(item.status)}"${item.world ? ' data-world="true" role="button" tabindex="0" aria-label="Enter CLAWD WORLD"' : ''}>
+        ${item.world ? '<div class="world-card-badge">&#9698; ENTER</div>' : ''}
         <div class="lab-status"><span class="status-dot"></span>${esc(item.status)}</div>
         <div class="card-title" data-title-en="${escAttr(item.title)}" data-title-cn="${escAttr(item.title_cn||item.title)}">${esc(item.title)}</div>
         <div class="card-desc"  data-desc-en="${escAttr(item.description)}" data-desc-cn="${escAttr(item.description_cn||item.description)}">${esc(item.description)}</div>
         <div class="card-tags">${item.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}<span class="tag">${esc(item.year)}</span></div>
       </div>
     </div>`).join('');
+
+  // Wire world card click → open modal
+  document.querySelectorAll('.lab-card[data-world]').forEach(card => {
+    card.addEventListener('click', openWorldModal);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openWorldModal(); });
+  });
 }
 
 function renderAbout(meta) {
@@ -1016,17 +1023,18 @@ function applyLang(lang) {
 }
 
 // -- CLAWD WORLD MODAL --
+function openWorldModal() {
+  const modal = document.getElementById('world-modal');
+  const iframe = document.getElementById('world-iframe');
+  if (!iframe.src || iframe.src === window.location.href) iframe.src = iframe.dataset.src;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
 (function() {
   const btn = document.getElementById('world-entry-btn');
   const modal = document.getElementById('world-modal');
   const closeBtn = document.getElementById('world-modal-close');
-  const iframe = document.getElementById('world-iframe');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    if (!iframe.src || iframe.src === window.location.href) iframe.src = iframe.dataset.src;
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-  });
+  if (btn) btn.addEventListener('click', openWorldModal);
   function closeModal() { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
   closeBtn.addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
