@@ -1,7 +1,8 @@
 // main.js
 const config = {
   type: Phaser.AUTO, width: 640, height: 576,
-  parent: 'game-container', pixelArt: true, backgroundColor: '#7ec850',
+  parent: 'game-container', pixelArt: true, backgroundColor: '#90d860',
+  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
   scene: [TownScene, LobbyScene, OfficeScene]
 };

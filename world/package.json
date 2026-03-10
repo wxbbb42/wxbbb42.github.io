@@ -1,0 +1,18 @@
+{
+  "name": "clawd-world",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.170.0",
+    "@dimforge/rapier3d-compat": "^0.14.0",
+    "gsap": "^3.12.5"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
