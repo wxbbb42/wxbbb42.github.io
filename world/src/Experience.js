@@ -25,7 +25,7 @@ export default class Experience {
     // Three.js scene
     this.scene = new THREE.Scene()
     this.scene.background = new THREE.Color(COLORS.sky)
-    this.scene.fog = new THREE.Fog(COLORS.fog, 12, 35)
+    this.scene.fog = new THREE.Fog(COLORS.fog, 20, 60)
 
     // Core systems
     this.ticker = new Ticker()
@@ -106,7 +106,7 @@ export default class Experience {
 
   _setupStars() {
     // Distant star field
-    const starCount = 2000
+    const starCount = 3000
     const positions = new Float32Array(starCount * 3)
     for (let i = 0; i < starCount; i++) {
       const theta = Math.random() * Math.PI * 2
@@ -119,11 +119,11 @@ export default class Experience {
     const starGeo = new THREE.BufferGeometry()
     starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     const starMat = new THREE.PointsMaterial({
-      color: 0xffeedd,
-      size: 0.25,
+      color: 0xffffff,
+      size: 0.2,
       sizeAttenuation: true,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.9,
       fog: false, // stars must NOT be affected by scene fog
     })
     this.stars = new THREE.Points(starGeo, starMat)

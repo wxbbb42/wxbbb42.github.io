@@ -8,8 +8,8 @@ export const COLORS = {
   marsSurface:     0xC4835A,
   marsSurfaceDark: 0x9B6840,
   dust:            0xB07850,
-  sky:             0xD4956B,
-  fog:             0xC88860,
+  sky:             0x000008, // deep space black
+  fog:             0x000008, // fade to space at horizon
   rock:            0x6B4226,
   rockLight:       0xCC7744,
   crystal:         0x88FFCC,
