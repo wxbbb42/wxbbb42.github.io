@@ -44,6 +44,10 @@ export default class Experience {
     // Lighting
     this._setupLighting()
 
+    // Stars & atmosphere (can be called immediately — no assets needed)
+    this._setupStars()
+    this._setupDustParticles()
+
     // Physics and world will be initialized async
     this.physics = null
     this.world = null
@@ -93,10 +97,83 @@ export default class Experience {
       if (this.physics) this.physics.update(delta)
       if (this.world) this.world.update(delta)
       if (this.editor) this.editor.update()
+      this.updateDust(delta)
       this.camera.update(delta)
       this.renderer.render()
     })
     this.ticker.start()
+  }
+
+  _setupStars() {
+    // Distant star field
+    const starCount = 2000
+    const positions = new Float32Array(starCount * 3)
+    for (let i = 0; i < starCount; i++) {
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.acos(2 * Math.random() - 1)
+      const r = 120 + Math.random() * 30
+      positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
+      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
+      positions[i * 3 + 2] = r * Math.cos(phi)
+    }
+    const starGeo = new THREE.BufferGeometry()
+    starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    const starMat = new THREE.PointsMaterial({
+      color: 0xffeedd,
+      size: 0.25,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.85,
+    })
+    this.stars = new THREE.Points(starGeo, starMat)
+    this.scene.add(this.stars)
+  }
+
+  _setupDustParticles() {
+    // Mars atmospheric dust — subtle floating particles
+    const count = 300
+    const positions = new Float32Array(count * 3)
+    const speeds = new Float32Array(count)
+    for (let i = 0; i < count; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * 40
+      positions[i * 3 + 1] = Math.random() * 4
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 40
+      speeds[i] = 0.002 + Math.random() * 0.004
+    }
+    const dustGeo = new THREE.BufferGeometry()
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    this._dustPositions = positions
+    this._dustSpeeds = speeds
+    this._dustCount = count
+
+    const dustMat = new THREE.PointsMaterial({
+      color: 0xC4835A,
+      size: 0.08,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.4,
+    })
+    this.dustParticles = new THREE.Points(dustGeo, dustMat)
+    this.scene.add(this.dustParticles)
+  }
+
+  updateDust(delta) {
+    if (!this.dustParticles) return
+    const pos = this._dustPositions
+    const speeds = this._dustSpeeds
+    const count = this._dustCount
+    for (let i = 0; i < count; i++) {
+      // Drift upward + slight x drift, wrap when too high
+      pos[i * 3]     += Math.sin(i * 0.3 + this._dustTime) * 0.003
+      pos[i * 3 + 1] += speeds[i]
+      if (pos[i * 3 + 1] > 5) {
+        pos[i * 3 + 1] = 0
+        pos[i * 3]     = (Math.random() - 0.5) * 40
+        pos[i * 3 + 2] = (Math.random() - 0.5) * 40
+      }
+    }
+    this._dustTime = (this._dustTime || 0) + delta
+    this.dustParticles.geometry.attributes.position.needsUpdate = true
   }
 
   _setupLighting() {

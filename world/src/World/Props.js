@@ -22,11 +22,27 @@ export default class Props {
     if (r.items.machineWireless) {
       this._place(r.items.machineWireless, -5, 0, 9, 2.0)
     }
+
+    // Rails via InstancedMesh — one draw call for 4 rail segments
     if (r.items.rail) {
-      for (let x = -11; x <= -5; x += 2) {
-        this._place(r.items.rail, x, 0, 6, 1.8)
+      let railMesh = null
+      r.items.rail.scene.traverse(c => { if (c.isMesh && !railMesh) railMesh = c })
+      if (railMesh) {
+        const railPositions = [-11, -9, -7, -5].map(x => ({ x, y: 0, z: 6, s: 1.8 }))
+        const instanced = new THREE.InstancedMesh(railMesh.geometry, railMesh.material, railPositions.length)
+        instanced.castShadow = true
+        instanced.receiveShadow = true
+        const dummy = new THREE.Object3D()
+        railPositions.forEach(({ x, y, z, s }, i) => {
+          dummy.position.set(x, y, z)
+          dummy.scale.setScalar(s)
+          dummy.updateMatrix()
+          instanced.setMatrixAt(i, dummy.matrix)
+        })
+        instanced.instanceMatrix.needsUpdate = true
+        this.group.add(instanced)
       }
-      this.experience.physics.addBoxCollider(-9, 0.4, 8, 5, 0.4, 0.2)
+      this.experience.physics.addBoxCollider(-9, 0.4, 6, 5, 0.4, 0.2)
     }
   }
 

@@ -39,7 +39,7 @@ export default class Ground {
 
   _createMarsSurface() {
     const size = TOWN.size + 10
-    const segments = 128
+    const segments = 64
 
     const geo = new THREE.PlaneGeometry(size, size, segments, segments)
     geo.rotateX(-Math.PI / 2)

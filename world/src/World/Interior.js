@@ -84,6 +84,10 @@ export default class Interior {
   _createDesks() {
     const r = this.experience.resources
     const deskPositions = [-5, 0, 5]
+    const agentColors = [0xff4444, 0xf0a000, 0x4488ff] // Claw, Coin, Neo
+
+    this.deskLights = []
+    this.monitorMeshes = []
 
     for (let i = 0; i < 3; i++) {
       const x = deskPositions[i]
@@ -113,17 +117,25 @@ export default class Interior {
         this.group.add(chair)
       }
 
-      // Screen glow monitor (procedural, for agent status glow effect)
+      // Screen glow monitor — emissive intensity driven by agent status
+      const col = new THREE.Color(agentColors[i])
       const screenMat = new THREE.MeshStandardMaterial({
-        color: 0x3344aa,
+        color: col,
         flatShading: true,
-        emissive: 0x1122aa,
+        emissive: col,
         emissiveIntensity: 0.3,
       })
       const monitor = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.05), screenMat)
       monitor.position.set(x, 1.6, -4.5)
       monitor.castShadow = true
       this.group.add(monitor)
+      this.monitorMeshes.push(monitor)
+
+      // Per-desk agent-colored point light (replaces single center lab light)
+      const deskLight = new THREE.PointLight(agentColors[i], 0.4, 8)
+      deskLight.position.set(x, 3.0, -4)
+      this.group.add(deskLight)
+      this.deskLights.push(deskLight)
     }
   }
 
@@ -257,24 +269,39 @@ export default class Interior {
   }
 
   updateAgentGlow(id, status) {
+    const agentIndex = AGENTS.findIndex(a => a.id === id)
     const glow = this.agentGlows[id]
     const light = this.agentLights[id]
     if (!glow || !light) return
     const config = STATUS_COLORS[status] || STATUS_COLORS.idle
-    glow.material.color.setHex(config.hex)
-    glow.material.opacity = status === 'idle' ? 0.15 : 0.4
-    light.color.setHex(config.hex)
+    const col = new THREE.Color(config.hex)
+    glow.material.color.copy(col)
+    glow.material.opacity = status === 'idle' ? 0.15 : 0.5
+    light.color.copy(col)
     light.intensity = config.intensity
+
+    // Update desk light + monitor emissive
+    if (agentIndex >= 0 && this.deskLights && this.monitorMeshes) {
+      const deskLight = this.deskLights[agentIndex]
+      const monitor = this.monitorMeshes[agentIndex]
+      if (deskLight) {
+        deskLight.color.copy(col)
+        deskLight.intensity = status === 'idle' ? 0.4 : 1.4
+      }
+      if (monitor) {
+        monitor.material.emissive.copy(col)
+        monitor.material.emissiveIntensity = status === 'idle' ? 0.3 : 1.5
+      }
+    }
   }
 
   getNearbyAgent(playerPos) {
+    const worldPos = new THREE.Vector3()
     for (const agent of this.agentNPCs) {
-      const worldX = agent.mesh.position.x + TOWN.interiorOffset.x
-      const worldY = agent.mesh.position.y + TOWN.interiorOffset.y
-      const worldZ = agent.mesh.position.z + TOWN.interiorOffset.z
-      const dx = playerPos.x - worldX
-      const dz = playerPos.z - worldZ
-      const dy = playerPos.y - worldY
+      agent.mesh.getWorldPosition(worldPos)
+      const dx = playerPos.x - worldPos.x
+      const dz = playerPos.z - worldPos.z
+      const dy = playerPos.y - worldPos.y
       if (Math.abs(dx) < agent.radius && Math.abs(dz) < agent.radius && Math.abs(dy) < 3) return agent
     }
     return null

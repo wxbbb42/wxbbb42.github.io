@@ -32,7 +32,7 @@ export default class World {
 
     // Invisible boundary — ring of colliders following the irregular ground edge
     const groundHalf = (TOWN.size + 10) / 2
-    const wallSegments = 96
+    const wallSegments = 32 // reduced from 96 — physics performance
     const wallH = 3
     for (let i = 0; i < wallSegments; i++) {
       const angle = (i / wallSegments) * Math.PI * 2
