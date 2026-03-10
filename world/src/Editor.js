@@ -218,6 +218,34 @@ export default class Editor {
     console.log('[Editor] Deleted model')
   }
 
+  recenterSelectedPivot() {
+    if (!this.selected) return false
+
+    const group = this.selected
+    const worldBoxBefore = new THREE.Box3().setFromObject(group)
+    if (worldBoxBefore.isEmpty()) return false
+
+    const worldCenterBefore = worldBoxBefore.getCenter(new THREE.Vector3())
+    const localCenter = group.worldToLocal(worldCenterBefore.clone())
+
+    if (localCenter.lengthSq() < 1e-10) return false
+
+    // Move children so the group's origin becomes the visual center.
+    for (const child of group.children) {
+      child.position.sub(localCenter)
+    }
+
+    // Compensate group translation so the model stays in place in world space.
+    const worldBoxAfter = new THREE.Box3().setFromObject(group)
+    const worldCenterAfter = worldBoxAfter.getCenter(new THREE.Vector3())
+    group.position.add(worldCenterBefore.sub(worldCenterAfter))
+
+    this.transformControls.attach(group)
+    this._updateInfoPanel()
+    console.log('[Editor] Recentered selected model pivot')
+    return true
+  }
+
   // ─── Place a model ────────────────────────────────────────────────
 
   placeModel(name, pos, rot, scl) {
@@ -234,6 +262,13 @@ export default class Editor {
         c.receiveShadow = true
       }
     })
+
+    // Normalize authoring pivots so the editor gizmo sits at model center.
+    const box = new THREE.Box3().setFromObject(clone)
+    if (!box.isEmpty()) {
+      const center = box.getCenter(new THREE.Vector3())
+      clone.position.sub(center)
+    }
 
     const group = new THREE.Group()
     group.userData._editorModel = true
@@ -261,7 +296,7 @@ export default class Editor {
         name: g.userData.modelName,
         position: [+p.x.toFixed(3), +p.y.toFixed(3), +p.z.toFixed(3)],
         rotation: [+r.x.toFixed(4), +r.y.toFixed(4), +r.z.toFixed(4)],
-        scale:    [+s.x.toFixed(3), +s.y.toFixed(3), +s.z.toFixed(3)],
+        scale: [+s.x.toFixed(3), +s.y.toFixed(3), +s.z.toFixed(3)],
       })
     }
     const json = JSON.stringify(layout, null, 2)
@@ -381,6 +416,16 @@ export default class Editor {
     }
     btnRow.appendChild(clearBtn)
 
+    const recenterBtn = document.createElement('button')
+    recenterBtn.textContent = 'Recenter'
+    recenterBtn.style.cssText = btnStyle
+    recenterBtn.onclick = () => {
+      if (!this.recenterSelectedPivot()) {
+        console.log('[Editor] Select a model first to recenter its pivot')
+      }
+    }
+    btnRow.appendChild(recenterBtn)
+
     this.panel.appendChild(btnRow)
 
     // Hint
@@ -389,7 +434,7 @@ export default class Editor {
       padding: 4px 14px 8px; font-size: 10px; color: #666;
       border-bottom: 1px solid rgba(68,255,170,0.15); flex-shrink: 0;
     `
-    hint.textContent = 'W=move E=rot R=scale | Del=remove'
+    hint.textContent = 'W=move E=rot R=scale | Del=remove | Recenter=pivot'
     this.panel.appendChild(hint)
 
     // Model grid label
