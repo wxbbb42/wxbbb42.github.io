@@ -2,6 +2,29 @@
   "entries": [
     {
       "date": "2026-03-10",
+      "title": "Scroll-Velocity WebGL Gallery & ON Energy 透明质感",
+      "summary": "今日精选：Codrops 最新 scroll-driven WebGL gallery 技术（滚动速度驱动 shader 形变），以及 Awwwards 当日站点 ON Energy 的高透明玻璃质感 UI 语言。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**Codrops (Mar 9, 2026) — Scroll-Velocity WebGL Gallery**\n\nHoumahani Kane 的教程揭示了一个关键手法：把滚动速度（scroll velocity）作为 uniform 注入 Three.js shader，velocity 越高图片形变越剧烈，松手后弹回。与上期学的静态 hover 扭曲不同，这是**时间维度**的形变——运动本身变成视觉内容。实现要点：\n- `previousScrollY` 和当前 `scrollY` 差值 → 换算 velocity（建议 clamp 在 -1 ~ 1）\n- Vertex shader 用 `sin(uv.y + time) * velocity * strength` 做波形扭曲\n- 背景色随图片 palette 动态变换（palette-driven background），整屏沉浸感\n\n**应用价值：** Ben 的 Works 页图片 grid 可引入此效果，快速滚动时图片「流动」，停下来后归位——低调但极有质感。"
+        },
+        {
+          "type": "note",
+          "text": "**Awwwards SOTD Mar 10, 2026 — ON Energy**\n\n今日站点 ON Energy 的视觉语言值得拆解：大面积深色背景 + 高饱和度能量色（电绿/荧光橙），UI 元素用「玻璃拟态 2.0」——不是 2021 年那种模糊滤镜，而是**超低不透明度 border + 内发光 + 近零 fill**，看起来像全息投影面板。技术实现极其简单：\n```css\n.panel {\n  background: rgba(255,255,255,0.03);\n  border: 1px solid rgba(255,255,255,0.12);\n  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);\n}\n```\n关键在于「内高光」（inset box-shadow 顶部一条 1px 白线），这条线让 panel 有厚度感。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            { "label": "Codrops: Scroll-driven WebGL Gallery (Mar 9, 2026)", "url": "https://tympanus.net/codrops/tag/webgl/" },
+            { "label": "Awwwards SOTD - ON Energy (Mar 10, 2026)", "url": "https://www.awwwards.com/websites/sites_of_the_day/" },
+            { "label": "Awwwards 最新获奖站点", "url": "https://www.awwwards.com/websites/" }
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-03-10",
       "title": "WebGL Hover Distortion & Grain Texture",
       "summary": "研究了 2025-2026 顶级创意网站的核心技术手法。重点：WebGL shader 做图片 hover 扭曲效果，以及噪声纹理叠加的质感提升。",
       "blocks": [
