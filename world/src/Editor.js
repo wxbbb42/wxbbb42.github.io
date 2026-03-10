@@ -65,10 +65,6 @@ export default class Editor {
     this._saveTimeout = null
     this._cloudSynced = false
 
-    // Thumbnail renderer (off-screen)
-    this._thumbRenderer = null
-    this._thumbCache = new Map()
-
     // Build the UI panel (hidden by default)
     this._buildUI()
 
@@ -626,23 +622,21 @@ export default class Editor {
       return
     }
 
-    // Lazy-init the off-screen renderer
-    if (!this._thumbRenderer) {
-      this._thumbRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
-      this._thumbRenderer.setSize(100, 70)
-      this._thumbRenderer.setClearColor(0x111118, 1)
-    }
+    // Use the main renderer to avoid WebGL context limits
+    const renderer = this.experience.renderer.instance
+    const w = canvas.width
+    const h = canvas.height
 
+    // Build a mini scene
     const thumbScene = new THREE.Scene()
-    const thumbCam = new THREE.PerspectiveCamera(40, 100 / 70, 0.01, 100)
+    thumbScene.background = new THREE.Color(0x111118)
+    const thumbCam = new THREE.PerspectiveCamera(40, w / h, 0.01, 100)
 
-    // Lights
     thumbScene.add(new THREE.AmbientLight(0xffffff, 0.8))
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.2)
     dirLight.position.set(2, 3, 4)
     thumbScene.add(dirLight)
 
-    // Clone model
     const model = gltf.scene.clone()
     thumbScene.add(model)
 
@@ -652,17 +646,27 @@ export default class Editor {
     const size = box.getSize(new THREE.Vector3())
     const maxDim = Math.max(size.x, size.y, size.z)
     const dist = maxDim / (2 * Math.tan((thumbCam.fov * Math.PI) / 360)) * 1.4
-
     thumbCam.position.set(center.x + dist * 0.6, center.y + dist * 0.4, center.z + dist)
     thumbCam.lookAt(center)
 
-    this._thumbRenderer.render(thumbScene, thumbCam)
+    // Save renderer state, render thumbnail, restore
+    const prevRenderTarget = renderer.getRenderTarget()
+    const prevSize = renderer.getSize(new THREE.Vector2())
+    const prevScissorTest = renderer.getScissorTest()
 
-    // Copy to the button's canvas
+    renderer.setSize(w, h, false)
+    renderer.setScissorTest(false)
+    renderer.render(thumbScene, thumbCam)
+
+    // Copy pixels to the button's canvas
     const ctx = canvas.getContext('2d')
-    ctx.drawImage(this._thumbRenderer.domElement, 0, 0)
+    ctx.drawImage(renderer.domElement, 0, 0, w, h)
 
-    // Cleanup
+    // Restore renderer
+    renderer.setSize(prevSize.x, prevSize.y, false)
+    renderer.setScissorTest(prevScissorTest)
+    renderer.setRenderTarget(prevRenderTarget)
+
     thumbScene.remove(model)
   }
 
