@@ -10,24 +10,91 @@ const SUPABASE_KEY = 'sb_publishable_IrAlGjUbMTGRofgRVAJ4ZA_FdU5rjma'
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 const EDITOR_MODEL_NAMES = [
-  'hangarLargeA', 'hangarRoundGlass', 'hangarSmallA', 'structureDetailed',
-  'rocketBaseA', 'rocketFinsA', 'rocketFuelA', 'rocketSidesA', 'rocketTopA',
-  'rockLargeA', 'rockLargeB', 'rocksSmallA', 'rocksSmallB',
-  'rockCrystals', 'rockCrystalsLargeA', 'crater', 'craterLarge', 'meteorHalf',
-  'satelliteDishLarge', 'machineGenerator', 'machineWireless',
-  'barrel', 'barrels', 'rover', 'turretSingle', 'rail', 'bones',
-  'deskComputer', 'deskChairArms', 'astronaut', 'astronautPlayer',
+  // Characters
+  'alien', 'astronaut', 'astronautPlayer',
+  // Structures
+  'hangarLargeA', 'hangarLargeB', 'hangarRoundA', 'hangarRoundB', 'hangarRoundGlass',
+  'hangarSmallA', 'hangarSmallB',
+  'structure', 'structureClosed', 'structureDetailed', 'structureDiagonal',
+  'gateComplex', 'gateSimple', 'chimney', 'chimneyDetailed',
+  // Corridors
+  'corridor', 'corridorCorner', 'corridorCornerRound', 'corridorCornerRoundWindow',
+  'corridorCross', 'corridorDetailed', 'corridorEnd', 'corridorOpen',
+  'corridorRoof', 'corridorSplit', 'corridorWall', 'corridorWallCorner',
+  'corridorWindow', 'corridorWindowClosed',
+  // Rocket parts
+  'rocketBaseA', 'rocketBaseB', 'rocketFinsA', 'rocketFinsB',
+  'rocketFuelA', 'rocketFuelB', 'rocketSidesA', 'rocketSidesB',
+  'rocketTopA', 'rocketTopB',
+  // Crafts
+  'craftCargoA', 'craftCargoB', 'craftMiner', 'craftRacer',
+  'craftSpeederA', 'craftSpeederB', 'craftSpeederC', 'craftSpeederD',
+  // Rocks & terrain
+  'rock', 'rockLargeA', 'rockLargeB', 'rocksSmallA', 'rocksSmallB',
+  'rockCrystals', 'rockCrystalsLargeA', 'rockCrystalsLargeB',
+  'crater', 'craterLarge', 'meteor', 'meteorDetailed', 'meteorHalf', 'bones',
+  // Terrain pieces
+  'terrain', 'terrainRamp', 'terrainRampLarge', 'terrainRampLargeDetailed',
+  'terrainRoadCorner', 'terrainRoadCross', 'terrainRoadEnd',
+  'terrainRoadSplit', 'terrainRoadStraight',
+  'terrainSide', 'terrainSideCliff', 'terrainSideCorner',
+  'terrainSideCornerInner', 'terrainSideEnd',
+  // Props & machines
+  'barrel', 'barrels', 'barrelsRail',
+  'machineBarrel', 'machineBarrelLarge',
+  'machineGenerator', 'machineGeneratorLarge', 'machineWireless', 'machineWirelessCable',
+  'satelliteDish', 'satelliteDishDetailed', 'satelliteDishLarge',
+  'rover', 'turretSingle', 'turretDouble', 'weaponGun', 'weaponRifle',
+  // Rails
+  'rail', 'railCorner', 'railEnd', 'railMiddle',
+  // Pipes
+  'pipeCorner', 'pipeCornerDiagonal', 'pipeCornerRound', 'pipeCornerRoundLarge',
+  'pipeCross', 'pipeEnd', 'pipeEntrance', 'pipeOpen',
+  'pipeRampLarge', 'pipeRampSmall', 'pipeRing', 'pipeRingHigh',
+  'pipeRingHighEnd', 'pipeRingSupport', 'pipeSplit', 'pipeStraight',
+  'pipeSupportHigh', 'pipeSupportLow',
+  // Platforms
+  'platformCenter', 'platformCorner', 'platformCornerOpen', 'platformCornerRound',
+  'platformEnd', 'platformHigh', 'platformLarge', 'platformLong',
+  'platformLow', 'platformSide', 'platformSmall', 'platformSmallDiagonal', 'platformStraight',
+  // Monorail
+  'monorailTrackCornerLarge', 'monorailTrackCornerSmall',
+  'monorailTrackSlope', 'monorailTrackStraight',
+  'monorailTrackSupport', 'monorailTrackSupportCorner',
+  'monorailTrainBox', 'monorailTrainCargo', 'monorailTrainEnd',
+  'monorailTrainFlat', 'monorailTrainFront', 'monorailTrainPassenger',
+  // Interior / desk
+  'deskChair', 'deskChairArms', 'deskChairStool',
+  'deskComputer', 'deskComputerCorner', 'deskComputerScreen',
+  // Stairs & supports
+  'stairs', 'stairsCorner', 'stairsShort', 'supportsHigh', 'supportsLow',
 ]
 
-// Default scales matching the hardcoded scene placements
+// Default scale: 2.0 for most models (matching scene proportions with astronaut at 1.4)
+const DEFAULT_SCALE = 2.0
 const DEFAULT_SCALES = {
-  hangarLargeA: 3.5, hangarRoundGlass: 2.5, hangarSmallA: 2.5, structureDetailed: 2.5,
-  rocketBaseA: 2.5, rocketFinsA: 2.5, rocketFuelA: 2.5, rocketSidesA: 2.5, rocketTopA: 2.5,
-  rockLargeA: 1.8, rockLargeB: 1.8, rocksSmallA: 1.5, rocksSmallB: 1.5,
-  rockCrystals: 1.5, rockCrystalsLargeA: 2.0, crater: 2.0, craterLarge: 2.0, meteorHalf: 2.0,
-  satelliteDishLarge: 2.5, machineGenerator: 2.0, machineWireless: 2.0,
-  barrel: 1.8, barrels: 1.8, rover: 2.5, turretSingle: 1.8, rail: 1.8, bones: 1.5,
-  deskComputer: 1.4, deskChairArms: 1.4, astronaut: 1.4, astronautPlayer: 1.4,
+  // Buildings — larger
+  hangarLargeA: 3.5, hangarLargeB: 3.5,
+  hangarRoundA: 2.5, hangarRoundB: 2.5, hangarRoundGlass: 2.5,
+  hangarSmallA: 2.5, hangarSmallB: 2.5,
+  structure: 2.5, structureClosed: 2.5, structureDetailed: 2.5, structureDiagonal: 2.5,
+  gateComplex: 2.5, gateSimple: 2.5,
+  // Rockets
+  rocketBaseA: 2.5, rocketBaseB: 2.5, rocketFinsA: 2.5, rocketFinsB: 2.5,
+  rocketFuelA: 2.5, rocketFuelB: 2.5, rocketSidesA: 2.5, rocketSidesB: 2.5,
+  rocketTopA: 2.5, rocketTopB: 2.5,
+  // Crafts
+  craftCargoA: 2.5, craftCargoB: 2.5, craftMiner: 2.5, craftRacer: 2.5,
+  craftSpeederA: 2.5, craftSpeederB: 2.5, craftSpeederC: 2.5, craftSpeederD: 2.5,
+  // Satellites
+  satelliteDish: 2.0, satelliteDishDetailed: 2.5, satelliteDishLarge: 2.5,
+  // Rover
+  rover: 2.5,
+  // Characters — match player scale
+  alien: 1.4, astronaut: 1.4, astronautPlayer: 1.4,
+  // Interior
+  deskChair: 1.4, deskChairArms: 1.4, deskChairStool: 1.4,
+  deskComputer: 1.4, deskComputerCorner: 1.4, deskComputerScreen: 1.4,
 }
 
 export default class Editor {
@@ -574,7 +641,7 @@ export default class Editor {
         btn.style.borderColor = 'rgba(255,255,255,0.12)'
       })
       btn.addEventListener('click', () => {
-        const s = DEFAULT_SCALES[name] || 1
+        const s = DEFAULT_SCALES[name] || DEFAULT_SCALE
         const group = this.placeModel(name, [0, 0, 0], [0, 0, 0], [s, s, s])
         if (group) {
           this._select(group)
