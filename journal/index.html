@@ -13,7 +13,7 @@
       --ink: #1a1a1a; --muted: #888;
       --accent: #C17A3A;
       --border: rgba(0,0,0,0.08);
-      --nav-w: 80px;
+      --nav-w: 200px;
     }
     [data-theme="dark"] {
       --bg: #111110; --bg-alt: #1a1916;
@@ -29,41 +29,48 @@
       transition: background 0.3s, color 0.3s;
     }
 
-    /* ── LEFT NAV (same as main site) ── */
+    /* ── LEFT NAV (matches main site) ── */
     .nav {
       position: fixed; left: 0; top: 0; bottom: 0;
       width: var(--nav-w);
       display: flex; flex-direction: column;
-      align-items: center; padding: 28px 0;
+      padding: 40px 32px;
       border-right: 1px solid var(--border);
       z-index: 200; background: var(--bg);
       transition: background 0.3s;
     }
-    .nav-logo {
-      color: var(--ink); text-decoration: none;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 32px; opacity: 0.7; transition: opacity 0.2s;
+    .nav-back {
+      color: var(--muted); text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: auto;
+      font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+      transition: color 0.25s;
     }
-    .nav-logo:hover { opacity: 1; }
-    .nav-items { display: flex; flex-direction: column; gap: 8px; width: 100%; align-items: center; }
+    .nav-back:hover { color: var(--ink); }
+    .nav-back svg { flex-shrink: 0; }
+    .nav-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: auto; }
     .nav-btn {
       background: none; border: none; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-      padding: 10px 0; width: 100%; color: var(--muted);
-      transition: color 0.2s; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; text-align: left; color: var(--muted);
+      transition: color 0.25s; text-decoration: none;
+      font-family: 'Inter', sans-serif;
     }
     .nav-btn:hover { color: var(--ink); }
     .nav-btn.active { color: var(--ink); }
-    .nav-num { font-size: 10px; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+    .nav-num { font-size: 10px; letter-spacing: 0.1em; min-width: 20px; transition: color 0.25s; }
     .nav-btn.active .nav-num { color: var(--accent); }
-    .nav-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+    .nav-label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
 
-    /* ── MAIN CONTENT ── */
-    .journal-wrap {
+    /* ── MAIN CONTENT (centered in remaining space) ── */
+    .journal-outer {
       margin-left: var(--nav-w);
-      max-width: 800px;
-      padding: 80px 64px 120px;
+      display: flex; justify-content: center;
       min-height: 100vh;
+    }
+    .journal-wrap {
+      max-width: 800px; width: 100%;
+      padding: 80px 64px 120px;
     }
 
     /* ── PAGE HEADER ── */
@@ -182,7 +189,8 @@
     /* ── MOBILE ── */
     @media (max-width: 768px) {
       .nav { display: none; }
-      .journal-wrap { margin-left: 0; padding: 48px 24px 80px; }
+      .journal-outer { margin-left: 0; }
+      .journal-wrap { padding: 48px 24px 80px; }
       .site-controls { left: 24px; transform: none; bottom: 24px; flex-direction: row; }
     }
   </style>
@@ -191,15 +199,11 @@
 
 <!-- LEFT NAV -->
 <nav class="nav" aria-label="Site navigation">
-  <a class="nav-logo" href="../" aria-label="Back to Xiaoben Wang">
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-      <g transform="rotate(45 14 14)" stroke="currentColor" stroke-width="1.2">
-        <line x1="14" y1="2" x2="14" y2="10"/>
-        <line x1="14" y1="18" x2="14" y2="26"/>
-        <line x1="2" y1="14" x2="10" y2="14"/>
-        <line x1="18" y1="14" x2="26" y2="14"/>
-      </g>
+  <a class="nav-back" href="../" aria-label="Back to home">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
+    Home
   </a>
   <div class="nav-items">
     <a class="nav-btn" href="../#work">
@@ -225,6 +229,7 @@
 </div>
 
 <!-- CONTENT -->
+<div class="journal-outer">
 <div class="journal-wrap">
   <div class="journal-header">
     <div class="journal-eyebrow" id="eyebrow-text">&#9997; AGENT LOG</div>
@@ -242,6 +247,7 @@
     <div class="journal-empty">Loading…</div>
   </div>
 </div>
+</div><!-- /journal-outer -->
 
 <script>
 // ── THEME ──
