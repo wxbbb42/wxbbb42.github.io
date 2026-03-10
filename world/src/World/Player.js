@@ -22,11 +22,52 @@ export default class Player {
     this.actions = {}
     this.currentAction = null
 
+    // Raycaster for ground detection
+    this._raycaster = new THREE.Raycaster()
+    this._rayOrigin = new THREE.Vector3()
+    this._rayDir = new THREE.Vector3(0, -1, 0)
+    this._groundY = 0
+
     this._createCharacter()
     this.group.position.copy(this.position)
   }
 
   _createCharacter() {
+    // The physics capsule center is above ground by (halfHeight + radius).
+    // We offset the visual model down so its feet align with the ground.
+    // Capsule params: halfHeight=0.3, radius=0.25 → center at 0.55 above ground
+    this._capsuleOffset = 0.55
+
+    // Try astronaut model first (Kenney — no animations, static)
+    const astronautGltf = this.experience.resources.items.astronautPlayer
+    if (astronautGltf) {
+      const rawModel = astronautGltf.scene.clone()
+      rawModel.scale.setScalar(1.4)
+      rawModel.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+        }
+      })
+
+      // Wrapper container: flip model 180° inside, then center
+      // This way the group rotation (for movement direction) doesn't shift position
+      const wrapper = new THREE.Group()
+      wrapper.add(rawModel)
+      rawModel.rotation.y = Math.PI // face forward
+
+      // Now compute bounding box of the flipped model
+      const box = new THREE.Box3().setFromObject(wrapper)
+      const center = box.getCenter(new THREE.Vector3())
+      // Offset wrapper so center-bottom is at origin
+      wrapper.position.set(-center.x, -box.min.y, -center.z)
+
+      this.model = wrapper
+      this.group.add(wrapper)
+      return
+    }
+
+    // Fallback to animated Quaternius player
     const gltf = this.experience.resources.items.player
     if (gltf) {
       this.model = gltf.scene
@@ -40,19 +81,13 @@ export default class Player {
       fixCharacterSkin(this.model, SKIN_COLOR)
       this.group.add(this.model)
 
-      // Set up animation mixer
       this.mixer = new THREE.AnimationMixer(this.model)
-
-      // Find and store key animations
       for (const clip of gltf.animations) {
         const action = this.mixer.clipAction(clip)
         this.actions[clip.name] = action
       }
-
-      // Start with idle
       this._playAction('Idle')
     } else {
-      // Fallback: procedural box character
       this._createFallback()
     }
   }
@@ -135,10 +170,26 @@ export default class Player {
     this.experience.physics.moveCharacter(this.velocity, delta)
     const newPos = this.experience.physics.getCharacterPosition()
     this.position.copy(newPos)
-    this.group.position.copy(this.position)
 
-    // Update camera target
-    camera.setTarget(this.position)
+    // Raycast down to find the actual ground surface height
+    this._rayOrigin.set(newPos.x, newPos.y + 2, newPos.z) // cast from above
+    this._raycaster.set(this._rayOrigin, this._rayDir)
+    this._raycaster.far = 10
+
+    // Only check ground mesh (first child of ground group)
+    const groundGroup = this.experience.world?.ground?.group
+    if (groundGroup) {
+      const hits = this._raycaster.intersectObjects(groundGroup.children, true)
+      if (hits.length > 0) {
+        this._groundY = hits[0].point.y
+      }
+    }
+
+    // Place visual model feet on the ground surface
+    this.group.position.set(newPos.x, this._groundY, newPos.z)
+
+    // Update camera target (use visual position for smooth camera)
+    camera.setTarget(this.group.position)
   }
 
   teleportTo(x, y, z) {

@@ -5,42 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agent Log — Xiaoben Wang</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- Shared site styles (tokens, cursor, nav, controls) -->
+  <link rel="stylesheet" href="../style.css">
   <style>
-    /* ── TOKENS (mirrors main site) ── */
-    :root {
-      --bg: #F7F5F0; --bg-alt: #EFECE5;
-      --ink: #1a1a1a; --muted: #888;
-      --accent: #C17A3A;
-      --border: rgba(0,0,0,0.08);
-      --nav-w: 200px;
-    }
-    [data-theme="dark"] {
-      --bg: #111110; --bg-alt: #1a1916;
-      --ink: #f0ede6; --muted: #666;
-      --border: rgba(255,255,255,0.07);
-    }
+    /* ── JOURNAL-SPECIFIC OVERRIDES ── */
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--bg); color: var(--ink);
-      font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    /* ── LEFT NAV (matches main site) ── */
-    .nav {
-      position: fixed; left: 0; top: 0; bottom: 0;
-      width: var(--nav-w);
-      display: flex; flex-direction: column;
-      padding: 40px 32px;
-      border-right: 1px solid var(--border);
-      z-index: 200; background: var(--bg);
-      transition: background 0.3s;
-    }
+    /* Back button in nav (replaces logo) */
     .nav-back {
-      color: var(--muted); text-decoration: none;
+      color: var(--ink-muted); text-decoration: none;
       display: flex; align-items: center; gap: 8px;
       margin-bottom: auto;
       font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
@@ -48,19 +22,7 @@
     }
     .nav-back:hover { color: var(--ink); }
     .nav-back svg { flex-shrink: 0; }
-    .nav-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: auto; }
-    .nav-btn {
-      background: none; border: none; cursor: pointer;
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 0; text-align: left; color: var(--muted);
-      transition: color 0.25s; text-decoration: none;
-      font-family: 'Inter', sans-serif;
-    }
-    .nav-btn:hover { color: var(--ink); }
-    .nav-btn.active { color: var(--ink); }
-    .nav-num { font-size: 10px; letter-spacing: 0.1em; min-width: 20px; transition: color 0.25s; }
-    .nav-btn.active .nav-num { color: var(--accent); }
-    .nav-label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+
 
     /* ── MAIN CONTENT (centered in remaining space) ── */
     .journal-outer {
@@ -85,13 +47,13 @@
       color: var(--accent); margin-bottom: 16px;
     }
     .journal-headline {
-      font-family: 'EB Garamond', serif;
+      font-family: var(--font-serif);
       font-size: clamp(36px, 5vw, 56px);
       font-weight: 400; line-height: 1.1;
       margin-bottom: 12px;
     }
     .journal-sub {
-      font-size: 14px; color: var(--muted); line-height: 1.6;
+      font-size: 14px; color: var(--ink-muted); line-height: 1.6;
       max-width: 480px;
     }
 
@@ -102,26 +64,26 @@
     }
     .date-nav-btn {
       background: none; border: 1px solid var(--border);
-      color: var(--muted); font-size: 11px; letter-spacing: 1px;
-      padding: 6px 16px; cursor: pointer; transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
+      color: var(--ink-muted); font-size: 11px; letter-spacing: 1px;
+      padding: 6px 16px; cursor: none; transition: all 0.2s;
+      font-family: var(--font-sans);
     }
     .date-nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
     .date-nav-btn:disabled { opacity: 0.25; cursor: default; }
     .date-display {
-      font-family: 'EB Garamond', serif; font-size: 17px; color: var(--muted);
+      font-family: var(--font-serif); font-size: 17px; color: var(--ink-muted);
     }
     .date-display strong { color: var(--ink); }
 
     /* ── ENTRY ── */
     .entry-title {
-      font-family: 'EB Garamond', serif;
+      font-family: var(--font-serif);
       font-size: clamp(28px, 4vw, 44px);
       line-height: 1.1; font-weight: 400;
       margin-bottom: 14px;
     }
     .entry-summary {
-      font-size: 15px; color: var(--muted);
+      font-size: 15px; color: var(--ink-muted);
       line-height: 1.75; margin-bottom: 56px;
       max-width: 580px;
     }
@@ -147,55 +109,48 @@
       font-size: 7px; letter-spacing: 1.5px; color: var(--accent);
     }
     .block-type-tag {
-      font-size: 10px; letter-spacing: 2px; color: var(--muted);
+      font-size: 10px; letter-spacing: 2px; color: var(--ink-muted);
       text-transform: uppercase;
     }
     .block-desc {
-      font-size: 13px; color: var(--muted);
+      font-size: 13px; color: var(--ink-muted);
       margin-bottom: 14px; line-height: 1.6;
     }
     .demo-frame {
       width: 100%; height: 280px; border: 1px solid var(--border);
       background: #fff; display: block; border-radius: 2px;
     }
+    /* Hide custom cursor over demo blocks, restore native cursor */
+    .block-demo { cursor: auto; }
+    .block-demo iframe { cursor: auto; }
 
     .block-ref .block-type-tag { margin-bottom: 12px; display: block; }
     .ref-links { display: flex; flex-wrap: wrap; gap: 10px; }
     .ref-link {
-      font-size: 12px; color: var(--muted); text-decoration: none;
+      font-size: 12px; color: var(--ink-muted); text-decoration: none;
       letter-spacing: 0.5px; border-bottom: 1px solid var(--border);
       padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
     }
     .ref-link:hover { color: var(--accent); border-color: var(--accent); }
 
-    /* ── CONTROLS (bottom-left, same as main) ── */
-    .site-controls {
-      position: fixed; bottom: 28px; left: calc(var(--nav-w) / 2);
-      transform: translateX(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      z-index: 300;
-    }
-    .ctrl-btn {
-      background: none; border: none; cursor: pointer;
-      font-size: 10px; letter-spacing: 1.5px; font-family: 'Inter', sans-serif;
-      color: var(--muted); transition: color 0.2s; padding: 4px;
-    }
-    .ctrl-btn:hover { color: var(--accent); }
-    .ctrl-divider { font-size: 10px; color: var(--border); }
-
     /* ── EMPTY / LOADING ── */
-    .journal-empty { text-align: center; padding: 80px 0; color: var(--muted); font-size: 14px; }
+    .journal-empty { text-align: center; padding: 80px 0; color: var(--ink-muted); font-size: 14px; }
 
     /* ── MOBILE ── */
-    @media (max-width: 768px) {
-      .nav { display: none; }
+    @media (max-width: 960px) {
       .journal-outer { margin-left: 0; }
       .journal-wrap { padding: 48px 24px 80px; }
-      .site-controls { left: 24px; transform: none; bottom: 24px; flex-direction: row; }
+      .mobile-controls {
+        position: fixed; bottom: 24px; left: 24px;
+        display: flex !important; align-items: center; gap: 8px; z-index: 300;
+      }
+    }
+    @media (min-width: 961px) {
+      .mobile-controls { display: none; }
     }
   </style>
 </head>
-<body>
+<body class="journal-page">
 
 <!-- LEFT NAV -->
 <nav class="nav" aria-label="Site navigation">
@@ -205,27 +160,32 @@
     </svg>
     Home
   </a>
-  <div class="nav-items">
-    <a class="nav-btn" href="../#work">
-      <span class="nav-num">01</span>
-      <span class="nav-label">Work</span>
-    </a>
-    <a class="nav-btn active" href="../#lab">
-      <span class="nav-num">02</span>
-      <span class="nav-label">Lab</span>
-    </a>
-    <a class="nav-btn" href="../#about">
-      <span class="nav-num">03</span>
-      <span class="nav-label">About</span>
-    </a>
-  </div>
 </nav>
 
-<!-- BOTTOM-LEFT CONTROLS -->
+<!-- BOTTOM-LEFT CONTROLS (same position as home page) -->
 <div class="site-controls">
   <button class="ctrl-btn" id="lang-toggle">EN</button>
   <span class="ctrl-divider">/</span>
   <button class="ctrl-btn" id="theme-toggle">&#9728;</button>
+</div>
+
+<!-- MOBILE CONTROLS -->
+<div class="mobile-controls">
+  <button class="ctrl-btn" id="mobile-lang-toggle">EN</button>
+  <span class="ctrl-divider">/</span>
+  <button class="ctrl-btn" id="mobile-theme-toggle">&#9728;</button>
+</div>
+
+<!-- CUSTOM CURSOR (same markup as home page) -->
+<div class="cursor" aria-hidden="true">
+  <div class="cursor-inner">
+    <div class="cursor-center"></div>
+    <div class="cursor-arm h left"></div>
+    <div class="cursor-arm h right"></div>
+    <div class="cursor-arm v top"></div>
+    <div class="cursor-arm v bottom"></div>
+  </div>
+  <div class="cursor-label" id="cursor-label"></div>
 </div>
 
 <!-- CONTENT -->
@@ -256,8 +216,7 @@
   if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 })();
 
-const themeBtn = document.getElementById('theme-toggle');
-themeBtn.addEventListener('click', () => {
+function toggleTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   if (isDark) {
     document.documentElement.removeAttribute('data-theme');
@@ -266,7 +225,10 @@ themeBtn.addEventListener('click', () => {
     document.documentElement.setAttribute('data-theme', 'dark');
     localStorage.setItem('theme', 'dark');
   }
-});
+}
+document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+if (document.getElementById('mobile-theme-toggle'))
+  document.getElementById('mobile-theme-toggle').addEventListener('click', toggleTheme);
 
 // ── LANG ──
 const strings = {
@@ -286,6 +248,7 @@ const strings = {
 
 let currentLang = localStorage.getItem('lang') || 'en';
 const langBtn = document.getElementById('lang-toggle');
+const mobileLangBtn = document.getElementById('mobile-lang-toggle');
 
 function applyLang(lang) {
   const s = strings[lang] || strings.en;
@@ -294,16 +257,20 @@ function applyLang(lang) {
   document.getElementById('sub-text').textContent = s.sub;
   document.getElementById('prev-btn').textContent = s.prev;
   document.getElementById('next-btn').textContent = s.next;
-  langBtn.textContent = lang === 'en' ? 'EN' : '中';
+  const label = lang === 'en' ? 'EN' : '中';
+  langBtn.textContent = label;
+  if (mobileLangBtn) mobileLangBtn.textContent = label;
   document.documentElement.setAttribute('data-lang', lang);
 }
 applyLang(currentLang);
 
-langBtn.addEventListener('click', () => {
+function toggleLang() {
   currentLang = currentLang === 'en' ? 'cn' : 'en';
   localStorage.setItem('lang', currentLang);
   applyLang(currentLang);
-});
+}
+langBtn.addEventListener('click', toggleLang);
+if (mobileLangBtn) mobileLangBtn.addEventListener('click', toggleLang);
 
 // ── JOURNAL ──
 let entries = [];
@@ -383,6 +350,121 @@ fetch('../data/journal.json?v=' + Date.now())
     document.getElementById('entry-container').innerHTML =
       '<div class="journal-empty">No entries yet. Check back soon.</div>';
   });
+
+// ── CUSTOM CURSOR (magnetic snap, matching home page) ──
+(function() {
+  const cursorEl = document.querySelector('.cursor');
+  const cursorLabel = document.getElementById('cursor-label');
+  if (!cursorEl || window.matchMedia('(max-width: 960px)').matches) return;
+
+  let rawX = -100, rawY = -100;
+  let posX = -100, posY = -100, inited = false;
+  let activeMagnet = null;
+
+  window.addEventListener('mousemove', e => { rawX = e.clientX; rawY = e.clientY; });
+
+  // Magnetic snap targets
+  const magnetTargets = [
+    { selector: '#lang-toggle',  label: 'Lang',  radius: 28 },
+    { selector: '#theme-toggle', label: 'Theme', radius: 28 },
+    { selector: '.nav-back',     label: 'Back',  radius: 40 },
+  ];
+
+  // Hover labels for interactive elements
+  const hoverMap = [
+    { selector: '.date-nav-btn', label: 'Navigate' },
+    { selector: '.ref-link',     label: 'Open ↗' },
+  ];
+
+  function tick() {
+    if (!inited && rawX > -50) { posX = rawX; posY = rawY; inited = true; }
+
+    let tx = rawX, ty = rawY;
+    let lerpSpeed = 0.35;
+    let snapped = null;
+
+    // Check magnetic targets
+    let bestDist = Infinity;
+    for (const { selector, label, radius } of magnetTargets) {
+      const el = document.querySelector(selector);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const dx = rawX - cx, dy = rawY - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < radius && dist < bestDist) {
+        bestDist = dist;
+        tx = cx; ty = cy;
+        lerpSpeed = 0.12;
+        snapped = { el, label };
+      }
+    }
+
+    if (snapped && activeMagnet !== snapped.el) {
+      if (activeMagnet) activeMagnet.classList.remove('magnet-hover');
+      activeMagnet = snapped.el;
+      activeMagnet.classList.add('magnet-hover');
+      document.body.classList.add('cursor-hover');
+      cursorLabel.textContent = snapped.label;
+    } else if (!snapped && activeMagnet) {
+      activeMagnet.classList.remove('magnet-hover');
+      activeMagnet = null;
+      document.body.classList.remove('cursor-hover');
+      cursorLabel.textContent = '';
+    }
+
+    posX += (tx - posX) * lerpSpeed;
+    posY += (ty - posY) * lerpSpeed;
+    cursorEl.style.transform = `translate(${posX}px, ${posY}px)`;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // Redirect clicks when magnetically snapped
+  let magnetClickInProgress = false;
+  window.addEventListener('click', e => {
+    if (magnetClickInProgress) return;
+    if (activeMagnet) {
+      const clickTarget = activeMagnet.closest('a, button') || activeMagnet;
+      if (!clickTarget.contains(e.target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        magnetClickInProgress = true;
+        clickTarget.click();
+        magnetClickInProgress = false;
+      }
+    }
+  }, true);
+
+  // Hover states for other interactive elements
+  function bindHovers() {
+    hoverMap.forEach(({ selector, label }) => {
+      document.querySelectorAll(selector).forEach(el => {
+        if (el.dataset.cursorBound) return;
+        el.dataset.cursorBound = 'true';
+        el.addEventListener('mouseenter', () => { if (!activeMagnet) { document.body.classList.add('cursor-hover'); cursorLabel.textContent = label; } });
+        el.addEventListener('mouseleave', () => { if (!activeMagnet) { document.body.classList.remove('cursor-hover'); cursorLabel.textContent = ''; } });
+      });
+    });
+  }
+  bindHovers();
+
+  window.addEventListener('mousedown', () => document.body.classList.add('cursor-active'));
+  window.addEventListener('mouseup',   () => document.body.classList.remove('cursor-active'));
+
+  // Hide custom cursor over demo blocks, re-bind hovers on content change
+  const observer = new MutationObserver(() => {
+    bindHovers();
+    document.querySelectorAll('.block-demo').forEach(block => {
+      if (block.dataset.cursorBound) return;
+      block.dataset.cursorBound = 'true';
+      block.addEventListener('mouseenter', () => { cursorEl.style.display = 'none'; document.body.classList.remove('cursor-hover'); });
+      block.addEventListener('mouseleave', () => { cursorEl.style.display = ''; });
+    });
+  });
+  observer.observe(document.getElementById('entry-container'), { childList: true, subtree: true });
+})();
 </script>
 </body>
 </html>

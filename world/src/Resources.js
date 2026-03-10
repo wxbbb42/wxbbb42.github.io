@@ -21,20 +21,47 @@ export default class Resources {
 
   async loadAll() {
     const assets = [
-      // Buildings
-      { name: 'buildingLab',    type: 'gltf', path: './models/buildings/building-a.glb' },
-      { name: 'buildingHouse1', type: 'gltf', path: './models/buildings/building-d.glb' },
-      { name: 'buildingHouse2', type: 'gltf', path: './models/buildings/building-g.glb' },
-      { name: 'colormap',       type: 'texture', path: './models/buildings/colormap.png' },
-      // Props
-      { name: 'desk',           type: 'gltf', path: './models/props/desk_computer.glb' },
-      { name: 'chair',          type: 'gltf', path: './models/props/desk_chairArms.glb' },
-      // Characters — each gets its own loader to avoid cache/clone issues
-      { name: 'player',         type: 'gltf', path: './models/characters/player.glb' },
-      { name: 'professor',      type: 'gltf', path: './models/characters/professor.glb' },
-      { name: 'agentClaw',      type: 'gltf', path: './models/characters/agent_claw.glb' },
-      { name: 'agentCoin',      type: 'gltf', path: './models/characters/agent_coin.glb' },
-      { name: 'agentNeo',       type: 'gltf', path: './models/characters/agent_neo.glb' },
+      // Space kit — structures
+      { name: 'hangarLargeA',      type: 'gltf', path: './models/space/hangar_largeA.glb' },
+      { name: 'hangarRoundGlass',  type: 'gltf', path: './models/space/hangar_roundGlass.glb' },
+      { name: 'hangarSmallA',      type: 'gltf', path: './models/space/hangar_smallA.glb' },
+      { name: 'structureDetailed', type: 'gltf', path: './models/space/structure_detailed.glb' },
+      // Rocket parts
+      { name: 'rocketBaseA',  type: 'gltf', path: './models/space/rocket_baseA.glb' },
+      { name: 'rocketFinsA',  type: 'gltf', path: './models/space/rocket_finsA.glb' },
+      { name: 'rocketFuelA',  type: 'gltf', path: './models/space/rocket_fuelA.glb' },
+      { name: 'rocketSidesA', type: 'gltf', path: './models/space/rocket_sidesA.glb' },
+      { name: 'rocketTopA',   type: 'gltf', path: './models/space/rocket_topA.glb' },
+      // Rocks & terrain
+      { name: 'rockLargeA',         type: 'gltf', path: './models/space/rock_largeA.glb' },
+      { name: 'rockLargeB',         type: 'gltf', path: './models/space/rock_largeB.glb' },
+      { name: 'rocksSmallA',        type: 'gltf', path: './models/space/rocks_smallA.glb' },
+      { name: 'rocksSmallB',        type: 'gltf', path: './models/space/rocks_smallB.glb' },
+      { name: 'rockCrystals',       type: 'gltf', path: './models/space/rock_crystals.glb' },
+      { name: 'rockCrystalsLargeA', type: 'gltf', path: './models/space/rock_crystalsLargeA.glb' },
+      { name: 'crater',             type: 'gltf', path: './models/space/crater.glb' },
+      { name: 'craterLarge',        type: 'gltf', path: './models/space/craterLarge.glb' },
+      { name: 'meteorHalf',         type: 'gltf', path: './models/space/meteor_half.glb' },
+      // Props & machines
+      { name: 'satelliteDishLarge', type: 'gltf', path: './models/space/satelliteDish_large.glb' },
+      { name: 'machineGenerator',   type: 'gltf', path: './models/space/machine_generator.glb' },
+      { name: 'machineWireless',    type: 'gltf', path: './models/space/machine_wireless.glb' },
+      { name: 'barrel',             type: 'gltf', path: './models/space/barrel.glb' },
+      { name: 'barrels',            type: 'gltf', path: './models/space/barrels.glb' },
+      { name: 'rover',              type: 'gltf', path: './models/space/rover.glb' },
+      { name: 'turretSingle',       type: 'gltf', path: './models/space/turret_single.glb' },
+      { name: 'rail',               type: 'gltf', path: './models/space/rail.glb' },
+      { name: 'bones',              type: 'gltf', path: './models/space/bones.glb' },
+      // Interior props
+      { name: 'deskComputer',  type: 'gltf', path: './models/space/desk_computer.glb' },
+      { name: 'deskChairArms', type: 'gltf', path: './models/space/desk_chairArms.glb' },
+      // Characters
+      { name: 'astronaut',       type: 'gltf', path: './models/space/astronautA.glb' },
+      { name: 'astronautPlayer', type: 'gltf', path: './models/space/astronautB.glb' },
+      { name: 'player',          type: 'gltf', path: './models/characters/player.glb' },
+      { name: 'agentClaw',  type: 'gltf', path: './models/characters/agent_claw.glb' },
+      { name: 'agentCoin',  type: 'gltf', path: './models/characters/agent_coin.glb' },
+      { name: 'agentNeo',   type: 'gltf', path: './models/characters/agent_neo.glb' },
     ]
 
     this.totalAssets = assets.length

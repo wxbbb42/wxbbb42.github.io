@@ -5,26 +5,22 @@ export const AGENTS = [
 ]
 
 export const COLORS = {
-  grass: 0x7bc242,
-  grassDark: 0x5ea030,
-  dirt: 0xc8a860,
-  water: 0x3878c8,
-  waterLight: 0x5898e8,
-  sky: 0x87ceeb,
-  fog: 0xc8e8ff,
-  treeTrunk: 0x8B5E3C,
-  treeGreen: 0x2d8a2d,
-  treeGreenLight: 0x4CAF50,
-  treeGreenDark: 0x1B5E20,
-  fence: 0xeeeeee,
-  rock: 0x888888,
+  marsSurface:     0xC4835A,
+  marsSurfaceDark: 0x9B6840,
+  dust:            0xB07850,
+  sky:             0xD4956B,
+  fog:             0xC88860,
+  rock:            0x6B4226,
+  rockLight:       0xCC7744,
+  crystal:         0x88FFCC,
+  metal:           0xBBBBCC,
 }
 
-// Town layout dimensions
+// Base layout dimensions
 export const TOWN = {
-  size: 60,          // ground plane size
-  halfSize: 30,
-  playerStart: { x: 0, y: 0.5, z: 5 },
+  size: 30,
+  halfSize: 15,
+  playerStart: { x: 0, y: 0.3, z: 5 },
   interiorOffset: { x: 0, y: -50, z: 0 },
 }
 

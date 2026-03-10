@@ -13,7 +13,7 @@ export default class Physics {
     // Create ground
     const groundDesc = RAPIER.RigidBodyDesc.fixed()
     const groundBody = this.world.createRigidBody(groundDesc)
-    const groundCollider = RAPIER.ColliderDesc.cuboid(30, 0.1, 30)
+    const groundCollider = RAPIER.ColliderDesc.cuboid(18, 0.1, 18)
       .setTranslation(0, -0.1, 0)
     this.world.createCollider(groundCollider, groundBody)
 
@@ -24,10 +24,11 @@ export default class Physics {
     this.characterController.enableSnapToGround(0.3)
 
     // Character collider (capsule)
+    // Capsule: halfHeight=0.3, radius=0.25 → center at 0.55 above ground
     const charBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased()
-      .setTranslation(0, 0.5, 5)
+      .setTranslation(0, 0.55, 5)
     this.characterBody = this.world.createRigidBody(charBodyDesc)
-    const charColliderDesc = RAPIER.ColliderDesc.capsule(0.35, 0.3)
+    const charColliderDesc = RAPIER.ColliderDesc.capsule(0.3, 0.25)
     this.characterCollider = this.world.createCollider(charColliderDesc, this.characterBody)
   }
 

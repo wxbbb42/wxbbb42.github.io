@@ -1,6 +1,5 @@
 import * as THREE from 'three'
-import { SKIN_COLOR } from '../utils/constants.js'
-import { fixCharacterSkin } from '../utils/math.js'
+import { COLORS } from '../utils/constants.js'
 
 export default class NPCs {
   constructor(experience) {
@@ -10,43 +9,31 @@ export default class NPCs {
     this.mixers = []
     this.experience.scene.add(this.group)
 
-    this._createProfessor()
+    this._createCommander()
   }
 
-  _createProfessor() {
-    const gltf = this.experience.resources.items.professor
+  _createCommander() {
+    const gltf = this.experience.resources.items.astronaut
     const npcGroup = new THREE.Group()
     npcGroup.position.set(0, 0, 2)
 
     if (gltf) {
-      const model = gltf.scene
-      model.scale.setScalar(0.5)
-      model.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true
-          child.receiveShadow = true
-        }
+      const model = gltf.scene.clone()
+      model.scale.setScalar(1.4)
+      model.traverse(c => {
+        if (c.isMesh) { c.castShadow = true; c.receiveShadow = true }
       })
-      fixCharacterSkin(model, SKIN_COLOR)
       npcGroup.add(model)
-
-      // Play idle animation
-      const mixer = new THREE.AnimationMixer(model)
-      const idleClip = gltf.animations.find(a => a.name === 'Idle')
-      if (idleClip) {
-        mixer.clipAction(idleClip).play()
-      }
-      this.mixers.push(mixer)
+      // Kenney astronaut has no animations — add gentle bob
     } else {
-      // Fallback: procedural NPC
-      this._createFallbackNPC(npcGroup, 0xffffff)
+      this._createFallbackNPC(npcGroup, COLORS.metal)
     }
 
     this.group.add(npcGroup)
     this.npcs.push({
       mesh: npcGroup,
-      name: 'Professor Oak',
-      dialog: "Welcome to CLAWD TOWN!\nUse WASD to move around.\nPress E to interact.\nVisit CLAWD LABS to meet the agents!",
+      name: 'Commander Aria',
+      dialog: "Welcome to CLAWD BASE!\nUse WASD to move around.\nPress E to interact.\nEnter the hangar to meet the agents!",
       radius: 2.5,
       triggered: false,
     })
@@ -68,6 +55,10 @@ export default class NPCs {
   }
 
   update(delta) {
+    // Gentle bob for astronaut NPC
+    for (const npc of this.npcs) {
+      npc.mesh.position.y = Math.sin(Date.now() * 0.002) * 0.04
+    }
     for (const mixer of this.mixers) {
       mixer.update(delta)
     }
@@ -78,9 +69,7 @@ export default class NPCs {
       const dx = playerPos.x - npc.mesh.position.x
       const dz = playerPos.z - npc.mesh.position.z
       const dist = Math.sqrt(dx * dx + dz * dz)
-      if (dist < npc.radius) {
-        return npc
-      }
+      if (dist < npc.radius) return npc
     }
     return null
   }

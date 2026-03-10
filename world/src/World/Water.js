@@ -1,96 +1,63 @@
 import * as THREE from 'three'
-import { COLORS, TOWN } from '../utils/constants.js'
+import { TOWN } from '../utils/constants.js'
 
-export default class Water {
+// Craters scattered near the south area
+export default class CraterField {
   constructor(experience) {
     this.experience = experience
     this.group = new THREE.Group()
     this.experience.scene.add(this.group)
 
-    this.time = 0
-    this._createWater()
+    this._createCraterField()
   }
 
-  _createWater() {
-    const width = TOWN.size
-    const depth = 8
+  _createCraterField() {
+    const r = this.experience.resources
 
-    const geo = new THREE.PlaneGeometry(width, depth, 40, 8)
-    geo.rotateX(-Math.PI / 2)
-
-    this.waterGeo = geo
-
-    const mat = new THREE.MeshStandardMaterial({
-      color: COLORS.water,
-      flatShading: true,
-      roughness: 0.2,
-      metalness: 0.1,
-      transparent: true,
-      opacity: 0.85,
-    })
-
-    this.waterMesh = new THREE.Mesh(geo, mat)
-    this.waterMesh.position.set(0, -0.3, TOWN.halfSize - 2)
-    this.waterMesh.receiveShadow = true
-    this.group.add(this.waterMesh)
-
-    // Lily pads
-    this._createLilyPads()
-
-    // Water collider (prevent player from walking in)
-    this.experience.physics.addBoxCollider(
-      0, 0.5, TOWN.halfSize - 2,
-      TOWN.halfSize, 0.5, depth / 2
-    )
-  }
-
-  _createLilyPads() {
-    const padGeo = new THREE.CircleGeometry(0.3, 6)
-    padGeo.rotateX(-Math.PI / 2)
-    const padMat = new THREE.MeshStandardMaterial({
-      color: 0x2d8a2d,
-      flatShading: true,
-      roughness: 0.7,
-    })
-
-    for (let i = 0; i < 12; i++) {
-      const pad = new THREE.Mesh(padGeo, padMat)
-      pad.position.set(
-        -20 + Math.random() * 40,
-        -0.18,
-        TOWN.halfSize - 4 + Math.random() * 4
-      )
-      pad.scale.setScalar(0.5 + Math.random() * 0.8)
-      this.group.add(pad)
-
-      // Occasional flower on lily pad
-      if (Math.random() > 0.6) {
-        const flowerGeo = new THREE.IcosahedronGeometry(0.1, 0)
-        const flowerMat = new THREE.MeshStandardMaterial({
-          color: 0xff88aa,
-          flatShading: true,
-        })
-        const flower = new THREE.Mesh(flowerGeo, flowerMat)
-        flower.position.copy(pad.position)
-        flower.position.y = -0.1
-        this.group.add(flower)
+    if (r.items.craterLarge) {
+      const craterPositions = [-6, -1, 4, 8]
+      for (const cx of craterPositions) {
+        const model = r.items.craterLarge.scene.clone()
+        model.scale.setScalar(1.5)
+        model.position.set(cx, -0.3, TOWN.halfSize - 2 + (Math.random() - 0.5) * 2)
+        model.rotation.y = Math.random() * Math.PI * 2
+        model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+        this.group.add(model)
       }
     }
-  }
 
-  update(delta) {
-    this.time += delta
+    if (r.items.meteorHalf) {
+      const m1 = r.items.meteorHalf.scene.clone()
+      m1.scale.setScalar(1.0)
+      m1.position.set(-4, -0.2, TOWN.halfSize - 4)
+      m1.rotation.set(0.3, 1.2, 0)
+      m1.traverse(c => { if (c.isMesh) { c.castShadow = true } })
+      this.group.add(m1)
 
-    // Animate water vertices
-    const pos = this.waterGeo.attributes.position
-    for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i)
-      const z = pos.getZ(i)
-      const y = Math.sin(x * 0.5 + this.time * 1.5) * 0.08 +
-                Math.sin(z * 0.3 + this.time * 1.2) * 0.06
-      pos.setY(i, y)
+      const m2 = r.items.meteorHalf.scene.clone()
+      m2.scale.setScalar(0.7)
+      m2.position.set(6, -0.1, TOWN.halfSize - 3)
+      m2.rotation.set(-0.2, 0.5, 0.4)
+      m2.traverse(c => { if (c.isMesh) { c.castShadow = true } })
+      this.group.add(m2)
     }
-    pos.needsUpdate = true
-    this.waterGeo.computeVertexNormals()
+
+    const smallRockModels = [r.items.rocksSmallA, r.items.rocksSmallB].filter(Boolean)
+    for (let i = 0; i < 6; i++) {
+      const gltf = smallRockModels[Math.floor(Math.random() * smallRockModels.length)]
+      if (!gltf) continue
+      const rock = gltf.scene.clone()
+      rock.scale.setScalar(0.3 + Math.random() * 0.5)
+      rock.position.set(
+        -8 + Math.random() * 16,
+        -0.2,
+        TOWN.halfSize - 4 + Math.random() * 4
+      )
+      rock.rotation.y = Math.random() * Math.PI * 2
+      rock.traverse(c => { if (c.isMesh) { c.receiveShadow = true } })
+      this.group.add(rock)
+    }
   }
+
+  update() {}
 }

@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { COLORS } from '../utils/constants.js'
 
 export default class Buildings {
   constructor(experience) {
@@ -11,66 +10,90 @@ export default class Buildings {
     this.buildings = []
 
     this._createBuildings()
+    this._createRocket()
   }
 
   _createBuildings() {
-    const resources = this.experience.resources
+    const r = this.experience.resources
 
-    // CLAWD LABS - main building (right side of town)
-    if (resources.items.buildingLab) {
-      const lab = this._placeModel(resources.items.buildingLab, 10, 0, -2, 2.5)
-      this._addLabel(lab, 'CLAWD LABS', 10, 5, -2)
-      this.buildings.push({ name: 'lab', mesh: lab, pos: new THREE.Vector3(10, 0, -2) })
-
-      // Lab collider
-      this.experience.physics.addBoxCollider(10, 2.5, -2, 3, 2.5, 3)
+    // Main Hangar (CLAWD LABS)
+    if (r.items.hangarLargeA) {
+      const lab = this._placeModel(r.items.hangarLargeA, 10, 0, -2, 3.5)
+      this._addLabel('CLAWD LABS', 10, 6, -2)
+      this.buildings.push({ name: 'lab', mesh: lab })
+      this.experience.physics.addBoxCollider(10, 3, -2, 4, 3, 4)
     }
 
-    // House 1 (left side)
-    if (resources.items.buildingHouse1) {
-      const house1 = this._placeModel(resources.items.buildingHouse1, -10, 0, -4, 2)
-      this.buildings.push({ name: 'house1', mesh: house1, pos: new THREE.Vector3(-10, 0, -4) })
+    // Comms Station
+    if (r.items.structureDetailed) {
+      const comms = this._placeModel(r.items.structureDetailed, -10, 0, -4, 2.5)
+      this._addLabel('COMMS', -10, 4, -4)
+      this.buildings.push({ name: 'comms', mesh: comms })
       this.experience.physics.addBoxCollider(-10, 2, -4, 2.5, 2, 2.5)
     }
 
-    // House 2 (left-center)
-    if (resources.items.buildingHouse2) {
-      const house2 = this._placeModel(resources.items.buildingHouse2, -6, 0, -12, 1.8)
-      this.buildings.push({ name: 'house2', mesh: house2, pos: new THREE.Vector3(-6, 0, -12) })
-      this.experience.physics.addBoxCollider(-6, 1.8, -12, 2, 1.8, 2)
+    // Storage Hangar
+    if (r.items.hangarSmallA) {
+      const storage = this._placeModel(r.items.hangarSmallA, -6, 0, -12, 2.5)
+      this.buildings.push({ name: 'storage', mesh: storage })
+      this.experience.physics.addBoxCollider(-6, 2, -12, 2, 2, 2)
     }
+
+    // Greenhouse Dome
+    if (r.items.hangarRoundGlass) {
+      const dome = this._placeModel(r.items.hangarRoundGlass, 8, 0, -10, 2.5)
+      this.buildings.push({ name: 'dome', mesh: dome })
+      this.experience.physics.addBoxCollider(8, 2, -10, 2, 2, 2)
+    }
+  }
+
+  _createRocket() {
+    const r = this.experience.resources
+    const rocketGroup = new THREE.Group()
+    rocketGroup.position.set(-10, 0, -10)
+    rocketGroup.scale.setScalar(2.5)
+
+    const parts = ['rocketBaseA', 'rocketFuelA', 'rocketSidesA', 'rocketFinsA', 'rocketTopA']
+    const offsets = [0, 1.0, 2.0, 3.0, 4.0]
+
+    for (let i = 0; i < parts.length; i++) {
+      const gltf = r.items[parts[i]]
+      if (!gltf) continue
+      const model = gltf.scene.clone()
+      model.position.y = offsets[i]
+      model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+      rocketGroup.add(model)
+    }
+
+    this.group.add(rocketGroup)
+    this._addLabel('LAUNCH PAD', -10, 12, -10)
+    this.experience.physics.addBoxCollider(-10, 4, -10, 1.5, 4, 1.5)
   }
 
   _placeModel(gltf, x, y, z, scale) {
     const model = gltf.scene.clone()
     model.position.set(x, y, z)
     model.scale.setScalar(scale)
-    model.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true
-        child.receiveShadow = true
-      }
-    })
+    model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
     this.group.add(model)
     return model
   }
 
-  _addLabel(parent, text, x, y, z) {
+  _addLabel(text, x, y, z) {
     const canvas = document.createElement('canvas')
     canvas.width = 512
     canvas.height = 128
     const ctx = canvas.getContext('2d')
-    ctx.fillStyle = '#000000'
-    ctx.fillRect(0, 0, 512, 128)
-    ctx.fillStyle = '#ffffff'
-    ctx.font = 'bold 48px "Press Start 2P", monospace'
+    ctx.clearRect(0, 0, 512, 128)
+    ctx.fillStyle = '#44ffaa'
+    ctx.font = 'bold 42px "Press Start 2P", monospace'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(text, 256, 64)
 
     const texture = new THREE.CanvasTexture(canvas)
-    const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true })
-    const sprite = new THREE.Sprite(spriteMat)
+    const mat = new THREE.SpriteMaterial({ map: texture, transparent: true })
+    const sprite = new THREE.Sprite(mat)
     sprite.position.set(x, y, z)
     sprite.scale.set(4, 1, 1)
     this.group.add(sprite)

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { lerp } from './utils/math.js'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
 export default class Camera {
   constructor(experience) {
@@ -13,7 +13,7 @@ export default class Camera {
     )
 
     // Third-person offset from target
-    this.offset = new THREE.Vector3(0, 10, 14)
+    this.offset = new THREE.Vector3(0, 6, 9)
     this.lookAtOffset = new THREE.Vector3(0, 1, 0)
 
     // Smooth follow target
@@ -29,6 +29,27 @@ export default class Camera {
 
     this.experience.scene.add(this.instance)
 
+    // Debug orbit controls (toggle with C key)
+    this.orbitMode = false
+    this.orbitControls = new OrbitControls(this.instance, experience.canvas)
+    this.orbitControls.enableDamping = true
+    this.orbitControls.dampingFactor = 0.1
+    this.orbitControls.enabled = false
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'c' || e.key === 'C') {
+        this.orbitMode = !this.orbitMode
+        this.orbitControls.enabled = this.orbitMode
+        if (this.orbitMode) {
+          // Set orbit target to current look-at point
+          this.orbitControls.target.copy(this.smoothLookAt)
+          console.log('📷 Orbit camera ON — drag to rotate, scroll to zoom')
+        } else {
+          console.log('📷 Orbit camera OFF — following player')
+        }
+      }
+    })
+
     window.addEventListener('resize', () => this.resize())
   }
 
@@ -42,6 +63,11 @@ export default class Camera {
   }
 
   update(delta) {
+    if (this.orbitMode) {
+      this.orbitControls.update()
+      return
+    }
+
     const lerpFactor = 1 - Math.pow(0.01, delta)
 
     // Desired camera position

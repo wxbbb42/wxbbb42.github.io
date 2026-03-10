@@ -10,6 +10,7 @@ import World from './World/World.js'
 import AgentHUD from './UI/AgentHUD.js'
 import Dialog from './UI/Dialog.js'
 import Intro from './UI/Intro.js'
+import Editor from './Editor.js'
 import { COLORS } from './utils/constants.js'
 
 export default class Experience {
@@ -24,7 +25,7 @@ export default class Experience {
     // Three.js scene
     this.scene = new THREE.Scene()
     this.scene.background = new THREE.Color(COLORS.sky)
-    this.scene.fog = new THREE.Fog(COLORS.fog, 25, 65)
+    this.scene.fog = new THREE.Fog(COLORS.fog, 12, 35)
 
     // Core systems
     this.ticker = new Ticker()
@@ -70,6 +71,9 @@ export default class Experience {
   }
 
   _start() {
+    // Create the editor (before World so World can check for saved layout)
+    this.editor = new Editor(this)
+
     // Build the world
     this.world = new World(this)
 
@@ -88,6 +92,7 @@ export default class Experience {
       this.input.update()
       if (this.physics) this.physics.update(delta)
       if (this.world) this.world.update(delta)
+      if (this.editor) this.editor.update()
       this.camera.update(delta)
       this.renderer.render()
     })
@@ -95,25 +100,25 @@ export default class Experience {
   }
 
   _setupLighting() {
-    // Ambient light: soft warm fill
-    const ambient = new THREE.AmbientLight(0xfff5e6, 0.5)
+    // Ambient light: warm Mars fill
+    const ambient = new THREE.AmbientLight(0xffccaa, 0.6)
     this.scene.add(ambient)
 
-    // Hemisphere light: sky blue above, grass green below
-    const hemisphere = new THREE.HemisphereLight(0x87ceeb, 0x556b2f, 0.4)
+    // Hemisphere light: peachy sky above, warm ground below
+    const hemisphere = new THREE.HemisphereLight(0xD4956B, 0xC4835A, 0.5)
     this.scene.add(hemisphere)
 
-    // Directional light: main sun with shadows
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2)
+    // Directional light: bright warm sun
+    const sun = new THREE.DirectionalLight(0xffeedd, 1.3)
     sun.position.set(15, 25, 10)
     sun.castShadow = true
     sun.shadow.mapSize.set(2048, 2048)
     sun.shadow.camera.near = 0.5
     sun.shadow.camera.far = 80
-    sun.shadow.camera.left = -35
-    sun.shadow.camera.right = 35
-    sun.shadow.camera.top = 35
-    sun.shadow.camera.bottom = -35
+    sun.shadow.camera.left = -20
+    sun.shadow.camera.right = 20
+    sun.shadow.camera.top = 20
+    sun.shadow.camera.bottom = -20
     sun.shadow.bias = -0.0005
     this.scene.add(sun)
     this.scene.add(sun.target)
