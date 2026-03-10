@@ -1,7 +1,13 @@
 import * as THREE from 'three'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
+import { createClient } from '@supabase/supabase-js'
 
 const STORAGE_KEY = 'clawd-world-editor-layout'
+
+// Supabase config
+const SUPABASE_URL = 'https://kuvftworrlcnqpavgkcg.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_IrAlGjUbMTGRofgRVAJ4ZA_FdU5rjma'
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 const EDITOR_MODEL_NAMES = [
   'hangarLargeA', 'hangarRoundGlass', 'hangarSmallA', 'structureDetailed',
@@ -12,6 +18,17 @@ const EDITOR_MODEL_NAMES = [
   'barrel', 'barrels', 'rover', 'turretSingle', 'rail', 'bones',
   'deskComputer', 'deskChairArms', 'astronaut', 'astronautPlayer',
 ]
+
+// Default scales matching the hardcoded scene placements
+const DEFAULT_SCALES = {
+  hangarLargeA: 3.5, hangarRoundGlass: 2.5, hangarSmallA: 2.5, structureDetailed: 2.5,
+  rocketBaseA: 2.5, rocketFinsA: 2.5, rocketFuelA: 2.5, rocketSidesA: 2.5, rocketTopA: 2.5,
+  rockLargeA: 1.8, rockLargeB: 1.8, rocksSmallA: 1.5, rocksSmallB: 1.5,
+  rockCrystals: 1.5, rockCrystalsLargeA: 2.0, crater: 2.0, craterLarge: 2.0, meteorHalf: 2.0,
+  satelliteDishLarge: 2.5, machineGenerator: 2.0, machineWireless: 2.0,
+  barrel: 1.8, barrels: 1.8, rover: 2.5, turretSingle: 1.8, rail: 1.8, bones: 1.5,
+  deskComputer: 1.4, deskChairArms: 1.4, astronaut: 1.4, astronautPlayer: 1.4,
+}
 
 export default class Editor {
   constructor(experience) {
@@ -36,11 +53,21 @@ export default class Editor {
     this.transformControls.addEventListener('dragging-changed', (e) => {
       // Disable orbit when dragging transform
       this.camera.orbitControls.enabled = !e.value
+      // Auto-save when user finishes dragging
+      if (!e.value && this.selected) this._autoSave()
     })
     this.scene.add(this.transformControls.getHelper())
 
     // Selection highlight material color
     this._originalMaterials = new Map()
+
+    // Auto-save debounce
+    this._saveTimeout = null
+    this._cloudSynced = false
+
+    // Thumbnail renderer (off-screen)
+    this._thumbRenderer = null
+    this._thumbCache = new Map()
 
     // Build the UI panel (hidden by default)
     this._buildUI()
@@ -216,6 +243,7 @@ export default class Editor {
     const idx = this.placedModels.indexOf(group)
     if (idx !== -1) this.placedModels.splice(idx, 1)
     console.log('[Editor] Deleted model')
+    this._autoSave()
   }
 
   recenterSelectedPivot() {
@@ -286,7 +314,7 @@ export default class Editor {
 
   // ─── Save / Load / Clear ──────────────────────────────────────────
 
-  saveLayout() {
+  _getLayoutData() {
     const layout = { models: [] }
     for (const g of this.placedModels) {
       const p = g.position
@@ -299,13 +327,58 @@ export default class Editor {
         scale: [+s.x.toFixed(3), +s.y.toFixed(3), +s.z.toFixed(3)],
       })
     }
-    const json = JSON.stringify(layout, null, 2)
-    localStorage.setItem(STORAGE_KEY, json)
-    console.log('[Editor] Layout saved', json)
     return layout
   }
 
-  loadLayout() {
+  saveLayout() {
+    const layout = this._getLayoutData()
+    const json = JSON.stringify(layout, null, 2)
+    localStorage.setItem(STORAGE_KEY, json)
+    this._saveToCloud(layout)
+    console.log('[Editor] Layout saved')
+    return layout
+  }
+
+  async _saveToCloud(layout) {
+    try {
+      const { error } = await supabase
+        .from('world_layout')
+        .update({ layout, updated_at: new Date().toISOString() })
+        .eq('id', 1)
+      if (error) throw error
+      this._cloudSynced = true
+      console.log('[Editor] Cloud save OK')
+    } catch (err) {
+      this._cloudSynced = false
+      console.warn('[Editor] Cloud save failed, localStorage still has it', err)
+    }
+  }
+
+  _autoSave() {
+    clearTimeout(this._saveTimeout)
+    this._saveTimeout = setTimeout(() => this.saveLayout(), 800)
+  }
+
+  async loadLayout() {
+    // Try cloud first
+    try {
+      const { data, error } = await supabase
+        .from('world_layout')
+        .select('layout')
+        .eq('id', 1)
+        .single()
+      if (!error && data && data.layout && data.layout.models && data.layout.models.length > 0) {
+        this._applyLayout(data.layout)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data.layout))
+        this._cloudSynced = true
+        console.log(`[Editor] Loaded ${data.layout.models.length} models from cloud`)
+        return true
+      }
+    } catch (err) {
+      console.warn('[Editor] Cloud load failed, trying localStorage', err)
+    }
+
+    // Fall back to localStorage
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) {
       console.log('[Editor] No saved layout found')
@@ -314,7 +387,7 @@ export default class Editor {
     try {
       const layout = JSON.parse(raw)
       this._applyLayout(layout)
-      console.log(`[Editor] Loaded ${layout.models.length} models`)
+      console.log(`[Editor] Loaded ${layout.models.length} models from localStorage`)
       return true
     } catch (err) {
       console.warn('[Editor] Failed to parse saved layout', err)
@@ -346,6 +419,21 @@ export default class Editor {
   }
 
   hasSavedLayout() {
+    return !!localStorage.getItem(STORAGE_KEY)
+  }
+
+  async hasSavedLayoutAsync() {
+    // Check cloud first
+    try {
+      const { data, error } = await supabase
+        .from('world_layout')
+        .select('layout')
+        .eq('id', 1)
+        .single()
+      if (!error && data && data.layout && data.layout.models && data.layout.models.length > 0) {
+        return true
+      }
+    } catch (_) { /* fall through */ }
     return !!localStorage.getItem(STORAGE_KEY)
   }
 
@@ -456,14 +544,31 @@ export default class Editor {
 
     for (const name of EDITOR_MODEL_NAMES) {
       const btn = document.createElement('button')
-      btn.textContent = name
       btn.title = name
       btn.style.cssText = `
-        padding: 6px 4px; border: 1px solid rgba(255,255,255,0.12);
+        padding: 4px; border: 1px solid rgba(255,255,255,0.12);
         background: rgba(255,255,255,0.04); color: #ccc; cursor: pointer;
-        font-family: monospace; font-size: 10px; border-radius: 3px;
-        text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+        font-family: monospace; font-size: 9px; border-radius: 3px;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 2px; min-height: 90px; justify-content: center;
       `
+
+      // Thumbnail canvas
+      const thumbCanvas = document.createElement('canvas')
+      thumbCanvas.width = 100
+      thumbCanvas.height = 70
+      thumbCanvas.style.cssText = 'width: 100%; height: 64px; border-radius: 2px;'
+      btn.appendChild(thumbCanvas)
+
+      // Label
+      const label = document.createElement('span')
+      label.textContent = name
+      label.style.cssText = 'text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 100%;'
+      btn.appendChild(label)
+
+      // Render thumbnail once resources are available
+      this._renderThumbnail(name, thumbCanvas)
+
       btn.addEventListener('mouseenter', () => {
         btn.style.background = 'rgba(68,255,170,0.15)'
         btn.style.borderColor = 'rgba(68,255,170,0.4)'
@@ -473,10 +578,12 @@ export default class Editor {
         btn.style.borderColor = 'rgba(255,255,255,0.12)'
       })
       btn.addEventListener('click', () => {
-        const group = this.placeModel(name, [0, 0, 0], [0, 0, 0], [1, 1, 1])
+        const s = DEFAULT_SCALES[name] || 1
+        const group = this.placeModel(name, [0, 0, 0], [0, 0, 0], [s, s, s])
         if (group) {
           this._select(group)
-          console.log(`[Editor] Placed "${name}" at origin`)
+          console.log(`[Editor] Placed "${name}" at origin, scale ${s}`)
+          this._autoSave()
         }
       })
       grid.appendChild(btn)
@@ -502,6 +609,61 @@ export default class Editor {
       <div>rot: ${r.x.toFixed(2)}, ${r.y.toFixed(2)}, ${r.z.toFixed(2)}</div>
       <div>scl: ${s.x.toFixed(2)}, ${s.y.toFixed(2)}, ${s.z.toFixed(2)}</div>
     `
+  }
+
+  // ─── Thumbnail rendering ──────────────────────────────────────────
+
+  _renderThumbnail(name, canvas) {
+    const gltf = this.resources.items[name]
+    if (!gltf) {
+      const ctx = canvas.getContext('2d')
+      ctx.fillStyle = '#222'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.fillStyle = '#666'
+      ctx.font = '10px monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('no model', canvas.width / 2, canvas.height / 2 + 4)
+      return
+    }
+
+    // Lazy-init the off-screen renderer
+    if (!this._thumbRenderer) {
+      this._thumbRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
+      this._thumbRenderer.setSize(100, 70)
+      this._thumbRenderer.setClearColor(0x111118, 1)
+    }
+
+    const thumbScene = new THREE.Scene()
+    const thumbCam = new THREE.PerspectiveCamera(40, 100 / 70, 0.01, 100)
+
+    // Lights
+    thumbScene.add(new THREE.AmbientLight(0xffffff, 0.8))
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2)
+    dirLight.position.set(2, 3, 4)
+    thumbScene.add(dirLight)
+
+    // Clone model
+    const model = gltf.scene.clone()
+    thumbScene.add(model)
+
+    // Fit camera to bounding box
+    const box = new THREE.Box3().setFromObject(model)
+    const center = box.getCenter(new THREE.Vector3())
+    const size = box.getSize(new THREE.Vector3())
+    const maxDim = Math.max(size.x, size.y, size.z)
+    const dist = maxDim / (2 * Math.tan((thumbCam.fov * Math.PI) / 360)) * 1.4
+
+    thumbCam.position.set(center.x + dist * 0.6, center.y + dist * 0.4, center.z + dist)
+    thumbCam.lookAt(center)
+
+    this._thumbRenderer.render(thumbScene, thumbCam)
+
+    // Copy to the button's canvas
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(this._thumbRenderer.domElement, 0, 0)
+
+    // Cleanup
+    thumbScene.remove(model)
   }
 
   // Called every frame to keep info panel fresh while dragging

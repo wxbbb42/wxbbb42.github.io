@@ -22,8 +22,8 @@ export default class World {
     this.props = null
     this.craterField = null
 
-    // Load editor layout if saved
-    if (experience.editor && experience.editor.hasSavedLayout()) {
+    // Load editor layout from cloud/localStorage
+    if (experience.editor) {
       experience.editor.loadLayout()
     }
     this.player = new Player(experience)
