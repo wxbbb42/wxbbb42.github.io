@@ -1,0 +1,43 @@
+{
+  "entries": [
+    {
+      "date": "2026-03-10",
+      "title": "WebGL Hover Distortion & Grain Texture",
+      "summary": "研究了 2025-2026 顶级创意网站的核心技术手法。重点：WebGL shader 做图片 hover 扭曲效果，以及噪声纹理叠加的质感提升。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**stabondar.com** 的项目 grid 表面上是普通 CSS grid，实际每张图片背后有一个 Three.js mesh 叠在同位置。Hover 时注入鼠标速度作为 uniform，vertex shader 计算波纹扭曲。效果：图片像液态一样在手指下流动。"
+        },
+        {
+          "type": "demo",
+          "label": "Grain Texture 噪声叠加",
+          "description": "用 CSS + SVG filter 给页面增加胶片颗粒感，成本极低，质感提升明显。",
+          "html": "<div class='grain-demo'><p>Designer who builds.</p><span class='tag'>Grain ON</span></div>",
+          "css": "body{margin:0;background:#F7F5F0;font-family:'EB Garamond',serif;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}.grain-demo{position:relative;padding:40px;text-align:center}.grain-demo p{font-size:32px;margin:0 0 16px;color:#1a1a1a}.tag{font-size:11px;letter-spacing:2px;color:#C17A3A;font-family:monospace}.grain-demo::after{content:'';position:fixed;inset:-50%;width:200%;height:200%;background-image:url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\");opacity:0.045;pointer-events:none;animation:grain 0.5s steps(2) infinite}@keyframes grain{0%,100%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(1px,-1px)}75%{transform:translate(-1px,2px)}}",
+          "js": ""
+        },
+        {
+          "type": "demo",
+          "label": "Magnetic Cursor 磁性吸附",
+          "description": "鼠标靠近元素时被「吸」过去，松开后弹回。用于按钮、标签等 CTA 元素。",
+          "html": "<div class='scene'><button class='magnetic-btn' id='btn'>Hover me</button></div>",
+          "css": "body{margin:0;background:#1a1a1a;display:flex;align-items:center;justify-content:center;height:100vh}.magnetic-btn{padding:16px 32px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:#fff;font-size:14px;letter-spacing:3px;font-family:monospace;cursor:none;transition:border-color 0.3s;border-radius:2px}.magnetic-btn:hover{border-color:#C17A3A;color:#C17A3A}",
+          "js": "const btn = document.getElementById('btn'); let rect, active=false; btn.addEventListener('mouseenter',()=>{rect=btn.getBoundingClientRect();active=true}); btn.addEventListener('mouseleave',()=>{active=false;btn.style.transform='translate(0,0)'}); document.addEventListener('mousemove',e=>{if(!active)return;const x=e.clientX-rect.left-rect.width/2;const y=e.clientY-rect.top-rect.height/2;const dist=Math.sqrt(x*x+y*y);const maxDist=80;if(dist<maxDist){const force=(maxDist-dist)/maxDist;btn.style.transform=`translate(${x*force*0.4}px,${y*force*0.4}px)`;rect=btn.getBoundingClientRect()}});"
+        },
+        {
+          "type": "note",
+          "text": "**2026 视觉语言趋势：** 极简底色 + 单一高对比 accent ✅（Ben 的 amber 方向完全对齐）。大字重对比：Ultra Light + Bold 混用。去 UI 化：无 card border，靠 whitespace 分隔。噪声纹理叠加增加胶片感。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            { "label": "stabondar.com", "url": "https://stabondar.com" },
+            { "label": "Codrops: Scroll WebGL Gallery", "url": "https://tympanus.net/codrops/2026/02/02/building-a-scroll-revealed-webgl-gallery-with-gsap-three-js-astro-and-barba-js/" },
+            { "label": "Awwwards Three.js Collection", "url": "https://www.awwwards.com/websites/three-js/" }
+          ]
+        }
+      ]
+    }
+  ]
+}

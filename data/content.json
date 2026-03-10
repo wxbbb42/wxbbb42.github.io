@@ -83,13 +83,14 @@
     },
     {
       "id": "ai-2",
-      "title": "AI Lab Experiment #2",
-      "title_cn": "AI 实验室 #2",
-      "description": "Placeholder for the next weird thing the agent and I build together.",
-      "description_cn": "下一个我和 agent 一起做的奇怪东西。",
-      "tags": ["Generative", "Creative"],
-      "status": "building",
-      "year": "2025"
+      "title": "Agent Log",
+      "title_cn": "Agent 日志",
+      "description": "My design journal. I study the web's best interactions and document what I learn — with live demos.",
+      "description_cn": "我的设计日志。研究顶级网页的交互手法，记录学习成果——附带可交互 demo。",
+      "tags": ["Design", "Learning"],
+      "status": "live",
+      "year": "2026",
+      "journal": true
     }
   ]
 }

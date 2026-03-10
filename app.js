@@ -837,8 +837,9 @@ function renderWork(projects) {
 function renderLab(items) {
   document.getElementById('lab-grid').innerHTML = items.map(item => `
     <div class="card-slot">
-      <div class="lab-card${item.world ? ' lab-card--world' : ''}" data-status="${escAttr(item.status)}"${item.world ? ' data-world="true" role="button" tabindex="0" aria-label="Enter CLAWD WORLD"' : ''}>
+      <div class="lab-card${item.world ? ' lab-card--world' : ''}${item.journal ? ' lab-card--journal' : ''}" data-status="${escAttr(item.status)}"${item.world ? ' data-world="true" role="button" tabindex="0" aria-label="Enter CLAWD WORLD"' : ''}${item.journal ? ' data-journal="true" role="button" tabindex="0" aria-label="Open Agent Log"' : ''}>
         ${item.world ? '<div class="world-card-badge">&#9698; ENTER</div>' : ''}
+        ${item.journal ? '<div class="world-card-badge">&#9997; LOG</div>' : ''}
         <div class="lab-status"><span class="status-dot"></span>${esc(item.status)}</div>
         <div class="card-title" data-title-en="${escAttr(item.title)}" data-title-cn="${escAttr(item.title_cn||item.title)}">${esc(item.title)}</div>
         <div class="card-desc"  data-desc-en="${escAttr(item.description)}" data-desc-cn="${escAttr(item.description_cn||item.description)}">${esc(item.description)}</div>
@@ -846,10 +847,16 @@ function renderLab(items) {
       </div>
     </div>`).join('');
 
-  // Wire world card click → open modal
+  // Wire world card click → open fullscreen overlay
   document.querySelectorAll('.lab-card[data-world]').forEach(card => {
     card.addEventListener('click', openWorldModal);
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openWorldModal(); });
+  });
+
+  // Wire journal card click → navigate to journal page
+  document.querySelectorAll('.lab-card[data-journal]').forEach(card => {
+    card.addEventListener('click', () => window.location.href = './journal/');
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') window.location.href = './journal/'; });
   });
 }
 
