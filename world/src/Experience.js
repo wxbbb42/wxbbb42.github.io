@@ -111,7 +111,7 @@ export default class Experience {
     for (let i = 0; i < starCount; i++) {
       const theta = Math.random() * Math.PI * 2
       const phi = Math.acos(2 * Math.random() - 1)
-      const r = 120 + Math.random() * 30
+      const r = 80 + Math.random() * 20
       positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta)
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
       positions[i * 3 + 2] = r * Math.cos(phi)
@@ -124,6 +124,7 @@ export default class Experience {
       sizeAttenuation: true,
       transparent: true,
       opacity: 0.85,
+      fog: false, // stars must NOT be affected by scene fog
     })
     this.stars = new THREE.Points(starGeo, starMat)
     this.scene.add(this.stars)
