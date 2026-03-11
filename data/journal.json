@@ -14,6 +14,22 @@
           "text": "**Awwwards SOTD Mar 10, 2026 — ON Energy**\n\n今日站点 ON Energy 的视觉语言值得拆解：大面积深色背景 + 高饱和度能量色（电绿/荧光橙），UI 元素用「玻璃拟态 2.0」——不是 2021 年那种模糊滤镜，而是**超低不透明度 border + 内发光 + 近零 fill**，看起来像全息投影面板。技术实现极其简单：\n```css\n.panel {\n  background: rgba(255,255,255,0.03);\n  border: 1px solid rgba(255,255,255,0.12);\n  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);\n}\n```\n关键在于「内高光」（inset box-shadow 顶部一条 1px 白线），这条线让 panel 有厚度感。"
         },
         {
+          "type": "demo",
+          "label": "Scroll-Velocity 形变效果",
+          "description": "CSS 模拟：滚动速度驱动文字波形扭曲，松手后弹回。",
+          "html": "<div class='sv-container'><div class='sv-track' id='track'><div class='sv-item'>Designer who builds.</div><div class='sv-item'>Senior Product Designer</div><div class='sv-item'>at Microsoft</div><div class='sv-item'>Designer who builds.</div><div class='sv-item'>Senior Product Designer</div><div class='sv-item'>at Microsoft</div></div><div class='sv-label'>↕ Scroll inside</div></div>",
+          "css": "body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;font-family:'EB Garamond',serif}.sv-container{position:relative;width:340px;height:240px;overflow-y:scroll;border:1px solid rgba(255,255,255,0.1)}.sv-track{padding:20px 32px}.sv-item{font-size:28px;color:#f5f0e8;line-height:1.6;transform-origin:center;transition:transform 0.2s cubic-bezier(.25,.46,.45,.94),opacity 0.2s}.sv-label{position:fixed;bottom:10px;right:14px;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-family:monospace}",
+          "js": "const container=document.querySelector('.sv-container');let lastY=0;container.addEventListener('scroll',()=>{const dy=container.scrollTop-lastY;lastY=container.scrollTop;const vel=Math.max(-1,Math.min(1,dy/10));container.querySelectorAll('.sv-item').forEach(el=>{el.style.transform=`skewY(${vel*5}deg) scaleX(${1+Math.abs(vel)*0.05})`;el.style.opacity=1-Math.abs(vel)*0.2});clearTimeout(container._t);container._t=setTimeout(()=>{container.querySelectorAll('.sv-item').forEach(el=>{el.style.transform='';el.style.opacity=1})},250)});"
+        },
+        {
+          "type": "demo",
+          "label": "ON Energy 玻璃质感 Panel",
+          "description": "超低不透明度 border + 内发光 + 近零 fill。关键：inset box-shadow 顶部 1px 白线给 panel 厚度感。",
+          "html": "<div class='scene'><div class='panel'><div class='panel-tag'>ENERGY OUTPUT</div><div class='panel-value'>94.7<span class='unit'>%</span></div><div class='panel-bar'><div class='panel-fill'></div></div><div class='panel-sub'>System nominal · 3 nodes active</div></div></div>",
+          "css": "body{margin:0;background:linear-gradient(135deg,#0a0f0a 0%,#0d1a10 100%);display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Inter',sans-serif}.panel{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);box-shadow:inset 0 1px 0 rgba(255,255,255,0.08),0 0 40px rgba(50,255,100,0.04);padding:32px 40px;min-width:280px;border-radius:2px}.panel-tag{font-size:9px;letter-spacing:3px;color:rgba(80,255,120,0.5);margin-bottom:16px;font-family:monospace}.panel-value{font-size:56px;color:#e8f5ea;font-weight:300;line-height:1;margin-bottom:20px}.unit{font-size:24px;opacity:0.4}.panel-bar{height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-bottom:16px;overflow:hidden}.panel-fill{height:100%;width:94.7%;background:linear-gradient(90deg,rgba(50,255,100,0.6),rgba(50,255,100,0.2))}.panel-sub{font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:0.5px}",
+          "js": ""
+        },
+        {
           "type": "ref",
           "links": [
             { "label": "Codrops: Scroll-driven WebGL Gallery (Mar 9, 2026)", "url": "https://tympanus.net/codrops/tag/webgl/" },
@@ -21,11 +37,6 @@
             { "label": "Awwwards 最新获奖站点", "url": "https://www.awwwards.com/websites/" }
           ]
         }
-      ]
-    },
-    {
-      "date": "2026-03-10",
-      "title": "WebGL Hover Distortion & Grain Texture",
       "summary": "研究了 2025-2026 顶级创意网站的核心技术手法。重点：WebGL shader 做图片 hover 扭曲效果，以及噪声纹理叠加的质感提升。",
       "blocks": [
         {
