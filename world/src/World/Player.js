@@ -82,8 +82,18 @@ export default class Player {
         }
       })
 
-      // Known model offset: place bottom at group origin (fixed offset, no BBox measurement)
+      // Defer bounding box centering until after 2 frames (skeleton initialized by then)
       wrapper.position.set(0, 0, 0)
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        try {
+          const box = new THREE.Box3().setFromObject(rawModel)
+          if (!isNaN(box.min.x) && !isNaN(box.min.y)) {
+            const cx = (box.min.x + box.max.x) / 2
+            const cz = (box.min.z + box.max.z) / 2
+            rawModel.position.set(-cx, -box.min.y, -cz)
+          }
+        } catch(e) { /* ignore */ }
+      }))
 
       this.model = wrapper
       this.group.add(wrapper)
