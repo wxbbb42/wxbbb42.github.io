@@ -73,7 +73,7 @@ export default class FootstepDust {
       `,
       transparent: true,
       depthWrite: false,
-      fog: true,
+      fog: false,
     })
 
     this._points = new THREE.Points(this._geo, this._mat)
