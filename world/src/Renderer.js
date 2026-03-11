@@ -5,6 +5,8 @@ import {
   EffectPass,
   BloomEffect,
   SMAAEffect,
+  HueSaturationEffect,
+  BrightnessContrastEffect,
 } from 'postprocessing'
 
 export default class Renderer {
@@ -21,7 +23,7 @@ export default class Renderer {
     this.instance.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.instance.setSize(window.innerWidth, window.innerHeight)
     this.instance.toneMapping = THREE.ACESFilmicToneMapping
-    this.instance.toneMappingExposure = 1.35
+    this.instance.toneMappingExposure = 1.4  // slightly brighter for richer output
     this.instance.shadowMap.enabled = true
     this.instance.shadowMap.type = THREE.PCFSoftShadowMap
 
@@ -38,19 +40,25 @@ export default class Renderer {
     // 1. Base render
     this.composer.addPass(new RenderPass(scene, camera.instance))
 
-    // 2. Bloom — glows on emissive surfaces (agent status lights, crystals, screens)
+    // 2. Bloom — glows on emissive surfaces
     this.bloomEffect = new BloomEffect({
-      intensity: 0.8,              // reduced — scene is brighter now
-      luminanceThreshold: 0.7,    // higher threshold, only true highlights bloom
+      intensity: 0.8,
+      luminanceThreshold: 0.7,
       luminanceSmoothing: 0.4,
       mipmapBlur: true,
       radius: 0.5,
     })
 
-    // 3. SMAA anti-aliasing
+    // 3. Saturation boost — richer colors without blowing highlights
+    this.saturationEffect = new HueSaturationEffect({ saturation: 0.35 })
+
+    // 4. Contrast lift — punchier shadows
+    this.contrastEffect = new BrightnessContrastEffect({ brightness: 0.0, contrast: 0.12 })
+
+    // 5. SMAA anti-aliasing
     this.smaaEffect = new SMAAEffect()
 
-    this.composer.addPass(new EffectPass(camera.instance, this.bloomEffect, this.smaaEffect))
+    this.composer.addPass(new EffectPass(camera.instance, this.bloomEffect, this.saturationEffect, this.contrastEffect, this.smaaEffect))
   }
 
   resize() {

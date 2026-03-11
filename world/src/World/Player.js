@@ -28,7 +28,7 @@ export default class Player {
     // Mars gravity constants
     this.GRAVITY_UP   = -3.72       // while rising (38% of Earth)
     this.GRAVITY_DOWN = -3.72 * 1.8 // while falling (heavier = snappier landing)
-    this.JUMP_VELOCITY = 6.0
+    this.JUMP_VELOCITY = 3.0
 
     // Landing squash & stretch
     this._landingScale = 1.0

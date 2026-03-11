@@ -16,20 +16,15 @@ export default class Intro {
   }
 
   showEnterButton() {
-    this.enterBtn.classList.remove('hidden')
+    // Auto-enter immediately — no button needed
     this.loadingText.textContent = 'ready!'
-
-    this.enterBtn.addEventListener('click', () => {
-      this._enter()
-    })
+    this._enter()
   }
 
   _enter() {
     this.overlay.classList.add('hidden')
-
-    // Start the experience
     if (this.onEnter) {
-      setTimeout(() => this.onEnter(), 800)
+      setTimeout(() => this.onEnter(), 600)
     }
   }
 }
