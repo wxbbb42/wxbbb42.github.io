@@ -28,12 +28,16 @@ export default class FootstepDust {
     this._geo.setAttribute('opacity',  new THREE.BufferAttribute(opacities,  1))
     this._geo.setAttribute('size',     new THREE.BufferAttribute(sizes,      1))
 
-    // Init all positions far below ground so bounding sphere never has NaN
+    // Init all positions far below ground
     for (let i = 0; i < DUST_COUNT; i++) {
       positions[i * 3]     = 0
       positions[i * 3 + 1] = -999
       positions[i * 3 + 2] = 0
     }
+
+    // Pre-set fixed bounding sphere — reassigned every frame after needsUpdate
+    this._fixedSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 5000)
+    this._geo.boundingSphere = this._fixedSphere
 
     // Pool of particle state objects
     this._pool = Array.from({ length: DUST_COUNT }, (_, i) => ({
@@ -99,6 +103,7 @@ export default class FootstepDust {
   }
 
   update(delta, playerPos, isMoving, isGrounded) {
+    if (!playerPos) return
     const pos = this._geo.attributes.position
     const opc = this._geo.attributes.opacity
     const siz = this._geo.attributes.size
@@ -153,5 +158,7 @@ export default class FootstepDust {
     pos.needsUpdate = true
     opc.needsUpdate = true
     siz.needsUpdate = true
+    // needsUpdate clears boundingSphere — must reassign every frame to prevent NaN crash
+    this._geo.boundingSphere = this._fixedSphere
   }
 }
