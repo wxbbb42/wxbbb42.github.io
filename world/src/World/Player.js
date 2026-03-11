@@ -53,6 +53,7 @@ export default class Player {
     this._raycaster  = new THREE.Raycaster()
     this._rayDir     = new THREE.Vector3(0, -1, 0)
     this._groundY    = 0
+    this._smoothPos  = new THREE.Vector3()  // smoothed visual position (anti-jitter)
 
     this._createCharacter()
     this.group.position.copy(this.position)
@@ -260,12 +261,24 @@ export default class Player {
       const groundGroup = this.experience.world?.ground?.group
       if (groundGroup) {
         const hits = this._raycaster.intersectObjects(groundGroup.children, true)
-        if (hits.length > 0) this._groundY = hits[0].point.y
+        if (hits.length > 0) {
+          // Lerp groundY to avoid jitter from per-frame noise sampling
+          this._groundY += (hits[0].point.y - this._groundY) * 0.25
+        }
       }
-      this.group.position.set(newPos.x, this._groundY + this._visualYOffset, newPos.z)
+      const targetY = this._groundY + this._visualYOffset
+      // Smooth full position to remove physics tick micro-stutter
+      this._smoothPos.set(
+        this._smoothPos.x + (newPos.x - this._smoothPos.x) * 0.35,
+        this._smoothPos.y + (targetY   - this._smoothPos.y) * 0.25,
+        this._smoothPos.z + (newPos.z - this._smoothPos.z) * 0.35,
+      )
+      this.group.position.copy(this._smoothPos)
     } else {
-      // Airborne: use physics Y
-      this.group.position.set(newPos.x, feetY, newPos.z)
+      // Airborne: use physics Y directly (no raycast needed)
+      const feetY = newPos.y - this._capsuleOffset + this._visualYOffset
+      this._smoothPos.set(newPos.x, feetY, newPos.z)
+      this.group.position.copy(this._smoothPos)
     }
 
     // Squash & stretch
