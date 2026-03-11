@@ -185,14 +185,15 @@ export default class Experience {
     const pmrem = new THREE.PMREMGenerator(this.renderer.instance)
     const env = pmrem.fromScene(new RoomEnvironment(), 0.04)
     this.scene.environment = env.texture
+    this.scene.environmentIntensity = 0.5  // dial down IBL so shadows read deeper
     pmrem.dispose()
 
     // Hemisphere light: warm Mars sky above, deep red ground below
     // This is the "ambient bounce" — no harsh shadows, fills all faces
     const hemisphere = new THREE.HemisphereLight(
-      0xFFCC99,  // sky: very subtle warm haze
-      0x6B2000,  // ground: dark Mars red bounce (doesn't overpaint surface)
-      0.9        // dialed down — env map does the heavy lifting now
+      0xFFCC99,  // sky: subtle warm haze
+      0x4A1500,  // ground: darker Mars red (deeper shadow contrast)
+      0.6        // reduced — let shadows go darker
     )
     this.scene.add(hemisphere)
 
