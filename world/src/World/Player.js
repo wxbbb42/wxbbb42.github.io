@@ -13,46 +13,42 @@ export default class Player {
       TOWN.playerStart.y,
       TOWN.playerStart.z
     )
-    this.velocity = new THREE.Vector3()
-    this.verticalVelocity = 0       // m/s, positive = up
-    this._isGrounded = true
+
+    // Horizontal movement — smoothed (friction feel)
+    this.inputVelocity  = new THREE.Vector3()  // raw input direction × speed
+    this.smoothVelocity = new THREE.Vector3()  // lerped velocity (for slide decel)
     this.targetRotation = 0
     this.speed = 6
 
-    // Mars gravity: 3.72 m/s² (38% of Earth's 9.81)
-    this.GRAVITY = -3.72
-    // Jump initial velocity — tuned for Mars feel (floaty, high arc)
+    // Vertical / jump
+    this.verticalVelocity = 0       // m/s, positive = up
+    this._isGrounded      = true
+    this._wasGrounded     = true
+
+    // Mars gravity constants
+    this.GRAVITY_UP   = -3.72       // while rising (38% of Earth)
+    this.GRAVITY_DOWN = -3.72 * 1.8 // while falling (heavier = snappier landing)
     this.JUMP_VELOCITY = 6.0
 
     // Landing squash & stretch
-    this._wasGrounded = true
-    this._landingScale = 1.0          // current Y scale
-    this._squashT      = 0            // animation progress 0→1
+    this._landingScale = 1.0
+    this._squashT      = 0
     this._squashing    = false
-    this._peakVelocity = 0            // track max downward velocity for squash intensity
+    this._peakVelocity = 0
 
     // Animation
     this.mixer = null
     this.actions = {}
     this.currentAction = null
 
-    // Raycaster for ground detection
-    this._raycaster = new THREE.Raycaster()
-    this._rayOrigin = new THREE.Vector3()
-    this._rayDir = new THREE.Vector3(0, -1, 0)
-    this._groundY = 0
+    // Capsule half-height+radius offset (capsule center above feet)
+    this._capsuleOffset = 0.55
 
     this._createCharacter()
     this.group.position.copy(this.position)
   }
 
   _createCharacter() {
-    // The physics capsule center is above ground by (halfHeight + radius).
-    // We offset the visual model down so its feet align with the ground.
-    // Capsule params: halfHeight=0.3, radius=0.25 → center at 0.55 above ground
-    this._capsuleOffset = 0.55
-
-    // Try astronaut model first (Kenney — no animations, static)
     const astronautGltf = this.experience.resources.items.astronautPlayer
     if (astronautGltf) {
       const rawModel = astronautGltf.scene.clone()
@@ -64,16 +60,12 @@ export default class Player {
         }
       })
 
-      // Wrapper container: flip model 180° inside, then center
-      // This way the group rotation (for movement direction) doesn't shift position
       const wrapper = new THREE.Group()
       wrapper.add(rawModel)
-      rawModel.rotation.y = Math.PI // face forward
+      rawModel.rotation.y = Math.PI
 
-      // Now compute bounding box of the flipped model
       const box = new THREE.Box3().setFromObject(wrapper)
       const center = box.getCenter(new THREE.Vector3())
-      // Offset wrapper so center-bottom is at origin
       wrapper.position.set(-center.x, -box.min.y, -center.z)
 
       this.model = wrapper
@@ -81,7 +73,6 @@ export default class Player {
       return
     }
 
-    // Fallback to animated Quaternius player
     const gltf = this.experience.resources.items.player
     if (gltf) {
       this.model = gltf.scene
@@ -109,12 +100,10 @@ export default class Player {
   _createFallback() {
     const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4488ff, flatShading: true })
     const headMat = new THREE.MeshStandardMaterial({ color: 0xffcc88, flatShading: true })
-
     const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.3), bodyMat)
     body.position.y = 0.5
     body.castShadow = true
     this.group.add(body)
-
     const head = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), headMat)
     head.position.y = 1.0
     head.castShadow = true
@@ -125,21 +114,16 @@ export default class Player {
     if (this.currentAction === name) return
     const newAction = this.actions[name]
     if (!newAction) return
-
     const oldAction = this.actions[this.currentAction]
-    if (oldAction) {
-      oldAction.fadeOut(0.2)
-    }
-
+    if (oldAction) oldAction.fadeOut(0.2)
     newAction.reset().fadeIn(0.2).play()
     this.currentAction = name
   }
 
   update(delta) {
-    const input = this.experience.input
+    const input  = this.experience.input
     const camera = this.experience.camera
 
-    // Update animation mixer
     if (this.mixer) this.mixer.update(delta)
 
     if (input.locked) {
@@ -147,7 +131,7 @@ export default class Player {
       return
     }
 
-    // Get camera-relative forward/right directions
+    // Camera-relative directions (horizontal only)
     const cameraDir = new THREE.Vector3()
     camera.instance.getWorldDirection(cameraDir)
     cameraDir.y = 0
@@ -156,101 +140,96 @@ export default class Player {
     const cameraRight = new THREE.Vector3()
     cameraRight.crossVectors(cameraDir, new THREE.Vector3(0, 1, 0)).normalize()
 
-    // Compute movement direction from input
-    this.velocity.set(0, 0, 0)
-    if (input.keys.forward) this.velocity.add(cameraDir)
-    if (input.keys.backward) this.velocity.sub(cameraDir)
-    if (input.keys.left) this.velocity.sub(cameraRight)
-    if (input.keys.right) this.velocity.add(cameraRight)
+    // Raw input velocity
+    this.inputVelocity.set(0, 0, 0)
+    if (input.keys.forward)  this.inputVelocity.add(cameraDir)
+    if (input.keys.backward) this.inputVelocity.sub(cameraDir)
+    if (input.keys.left)     this.inputVelocity.sub(cameraRight)
+    if (input.keys.right)    this.inputVelocity.add(cameraRight)
 
-    if (this.velocity.lengthSq() > 0) {
-      this.velocity.normalize().multiplyScalar(this.speed)
-
-      // Rotate character to face movement direction
-      this.targetRotation = Math.atan2(this.velocity.x, this.velocity.z)
-
+    const hasInput = this.inputVelocity.lengthSq() > 0
+    if (hasInput) {
+      this.inputVelocity.normalize().multiplyScalar(this.speed)
+      this.targetRotation = Math.atan2(this.inputVelocity.x, this.inputVelocity.z)
       this._playAction('Walk')
     } else {
       this._playAction('Idle')
     }
 
-    // Smoothly rotate toward target
+    // Friction / deceleration: smooth velocity toward input
+    // accel fast (0.12 factor → ~8 frames), decel slower (0.08 → ~12 frames)
+    const lerpFactor = hasInput ? 0.18 : 0.10
+    this.smoothVelocity.lerp(this.inputVelocity, lerpFactor)
+
+    // Rotation — smooth turn
     let diff = this.targetRotation - this.group.rotation.y
-    while (diff > Math.PI) diff -= Math.PI * 2
+    while (diff > Math.PI)  diff -= Math.PI * 2
     while (diff < -Math.PI) diff += Math.PI * 2
     this.group.rotation.y += diff * 0.15
 
-    // Jump input — only when grounded
+    // Jump (only when grounded)
     if (input.consumeJump() && this._isGrounded) {
       this.verticalVelocity = this.JUMP_VELOCITY
       this._isGrounded = false
     }
 
-    // Apply Mars gravity
-    this.verticalVelocity += this.GRAVITY * delta
+    // Asymmetric gravity: lighter going up, heavier falling down
+    const gravity = this.verticalVelocity > 0 ? this.GRAVITY_UP : this.GRAVITY_DOWN
+    this.verticalVelocity += gravity * delta
 
-    // Track peak downward velocity for squash intensity
+    // Track peak downward speed for squash intensity
     if (!this._isGrounded && this.verticalVelocity < this._peakVelocity) {
       this._peakVelocity = this.verticalVelocity
     }
 
-    // Move via physics (now passes vertical velocity separately)
-    const grounded = this.experience.physics.moveCharacter(this.velocity, this.verticalVelocity, delta)
-    if (grounded && this.verticalVelocity < 0) {
-      // Just landed
+    // Physics move — uses smoothed horizontal + vertical
+    const grounded = this.experience.physics.moveCharacter(
+      this.smoothVelocity, this.verticalVelocity, delta
+    )
+
+    if (grounded && this.verticalVelocity <= 0) {
       if (!this._wasGrounded) {
+        // Landing: trigger squash
         const impact = Math.min(Math.abs(this._peakVelocity) / this.JUMP_VELOCITY, 1)
-        this._squashT    = 0
-        this._squashing  = true
-        this._landingScale = 1 - impact * 0.35  // max squash 35%
+        this._squashT      = 0
+        this._squashing    = true
+        this._landingScale = 1 - impact * 0.35
         this._peakVelocity = 0
       }
       this.verticalVelocity = 0
       this._isGrounded = true
+    } else if (!grounded) {
+      this._isGrounded = false
     }
     this._wasGrounded = grounded
+
+    // Position: fully trust Rapier physics Y (fix float/clip bug)
     const newPos = this.experience.physics.getCharacterPosition()
     this.position.copy(newPos)
 
-    // Raycast down to find the actual ground surface height
-    this._rayOrigin.set(newPos.x, newPos.y + 2, newPos.z) // cast from above
-    this._raycaster.set(this._rayOrigin, this._rayDir)
-    this._raycaster.far = 10
+    // Feet Y = capsule center Y - capsuleOffset
+    const feetY = newPos.y - this._capsuleOffset
+    this.group.position.set(newPos.x, feetY, newPos.z)
 
-    // Only check ground mesh (first child of ground group)
-    const groundGroup = this.experience.world?.ground?.group
-    if (groundGroup) {
-      const hits = this._raycaster.intersectObjects(groundGroup.children, true)
-      if (hits.length > 0) {
-        this._groundY = hits[0].point.y
-      }
-    }
-
-    // When airborne, use physics Y; when grounded, snap to raycast ground surface
-    const physicsY = newPos.y - 0.55 // subtract capsule half-height to get feet position
-    const visualY = this._isGrounded ? this._groundY : Math.max(physicsY, this._groundY)
-    this.group.position.set(newPos.x, visualY, newPos.z)
-
-    // Squash & stretch landing animation
+    // Squash & stretch
     if (this._squashing) {
-      this._squashT += delta * 8  // animation speed
+      this._squashT += delta * 8
       if (this._squashT >= 1) {
-        this._squashT = 1
+        this._squashT   = 1
         this._squashing = false
       }
-      // Ease out: squash → normal → slight stretch → normal
-      const t = this._squashT
+      const t     = this._squashT
       const eased = t < 0.5
-        ? 4 * t * t * t               // ease in cubic (squash phase)
-        : 1 - Math.pow(-2 * t + 2, 3) / 2  // ease out cubic (recover)
-      const scaleY = this._landingScale + (1 - this._landingScale) * eased
-      const scaleXZ = 1 + (1 - scaleY) * 0.5  // opposite axis bulge
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2
+      const scaleY  = this._landingScale + (1 - this._landingScale) * eased
+      const scaleXZ = 1 + (1 - scaleY) * 0.5
       this.group.scale.set(scaleXZ, scaleY, scaleXZ)
-    } else if (!this._squashing && this._isGrounded) {
+    } else if (this._isGrounded) {
       this.group.scale.set(1, 1, 1)
     }
 
-    // Update camera target (use visual position for smooth camera)
+    // Camera target: use visual group position
     camera.setTarget(this.group.position)
   }
 
@@ -259,7 +238,5 @@ export default class Player {
     this.group.position.copy(this.position)
     this.experience.physics.setCharacterPosition(x, y, z)
     this.experience.camera.setTarget(this.position)
-    // Snap camera immediately
-    this.experience.camera.smoothPosition.copy(this.position).add(this.experience.camera.offset)
   }
 }
