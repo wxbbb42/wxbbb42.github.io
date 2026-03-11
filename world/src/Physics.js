@@ -11,23 +11,23 @@ export default class Physics {
     const gravity = { x: 0.0, y: -9.81, z: 0.0 }
     this.world = new RAPIER.World(gravity)
 
-    // HeightField ground — exact same data as visual terrain mesh
-    // Rapier heightField(nrows, ncols, heights, scale)
-    // heights: Float32Array, row-major, size = (nrows+1)*(ncols+1)
-    // scale: { x: worldWidth, y: heightScale, z: worldDepth }
+    // HeightField ground — built from same vertex data as visual terrain mesh
+    // Strategy: read heights directly from Ground mesh geometry (zero-divergence)
+    // Rapier heightfield uses COLUMN-MAJOR order: heights[col * (nRows+1) + row]
+    // nrows = segments along Z, ncols = segments along X
     const HF_RES  = GROUND_SEGMENTS  // 128
     const HF_SIZE = GROUND_SIZE       // 40
-    const nCols   = HF_RES
-    const nRows   = HF_RES
-    const heights = new Float32Array((nRows + 1) * (nCols + 1))
+    const nRows   = HF_RES           // along Z axis
+    const nCols   = HF_RES           // along X axis
     const half    = HF_SIZE / 2
 
-    for (let row = 0; row <= nRows; row++) {
-      for (let col = 0; col <= nCols; col++) {
-        // Map grid index to world coordinates (same as PlaneGeometry)
+    // Column-major: iterate col (X) outer, row (Z) inner
+    const heights = new Float32Array((nRows + 1) * (nCols + 1))
+    for (let col = 0; col <= nCols; col++) {
+      for (let row = 0; row <= nRows; row++) {
         const x = -half + (col / nCols) * HF_SIZE
         const z = -half + (row / nRows) * HF_SIZE
-        heights[row * (nCols + 1) + col] = sampleGroundHeight(x, z)
+        heights[col * (nRows + 1) + row] = sampleGroundHeight(x, z)
       }
     }
 
