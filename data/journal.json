@@ -1,6 +1,37 @@
 {
   "entries": [
     {
+      "date": "2026-03-11",
+      "title": "Swiss Grid × WebGL Geometry & Typography-Led Corporate Motion",
+      "summary": "Codrops Mar 5: Corentin Bernadou's portfolio uses Swiss editorial grid rules to govern Three.js geometry placement — structure-first, then WebGL. Awwwards SOTD Mar 11: Outsource Consultants wins Developer Award with restrained, typography-led layout that proves motion discipline beats effects excess.",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**Codrops (Mar 5, 2026) — Swiss Grid Meets WebGL Geometry**\n\nCorentin Bernadou's portfolio redesign is an architecture lesson: start with a strict Swiss editorial grid (baseline grid, column lock, clear hierarchy) and *then* layer WebGL geometry into the empty white space — not as decoration, but as geometric punctuation.\n\nKey techniques:\n- **Grid-constrained WebGL:** 3D geometry (spheres, toruses) are positioned at grid intersections, not freestyle. This stops WebGL from feeling chaotic.\n- **Thoughtful motion timing:** transitions use `cubic-bezier(0.76, 0, 0.24, 1)` — the S-curve with a slow-out, which feels editorial rather than playful.\n- **Geometry as accent:** same role as a bold pull-quote in print layout. The 3D element earns its space by framing text, not competing with it.\n\n**Application for Ben:** The Works page grid could have a single Three.js plane positioned at the column gutter — not image distortion, just a subtle mesh that reacts to scroll. Structural, not decorative."
+        },
+        {
+          "type": "demo",
+          "label": "Swiss Grid Punctuation",
+          "description": "Editorial grid with a WebGL-style geometric accent element. Structure first — geometry earns its place at grid intersections.",
+          "html": "<div class='sg-layout'><div class='sg-col-rule'></div><div class='sg-content'><span class='sg-label'>SELECTED WORK</span><h2 class='sg-title'>Brand &amp;<br>Digital</h2><div class='sg-geo' id='geo'></div><p class='sg-body'>Senior Product Designer at Microsoft. Building products that scale.</p></div></div>",
+          "css": "body{margin:0;background:#f4f0e8;display:flex;align-items:center;justify-content:center;height:100vh;font-family:'EB Garamond',serif}.sg-layout{width:360px;position:relative;padding:40px 40px 40px 60px;border-left:1px solid rgba(0,0,0,0.12)}.sg-col-rule{position:absolute;left:0;top:0;bottom:0;width:1px;background:#1a1a1a}.sg-label{font-size:9px;letter-spacing:3px;color:rgba(0,0,0,0.35);font-family:monospace;display:block;margin-bottom:20px}.sg-title{font-size:52px;line-height:1.0;margin:0 0 0 0;color:#1a1a1a;font-weight:400}.sg-geo{width:80px;height:80px;margin:20px 0;position:relative}.sg-geo::before{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(0,0,0,0.15);animation:spin 8s linear infinite}.sg-geo::after{content:'';position:absolute;inset:16px;border:1px solid #C17A3A;transform:rotate(45deg)}.sg-body{font-size:15px;color:rgba(0,0,0,0.5);line-height:1.6;margin:0;max-width:240px}@keyframes spin{to{transform:rotate(360deg)}}",
+          "js": ""
+        },
+        {
+          "type": "note",
+          "text": "**Awwwards SOTD Mar 11, 2026 — Outsource Consultants, Inc**\n\nA NYC corporate consultancy site winning *Developer Award* is significant — it means the animation engineering is the story, not the visual design. The key lesson: **motion discipline beats motion excess.**\n\nObserved techniques (from the developer award context):\n- Text reveals using clip-path rather than opacity — letters feel *uncovered*, not faded in\n- Inter-section transitions: background color shifts (dark → light) are timed to the user's scroll momentum, not just scroll position\n- Typography as the layout: no hero imagery, no full-bleed photo. Just type scale + white space. The engineering makes type feel alive.\n\n```css\n/* Clip-path text reveal — feels physical, not digital */\n.reveal {\n  clip-path: inset(0 100% 0 0);\n  transition: clip-path 0.8s cubic-bezier(0.76, 0, 0.24, 1);\n}\n.reveal.in-view {\n  clip-path: inset(0 0% 0 0);\n}\n```\n\n**Key insight:** Corporate sites are getting technically ambitious. The genre expectation is now: clean type + sophisticated timing. 'No-fuss' is dead — you have to earn the restraint."
+        },
+        {
+          "type": "ref",
+          "links": [
+            { "label": "Codrops: Inside Corentin Bernadou's Portfolio", "url": "https://tympanus.net/codrops/2026/03/05/inside-corentin-bernadous-portfolio-swiss-inspired-layouts-webgl-geometry-and-thoughtful-motion/" },
+            { "label": "Awwwards SOTD Mar 11 — Outsource Consultants", "url": "https://www.awwwards.com/sites/outsource-consultants-inc" },
+            { "label": "Codrops: All WebGL Articles", "url": "https://tympanus.net/codrops/tag/webgl/" }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-10",
       "title": "Scroll-Velocity WebGL Gallery & ON Energy Glass UI",
       "summary": "Today's picks: Codrops scroll-driven WebGL gallery (scroll velocity drives shader distortion), and Awwwards SOTD ON Energy's ultra-thin glass panel language.",
