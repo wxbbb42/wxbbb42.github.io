@@ -36,6 +36,10 @@ export default class Player {
     this._squashing    = false
     this._peakVelocity = 0
 
+    // Footstep timer
+    this._stepTimer    = 0
+    this._stepInterval = 0.42  // seconds between steps at normal speed
+
     // Animation
     this.mixer = null
     this.actions = {}
@@ -156,6 +160,12 @@ export default class Player {
       this._playAction('Idle')
     }
 
+    // FOV: slightly wider when moving (speed feel)
+    const cam = this.experience.camera.instance
+    const targetFOV = hasInput ? 62 : 55
+    cam.fov += (targetFOV - cam.fov) * 0.06
+    cam.updateProjectionMatrix()
+
     // Friction / deceleration: smooth velocity toward input
     // accel fast (0.12 factor → ~8 frames), decel slower (0.08 → ~12 frames)
     const lerpFactor = hasInput ? 0.18 : 0.10
@@ -171,6 +181,7 @@ export default class Player {
     if (input.consumeJump() && this._isGrounded) {
       this.verticalVelocity = this.JUMP_VELOCITY
       this._isGrounded = false
+      this.experience.sound?.playJump()
     }
 
     // Asymmetric gravity: lighter going up, heavier falling down
@@ -189,12 +200,13 @@ export default class Player {
 
     if (grounded && this.verticalVelocity <= 0) {
       if (!this._wasGrounded) {
-        // Landing: trigger squash
+        // Landing: trigger squash + sound
         const impact = Math.min(Math.abs(this._peakVelocity) / this.JUMP_VELOCITY, 1)
         this._squashT      = 0
         this._squashing    = true
         this._landingScale = 1 - impact * 0.35
         this._peakVelocity = 0
+        this.experience.sound?.playLand(impact)
       }
       this.verticalVelocity = 0
       this._isGrounded = true
@@ -202,6 +214,17 @@ export default class Player {
       this._isGrounded = false
     }
     this._wasGrounded = grounded
+
+    // Footstep sounds (only when moving and grounded)
+    if (this._isGrounded && hasInput) {
+      this._stepTimer -= delta
+      if (this._stepTimer <= 0) {
+        this.experience.sound?.playFootstep()
+        this._stepTimer = this._stepInterval
+      }
+    } else {
+      this._stepTimer = 0  // reset so first step plays immediately on next move
+    }
 
     // Position: fully trust Rapier physics Y (fix float/clip bug)
     const newPos = this.experience.physics.getCharacterPosition()

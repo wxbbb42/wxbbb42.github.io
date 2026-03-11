@@ -11,6 +11,7 @@ import AgentHUD from './UI/AgentHUD.js'
 import Dialog from './UI/Dialog.js'
 import Intro from './UI/Intro.js'
 import Editor from './Editor.js'
+import SoundManager from './SoundManager.js'
 import { COLORS } from './utils/constants.js'
 
 export default class Experience {
@@ -30,6 +31,7 @@ export default class Experience {
     // Core systems
     this.ticker = new Ticker()
     this.input = new Input()
+    this.sound = new SoundManager()
     this.resources = new Resources()
 
     // Camera and renderer (need scene first)
