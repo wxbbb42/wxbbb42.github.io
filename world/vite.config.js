@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/world/',
+  base: '/world/dist/',
   root: '.',
   publicDir: 'public',
   build: {
