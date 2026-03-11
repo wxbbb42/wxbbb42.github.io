@@ -73,22 +73,22 @@ export default class Player {
       wrapper.add(rawModel)
       rawModel.rotation.y = Math.PI
 
-      const box = new THREE.Box3().setFromObject(wrapper)
-      const center = box.getCenter(new THREE.Vector3())
-      // Offset wrapper so center-bottom is at origin
-      wrapper.position.set(-center.x, -box.min.y, -center.z)
+      // DO NOT use Box3.setFromObject on SkinnedMesh before first render —
+      // skeleton bones are uninitialized, positions are NaN → triggers computeBoundingSphere() → black screen
+      // Disable frustum culling on all skinned meshes to prevent Three.js from calling it
+      rawModel.traverse((child) => {
+        if (child.isSkinnedMesh || child.isMesh) {
+          child.frustumCulled = false
+        }
+      })
 
-      // Recompute after repositioning to find actual model feet offset
-      // Model min.y after centering should be 0; measure total height
-      const box2 = new THREE.Box3().setFromObject(wrapper)
-      console.log(`[Player] modelHeight=${(box2.max.y - box2.min.y).toFixed(3)}`)
+      // Known model offset: place bottom at group origin (fixed offset, no BBox measurement)
+      wrapper.position.set(0, 0, 0)
 
       this.model = wrapper
       this.group.add(wrapper)
       return
     }
-
-    const gltf = this.experience.resources.items.player
     if (gltf) {
       this.model = gltf.scene
       this.model.scale.setScalar(0.5)
