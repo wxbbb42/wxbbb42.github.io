@@ -94,6 +94,7 @@ export default class Ground {
 
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
     geo.computeVertexNormals()
+    geo.computeBoundingSphere()  // must call after manual position edits
 
     // Use alphaMap via a canvas texture generated from vertex alphas
     // But vertex alpha is simpler — use onBeforeCompile to inject alpha
@@ -136,6 +137,7 @@ export default class Ground {
     })
 
     const mesh = new THREE.Mesh(geo, mat)
+    mesh.frustumCulled = false  // skip frustum test — geometry modified manually
     mesh.receiveShadow = true
     this.group.add(mesh)
   }
