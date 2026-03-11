@@ -123,6 +123,19 @@ export default class Editor {
       // Auto-save when user finishes dragging
       if (!e.value && this.selected) this._autoSave()
     })
+
+    // Enforce uniform scale: whenever transform controls emit a change in scale mode,
+    // sync all three axes to the axis that changed the most
+    this._lastUniformScale = 1
+    this.transformControls.addEventListener('change', () => {
+      if (this.transformControls.getMode() === 'scale' && this.selected) {
+        const s = this.selected.scale
+        // Use the axis with the largest deviation from last uniform scale as the driver
+        const avg = (Math.abs(s.x) + Math.abs(s.y) + Math.abs(s.z)) / 3
+        s.set(avg, avg, avg)
+      }
+    })
+
     this.scene.add(this.transformControls.getHelper())
 
     // Selection highlight material color
