@@ -69,6 +69,7 @@ export default class World {
     this.player.update(delta)
     this.npcs.update(delta)
     if (this.craterField) this.craterField.update(delta)
+    if (this.buildings) this.buildings.update(delta)
     this.interior.update(delta)
 
     if (this.transitioning) return
@@ -117,7 +118,7 @@ export default class World {
 
       // Check lab door proximity
       const distToLabDoor = distance2D(playerPos.x, playerPos.z, this.labDoorPos.x, this.labDoorPos.z)
-      if (distToLabDoor < 2.5) {
+      if (distToLabDoor < 3.5) {
         showHint = true
         if (input.consumeInteract()) {
           this._transitionToInterior()

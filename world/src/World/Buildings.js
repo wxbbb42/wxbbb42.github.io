@@ -22,6 +22,8 @@ export default class Buildings {
       this._addLabel('CLAWD LABS', 10, 6, -2)
       this.buildings.push({ name: 'lab', mesh: lab })
       this.experience.physics.addBoxCollider(10, 3, -2, 4, 3, 4)
+      // Entrance indicator: amber point light + ground ring
+      this._addEntrance(10, 0, 2)
     }
 
     // Comms Station
@@ -68,6 +70,52 @@ export default class Buildings {
     this.group.add(rocketGroup)
     this._addLabel('LAUNCH PAD', -10, 12, -10)
     this.experience.physics.addBoxCollider(-10, 4, -10, 1.5, 4, 1.5)
+  }
+
+  _addEntrance(x, y, z) {
+    // Amber point light above door
+    const light = new THREE.PointLight(0xC17A3A, 2.5, 6)
+    light.position.set(x, y + 3, z)
+    this.group.add(light)
+
+    // Pulsing "ENTER" sprite above the door
+    const canvas = document.createElement('canvas')
+    canvas.width = 256
+    canvas.height = 64
+    const ctx = canvas.getContext('2d')
+    ctx.fillStyle = '#C17A3A'
+    ctx.font = 'bold 28px "Press Start 2P", monospace'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('[ ENTER ]', 128, 32)
+    const tex = new THREE.CanvasTexture(canvas)
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true })
+    this._entranceSprite = new THREE.Sprite(mat)
+    this._entranceSprite.position.set(x, y + 2, z)
+    this._entranceSprite.scale.set(3, 0.75, 1)
+    this.group.add(this._entranceSprite)
+
+    // Ground ring: torus lying flat
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(1.2, 0.06, 8, 32),
+      new THREE.MeshStandardMaterial({ color: 0xC17A3A, emissive: 0xC17A3A, emissiveIntensity: 0.8 })
+    )
+    ring.rotation.x = -Math.PI / 2
+    ring.position.set(x, y + 0.05, z)
+    this.group.add(ring)
+    this._entranceRing = ring
+    this._entranceLight = light
+    this._entranceT = 0
+  }
+
+  update(delta) {
+    // Pulse entrance light and sprite
+    if (!this._entranceLight) return
+    this._entranceT = (this._entranceT || 0) + delta
+    const pulse = 0.7 + 0.3 * Math.sin(this._entranceT * 2.5)
+    this._entranceLight.intensity = 2.5 * pulse
+    if (this._entranceSprite) this._entranceSprite.material.opacity = 0.6 + 0.4 * pulse
+    if (this._entranceRing) this._entranceRing.material.emissiveIntensity = 0.5 + 0.5 * pulse
   }
 
   _placeModel(gltf, x, y, z, scale) {
