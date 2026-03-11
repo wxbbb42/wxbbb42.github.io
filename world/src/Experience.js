@@ -102,6 +102,10 @@ export default class Experience {
       if (this.editor) this.editor.update()
       this.updateDust(delta)
       this.camera.update(delta)
+      // Keep DOF focused on player
+      if (this.world && this.world.player) {
+        this.renderer.updateDOF(this.world.player.group.position)
+      }
       this.renderer.render()
     })
     this.ticker.start()

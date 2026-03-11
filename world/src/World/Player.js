@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { TOWN, SKIN_COLOR } from '../utils/constants.js'
 import { fixCharacterSkin } from '../utils/math.js'
+import FootstepDust from './FootstepDust.js'
 
 export default class Player {
   constructor(experience) {
@@ -51,6 +52,9 @@ export default class Player {
 
     this._createCharacter()
     this.group.position.copy(this.position)
+
+    // Footstep dust particles
+    this._dust = new FootstepDust(experience)
   }
 
   _createCharacter() {
@@ -262,6 +266,10 @@ export default class Player {
 
     // Camera target: use visual group position
     camera.setTarget(this.group.position)
+
+    // Footstep dust
+    const moving = hasInput && this._isGrounded
+    this._dust.update(delta, this.group.position, moving, this._isGrounded)
   }
 
   teleportTo(x, y, z) {

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { sampleGroundHeight } from './Ground.js'
 
 export default class Buildings {
   constructor(experience) {
@@ -6,7 +7,7 @@ export default class Buildings {
     this.group = new THREE.Group()
     this.experience.scene.add(this.group)
 
-    this.labDoorPosition = new THREE.Vector3(10, 0, 2)
+    this.labDoorPosition = new THREE.Vector3(6, 0, 8)  // updated in _createBuildings
     this.buildings = []
 
     this._createBuildings()
@@ -16,17 +17,35 @@ export default class Buildings {
   _createBuildings() {
     const r = this.experience.resources
 
-    // Main Hangar (CLAWD LABS)
+    // ─── CLAWD LABS compound ───────────────────────────────────────────────
+    // Main hangar A (primary lab) — placed in front of player spawn (z=5)
     if (r.items.hangarLargeA) {
-      const lab = this._placeModel(r.items.hangarLargeA, 10, 0, -2, 3.5)
-      this._addLabel('CLAWD LABS', 10, 6, -2)
+      const lab = this._placeModel(r.items.hangarLargeA, 6, 0, 12, 3.5)
       this.buildings.push({ name: 'lab', mesh: lab })
       this._addBBoxCollider(lab)
-      // Entrance indicator: amber point light + ground ring
-      this._addEntrance(10, 0, 2)
     }
+    // Wing B — attached to the side for a compound feel
+    if (r.items.hangarLargeB) {
+      const wing = this._placeModel(r.items.hangarLargeB, 13, 0, 12, 2.5)
+      this.buildings.push({ name: 'labWing', mesh: wing })
+      this._addBBoxCollider(wing)
+    }
+    // Round glass dome — observation deck on the right
+    if (r.items.hangarRoundGlass) {
+      const dome = this._placeModel(r.items.hangarRoundGlass, 13, 0, 18, 2.0)
+      this.buildings.push({ name: 'dome', mesh: dome })
+      this._addBBoxCollider(dome)
+    }
+    // CLAWD LABS label above
+    const labGroundY = sampleGroundHeight(9, 12)
+    this._addLabel('CLAWD LABS', 9, labGroundY + 7.5, 12)
 
-    // Comms Station
+    // Entrance indicator at front door
+    const entranceGroundY = sampleGroundHeight(6, 8)
+    this._addEntrance(6, entranceGroundY, 8)
+    this.labDoorPosition = new THREE.Vector3(6, entranceGroundY, 8)
+
+    // ─── Comms Station ─────────────────────────────────────────────────────
     if (r.items.structureDetailed) {
       const comms = this._placeModel(r.items.structureDetailed, -10, 0, -4, 2.5)
       this._addLabel('COMMS', -10, 4, -4)
@@ -34,18 +53,11 @@ export default class Buildings {
       this._addBBoxCollider(comms)
     }
 
-    // Storage Hangar
+    // ─── Storage Hangar ─────────────────────────────────────────────────────
     if (r.items.hangarSmallA) {
       const storage = this._placeModel(r.items.hangarSmallA, -6, 0, -12, 2.5)
       this.buildings.push({ name: 'storage', mesh: storage })
       this._addBBoxCollider(storage)
-    }
-
-    // Greenhouse Dome
-    if (r.items.hangarRoundGlass) {
-      const dome = this._placeModel(r.items.hangarRoundGlass, 8, 0, -10, 2.5)
-      this.buildings.push({ name: 'dome', mesh: dome })
-      this._addBBoxCollider(dome)
     }
   }
 
@@ -135,7 +147,9 @@ export default class Buildings {
 
   _placeModel(gltf, x, y, z, scale) {
     const model = gltf.scene.clone()
-    model.position.set(x, y, z)
+    // Snap to terrain surface
+    const groundY = sampleGroundHeight(x, z)
+    model.position.set(x, groundY + y, z)
     model.scale.setScalar(scale)
     model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
     this.group.add(model)

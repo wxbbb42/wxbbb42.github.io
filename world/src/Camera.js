@@ -13,7 +13,7 @@ export default class Camera {
     )
 
     // Spherical camera orbit around player
-    this.azimuth      = Math.PI   // horizontal angle (start behind player)
+    this.azimuth      = 0   // face forward (+Z direction = toward buildings)
     this.elevation    = 0.45      // vertical angle (~25° above horizon)
     this.radius       = 9         // current distance
     this.targetRadius = 9         // smooth zoom target
