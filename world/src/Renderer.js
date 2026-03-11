@@ -16,7 +16,8 @@ export default class Renderer {
     this.instance.toneMapping = THREE.ACESFilmicToneMapping
     this.instance.toneMappingExposure = 1.4
     this.instance.outputColorSpace = THREE.SRGBColorSpace
-    this.instance.shadowMap.enabled = false
+    this.instance.shadowMap.enabled = true
+    this.instance.shadowMap.type = THREE.PCFSoftShadowMap
 
     window.addEventListener('resize', () => this.resize())
   }
