@@ -10,6 +10,8 @@ const SUPABASE_KEY = 'sb_publishable_IrAlGjUbMTGRofgRVAJ4ZA_FdU5rjma'
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 const EDITOR_MODEL_NAMES = [
+  // Composite models (assembled from parts)
+  'rocket',
   // Characters
   'alien', 'astronaut', 'astronautPlayer',
   // Structures
@@ -73,6 +75,8 @@ const EDITOR_MODEL_NAMES = [
 // Default scale: 2.0 for most models (matching scene proportions with astronaut at 1.4)
 const DEFAULT_SCALE = 2.0
 const DEFAULT_SCALES = {
+  // Composite
+  rocket: 2.5,
   // Buildings — larger
   hangarLargeA: 3.5, hangarLargeB: 3.5,
   hangarRoundA: 2.5, hangarRoundB: 2.5, hangarRoundGlass: 2.5,
@@ -314,12 +318,22 @@ export default class Editor {
   _deleteSelected() {
     if (!this.selected) return
     const group = this.selected
+    this._removeCollider(group)
     this._deselect()
     this.scene.remove(group)
     const idx = this.placedModels.indexOf(group)
     if (idx !== -1) this.placedModels.splice(idx, 1)
     console.log('[Editor] Deleted model')
     this._autoSave()
+  }
+
+  _removeCollider(group) {
+    const physics = this.experience.physics
+    if (!physics || !group.userData._collider) return
+    try {
+      physics.world.removeCollider(group.userData._collider, true)
+    } catch (e) {}
+    group.userData._collider = null
   }
 
   recenterSelectedPivot() {
@@ -353,6 +367,9 @@ export default class Editor {
   // ─── Place a model ────────────────────────────────────────────────
 
   placeModel(name, pos, rot, scl) {
+    // Special case: "rocket" is a composite of 5 parts
+    if (name === 'rocket') return this._placeRocket(pos, rot, scl)
+
     const gltf = this.resources.items[name]
     if (!gltf) {
       console.warn(`[Editor] Model "${name}" not found in resources`)
@@ -385,7 +402,71 @@ export default class Editor {
 
     this.scene.add(group)
     this.placedModels.push(group)
+
+    // Auto-generate physics box collider from bounding box
+    this._addCollider(group)
+
     return group
+  }
+
+  // Composite rocket: assemble 5 parts into one placeable group
+  _placeRocket(pos, rot, scl) {
+    const r = this.resources
+    const parts = [
+      { key: 'rocketBaseA',  y: 0.0 },
+      { key: 'rocketFuelA',  y: 1.0 },
+      { key: 'rocketSidesA', y: 2.0 },
+      { key: 'rocketFinsA',  y: 3.0 },
+      { key: 'rocketTopA',   y: 4.0 },
+    ]
+
+    const group = new THREE.Group()
+    group.userData._editorModel = true
+    group.userData.modelName = 'rocket'
+
+    for (const part of parts) {
+      const gltf = r.items[part.key]
+      if (!gltf) continue
+      const clone = gltf.scene.clone()
+      clone.position.y = part.y
+      clone.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+      group.add(clone)
+    }
+
+    const s = scl ? scl[0] : (DEFAULT_SCALES.rocketBaseA || DEFAULT_SCALE)
+    if (pos) group.position.set(pos[0], pos[1], pos[2])
+    if (rot) group.rotation.set(rot[0], rot[1], rot[2])
+    group.scale.setScalar(s)
+    if (scl) group.scale.set(scl[0], scl[1], scl[2])
+
+    this.scene.add(group)
+    this.placedModels.push(group)
+    this._addCollider(group)
+    return group
+  }
+
+  // Auto box collider from world bounding box
+  _addCollider(group) {
+    const physics = this.experience.physics
+    if (!physics) return
+
+    // Compute world bounding box after transforms applied
+    const box = new THREE.Box3().setFromObject(group)
+    if (box.isEmpty()) return
+
+    const size = new THREE.Vector3()
+    const center = new THREE.Vector3()
+    box.getSize(size)
+    box.getCenter(center)
+
+    // half-extents for Rapier cuboid
+    const hx = size.x / 2
+    const hy = size.y / 2
+    const hz = size.z / 2
+
+    const collider = physics.addBoxCollider(center.x, center.y, center.z, hx, hy, hz)
+    // Store collider handle on group so we can remove it on delete
+    group.userData._collider = collider
   }
 
   // ─── Save / Load / Clear ──────────────────────────────────────────
@@ -488,6 +569,7 @@ export default class Editor {
   clearAll() {
     this._deselect()
     for (const g of this.placedModels) {
+      this._removeCollider(g)
       this.scene.remove(g)
     }
     this.placedModels = []
