@@ -12,6 +12,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 const EDITOR_MODEL_NAMES = [
   // Composite models (assembled from parts)
   'rocket',
+  'rocketB',
+  'monorailTrain',
+  'workstation',
   // Characters
   'alien', 'astronaut', 'astronautPlayer',
   // Structures
@@ -77,6 +80,9 @@ const DEFAULT_SCALE = 2.0
 const DEFAULT_SCALES = {
   // Composite
   rocket: 2.5,
+  rocketB: 2.5,
+  monorailTrain: 2.5,
+  workstation: 1.4,
   // Buildings — larger
   hangarLargeA: 3.5, hangarLargeB: 3.5,
   hangarRoundA: 2.5, hangarRoundB: 2.5, hangarRoundGlass: 2.5,
@@ -367,8 +373,11 @@ export default class Editor {
   // ─── Place a model ────────────────────────────────────────────────
 
   placeModel(name, pos, rot, scl) {
-    // Special case: "rocket" is a composite of 5 parts
+    // Special case: composite assets
     if (name === 'rocket') return this._placeRocket(pos, rot, scl)
+    if (name === 'rocketB') return this._placeRocketB(pos, rot, scl)
+    if (name === 'monorailTrain') return this._placeMonorailTrain(pos, rot, scl)
+    if (name === 'workstation') return this._placeWorkstation(pos, rot, scl)
 
     const gltf = this.resources.items[name]
     if (!gltf) {
@@ -445,7 +454,97 @@ export default class Editor {
     return group
   }
 
-  // Auto box collider from world bounding box
+  // Composite rocket B variant
+  _placeRocketB(pos, rot, scl) {
+    const r = this.resources
+    const parts = [
+      { key: 'rocketBaseB',  y: 0.0 },
+      { key: 'rocketFuelB',  y: 1.0 },
+      { key: 'rocketSidesB', y: 2.0 },
+      { key: 'rocketFinsB',  y: 3.0 },
+      { key: 'rocketTopB',   y: 4.0 },
+    ]
+    const group = new THREE.Group()
+    group.userData._editorModel = true
+    group.userData.modelName = 'rocketB'
+    for (const part of parts) {
+      const gltf = r.items[part.key]
+      if (!gltf) continue
+      const clone = gltf.scene.clone()
+      clone.position.y = part.y
+      clone.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+      group.add(clone)
+    }
+    const s = scl ? scl[0] : DEFAULT_SCALES.rocketB
+    if (pos) group.position.set(pos[0], pos[1], pos[2])
+    if (rot) group.rotation.set(rot[0], rot[1], rot[2])
+    group.scale.setScalar(s)
+    if (scl) group.scale.set(scl[0], scl[1], scl[2])
+    this.scene.add(group)
+    this.placedModels.push(group)
+    this._addCollider(group)
+    return group
+  }
+
+  // Composite monorail train: Front + 2×Passenger + Box + Cargo + End
+  // All cars are z=1.0 wide; Front is z=1.05 — offset along Z
+  _placeMonorailTrain(pos, rot, scl) {
+    const r = this.resources
+    // [key, zOffset] — all measured at scale=1, z-depth=1.0 each
+    const cars = [
+      { key: 'monorailTrainFront',     z: 0 },
+      { key: 'monorailTrainPassenger', z: 1.05 },
+      { key: 'monorailTrainPassenger', z: 2.05 },
+      { key: 'monorailTrainBox',       z: 3.05 },
+      { key: 'monorailTrainCargo',     z: 4.05 },
+      { key: 'monorailTrainEnd',       z: 5.05 },
+    ]
+    const group = new THREE.Group()
+    group.userData._editorModel = true
+    group.userData.modelName = 'monorailTrain'
+    for (const car of cars) {
+      const gltf = r.items[car.key]
+      if (!gltf) continue
+      const clone = gltf.scene.clone()
+      clone.position.z = car.z
+      clone.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+      group.add(clone)
+    }
+    const s = scl ? scl[0] : DEFAULT_SCALES.monorailTrain
+    if (pos) group.position.set(pos[0], pos[1], pos[2])
+    if (rot) group.rotation.set(rot[0], rot[1], rot[2])
+    group.scale.setScalar(s)
+    if (scl) group.scale.set(scl[0], scl[1], scl[2])
+    this.scene.add(group)
+    this.placedModels.push(group)
+    this._addCollider(group)
+    return group
+  }
+
+  // Composite workstation: desk + computer + screen
+  _placeWorkstation(pos, rot, scl) {
+    const r = this.resources
+    const group = new THREE.Group()
+    group.userData._editorModel = true
+    group.userData.modelName = 'workstation'
+    const parts = ['deskComputer', 'deskComputerScreen']
+    for (const key of parts) {
+      const gltf = r.items[key]
+      if (!gltf) continue
+      const clone = gltf.scene.clone()
+      clone.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+      group.add(clone)
+    }
+    const s = scl ? scl[0] : DEFAULT_SCALES.workstation
+    if (pos) group.position.set(pos[0], pos[1], pos[2])
+    if (rot) group.rotation.set(rot[0], rot[1], rot[2])
+    group.scale.setScalar(s)
+    if (scl) group.scale.set(scl[0], scl[1], scl[2])
+    this.scene.add(group)
+    this.placedModels.push(group)
+    this._addCollider(group)
+    return group
+  }
   _addCollider(group) {
     const physics = this.experience.physics
     if (!physics) return
