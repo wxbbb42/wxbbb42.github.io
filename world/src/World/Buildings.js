@@ -21,7 +21,7 @@ export default class Buildings {
       const lab = this._placeModel(r.items.hangarLargeA, 10, 0, -2, 3.5)
       this._addLabel('CLAWD LABS', 10, 6, -2)
       this.buildings.push({ name: 'lab', mesh: lab })
-      this.experience.physics.addBoxCollider(10, 3, -2, 4, 3, 4)
+      this._addBBoxCollider(lab)
       // Entrance indicator: amber point light + ground ring
       this._addEntrance(10, 0, 2)
     }
@@ -31,21 +31,21 @@ export default class Buildings {
       const comms = this._placeModel(r.items.structureDetailed, -10, 0, -4, 2.5)
       this._addLabel('COMMS', -10, 4, -4)
       this.buildings.push({ name: 'comms', mesh: comms })
-      this.experience.physics.addBoxCollider(-10, 2, -4, 2.5, 2, 2.5)
+      this._addBBoxCollider(comms)
     }
 
     // Storage Hangar
     if (r.items.hangarSmallA) {
       const storage = this._placeModel(r.items.hangarSmallA, -6, 0, -12, 2.5)
       this.buildings.push({ name: 'storage', mesh: storage })
-      this.experience.physics.addBoxCollider(-6, 2, -12, 2, 2, 2)
+      this._addBBoxCollider(storage)
     }
 
     // Greenhouse Dome
     if (r.items.hangarRoundGlass) {
       const dome = this._placeModel(r.items.hangarRoundGlass, 8, 0, -10, 2.5)
       this.buildings.push({ name: 'dome', mesh: dome })
-      this.experience.physics.addBoxCollider(8, 2, -10, 2, 2, 2)
+      this._addBBoxCollider(dome)
     }
   }
 
@@ -69,7 +69,22 @@ export default class Buildings {
 
     this.group.add(rocketGroup)
     this._addLabel('LAUNCH PAD', -10, 12, -10)
-    this.experience.physics.addBoxCollider(-10, 4, -10, 1.5, 4, 1.5)
+    this._addBBoxCollider(rocketGroup)
+  }
+
+  // Auto-generate physics box collider from mesh bounding box
+  _addBBoxCollider(mesh) {
+    const physics = this.experience.physics
+    if (!physics) return
+    // Must be added to scene (or group already in scene) to get world coords
+    // Temporarily ensure it's in the scene group hierarchy
+    const box = new THREE.Box3().setFromObject(mesh)
+    if (box.isEmpty()) return
+    const size = new THREE.Vector3()
+    const center = new THREE.Vector3()
+    box.getSize(size)
+    box.getCenter(center)
+    physics.addBoxCollider(center.x, center.y, center.z, size.x / 2, size.y / 2, size.z / 2)
   }
 
   _addEntrance(x, y, z) {
