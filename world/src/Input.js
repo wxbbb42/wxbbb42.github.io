@@ -6,8 +6,10 @@ export default class Input {
       left: false,
       right: false,
       interact: false,
+      jump: false,
     }
     this._interactPressed = false
+    this._jumpPressed = false
     this.locked = false
 
     window.addEventListener('keydown', (e) => this._onKey(e, true))
@@ -21,13 +23,23 @@ export default class Input {
       case 'KeyS': case 'ArrowDown':  this.keys.backward = down; break
       case 'KeyA': case 'ArrowLeft':  this.keys.left = down; break
       case 'KeyD': case 'ArrowRight': this.keys.right = down; break
-      case 'KeyE': case 'Space':
+      case 'KeyE':
         if (down && !this._interactPressed) {
           this.keys.interact = true
           this._interactPressed = true
         }
         if (!down) {
           this._interactPressed = false
+        }
+        break
+      case 'Space':
+        e.preventDefault()
+        if (down && !this._jumpPressed) {
+          this.keys.jump = true
+          this._jumpPressed = true
+        }
+        if (!down) {
+          this._jumpPressed = false
         }
         break
     }
@@ -39,7 +51,9 @@ export default class Input {
     this.keys.left = false
     this.keys.right = false
     this.keys.interact = false
+    this.keys.jump = false
     this._interactPressed = false
+    this._jumpPressed = false
   }
 
   get moving() {
@@ -49,6 +63,14 @@ export default class Input {
   consumeInteract() {
     if (this.keys.interact) {
       this.keys.interact = false
+      return true
+    }
+    return false
+  }
+
+  consumeJump() {
+    if (this.keys.jump) {
+      this.keys.jump = false
       return true
     }
     return false

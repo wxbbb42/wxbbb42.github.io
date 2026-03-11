@@ -42,8 +42,12 @@ export default class Physics {
     return collider
   }
 
-  moveCharacter(velocity, delta) {
-    const movement = { x: velocity.x * delta, y: -9.81 * delta, z: velocity.z * delta }
+  moveCharacter(velocity, verticalVelocity, delta) {
+    const movement = {
+      x: velocity.x * delta,
+      y: verticalVelocity * delta,
+      z: velocity.z * delta,
+    }
     this.characterController.computeColliderMovement(this.characterCollider, movement)
     const corrected = this.characterController.computedMovement()
     const pos = this.characterBody.translation()
@@ -52,6 +56,9 @@ export default class Physics {
       y: pos.y + corrected.y,
       z: pos.z + corrected.z,
     })
+    // Return whether we're grounded (corrected.y ≈ movement.y means no floor collision above us;
+    // if corrected.y is much less than movement.y when negative → we hit the floor)
+    return corrected.y > movement.y - 0.01 // grounded if vertical movement was stopped
   }
 
   getCharacterPosition() {

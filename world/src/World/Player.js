@@ -14,8 +14,15 @@ export default class Player {
       TOWN.playerStart.z
     )
     this.velocity = new THREE.Vector3()
+    this.verticalVelocity = 0       // m/s, positive = up
+    this._isGrounded = true
     this.targetRotation = 0
     this.speed = 6
+
+    // Mars gravity: 3.72 m/s² (38% of Earth's 9.81)
+    this.GRAVITY = -3.72
+    // Jump initial velocity — tuned for Mars feel (floaty, high arc)
+    this.JUMP_VELOCITY = 6.0
 
     // Animation
     this.mixer = null
@@ -166,8 +173,21 @@ export default class Player {
     while (diff < -Math.PI) diff += Math.PI * 2
     this.group.rotation.y += diff * 0.15
 
-    // Move via physics
-    this.experience.physics.moveCharacter(this.velocity, delta)
+    // Jump input — only when grounded
+    if (input.consumeJump() && this._isGrounded) {
+      this.verticalVelocity = this.JUMP_VELOCITY
+      this._isGrounded = false
+    }
+
+    // Apply Mars gravity
+    this.verticalVelocity += this.GRAVITY * delta
+
+    // Move via physics (now passes vertical velocity separately)
+    const grounded = this.experience.physics.moveCharacter(this.velocity, this.verticalVelocity, delta)
+    if (grounded && this.verticalVelocity < 0) {
+      this.verticalVelocity = 0
+      this._isGrounded = true
+    }
     const newPos = this.experience.physics.getCharacterPosition()
     this.position.copy(newPos)
 
@@ -185,8 +205,10 @@ export default class Player {
       }
     }
 
-    // Place visual model feet on the ground surface
-    this.group.position.set(newPos.x, this._groundY, newPos.z)
+    // When airborne, use physics Y; when grounded, snap to raycast ground surface
+    const physicsY = newPos.y - 0.55 // subtract capsule half-height to get feet position
+    const visualY = this._isGrounded ? this._groundY : Math.max(physicsY, this._groundY)
+    this.group.position.set(newPos.x, visualY, newPos.z)
 
     // Update camera target (use visual position for smooth camera)
     camera.setTarget(this.group.position)
