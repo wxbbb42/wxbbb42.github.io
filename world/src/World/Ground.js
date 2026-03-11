@@ -8,7 +8,6 @@ function noise2D(x, z) {
        + 0.1  * Math.cos(x * 1.71 + z * 1.31 + 0.5)
 }
 
-// Irregular edge radius — varies by angle for organic shape
 function edgeBoundary(angle) {
   return 0.82
     + 0.055 * Math.sin(angle * 1.0 + 0.3)
@@ -28,6 +27,19 @@ function smoothstep(edge0, edge1, x) {
   return t * t * (3 - 2 * t)
 }
 
+// Shared height sampler — used by both visual mesh and physics heightField
+export const GROUND_SIZE     = TOWN.size + 10   // 40 units
+export const GROUND_SEGMENTS = 128
+
+export function sampleGroundHeight(x, z) {
+  const halfSize = GROUND_SIZE / 2
+  const dist  = Math.sqrt(x * x + z * z) / halfSize
+  const angle = Math.atan2(z, x)
+  const edge  = edgeBoundary(angle)
+  const innerFalloff = 1.0 - smoothstep(edge - 0.1, edge, dist)
+  return noise2D(x, z) * 0.4 * innerFalloff
+}
+
 export default class Ground {
   constructor(experience) {
     this.experience = experience
@@ -38,8 +50,8 @@ export default class Ground {
   }
 
   _createMarsSurface() {
-    const size = TOWN.size + 10
-    const segments = 128
+    const size = GROUND_SIZE
+    const segments = GROUND_SEGMENTS
 
     const geo = new THREE.PlaneGeometry(size, size, segments, segments)
     geo.rotateX(-Math.PI / 2)
@@ -61,10 +73,9 @@ export default class Ground {
       const angle = Math.atan2(z, x)
       const edge = edgeBoundary(angle)
 
-      // Height: noise in the inner region, flat at edges
+      // Height: use shared sampler (same as physics heightField)
       const innerFalloff = 1.0 - smoothstep(edge - 0.1, edge, dist)
-      const rawHeight = noise2D(x, z) * 0.4
-      const y = rawHeight * innerFalloff
+      const y = sampleGroundHeight(x, z)
       pos.setY(i, y)
 
       // Alpha: fully opaque inside, narrow fade at edge

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { sampleGroundHeight, GROUND_SIZE, GROUND_SEGMENTS } from './World/Ground.js'
 
 export default class Physics {
   constructor(experience, RAPIER) {
@@ -10,24 +11,46 @@ export default class Physics {
     const gravity = { x: 0.0, y: -9.81, z: 0.0 }
     this.world = new RAPIER.World(gravity)
 
-    // Create ground — visual mesh sits at ~Y=-0.16, so physics top must match
-    // cuboid halfExtent=0.1, setTranslation Y = visualGroundY - 0.1 ≈ -0.26
-    const groundDesc    = RAPIER.RigidBodyDesc.fixed()
-    const groundBody    = this.world.createRigidBody(groundDesc)
-    const groundCollider = RAPIER.ColliderDesc.cuboid(18, 0.1, 18)
-      .setTranslation(0, -0.26, 0)
-    this.world.createCollider(groundCollider, groundBody)
+    // HeightField ground — exact same data as visual terrain mesh
+    // Rapier heightField(nrows, ncols, heights, scale)
+    // heights: Float32Array, row-major, size = (nrows+1)*(ncols+1)
+    // scale: { x: worldWidth, y: heightScale, z: worldDepth }
+    const HF_RES  = GROUND_SEGMENTS  // 128
+    const HF_SIZE = GROUND_SIZE       // 40
+    const nCols   = HF_RES
+    const nRows   = HF_RES
+    const heights = new Float32Array((nRows + 1) * (nCols + 1))
+    const half    = HF_SIZE / 2
+
+    for (let row = 0; row <= nRows; row++) {
+      for (let col = 0; col <= nCols; col++) {
+        // Map grid index to world coordinates (same as PlaneGeometry)
+        const x = -half + (col / nCols) * HF_SIZE
+        const z = -half + (row / nRows) * HF_SIZE
+        heights[row * (nCols + 1) + col] = sampleGroundHeight(x, z)
+      }
+    }
+
+    const hfBodyDesc = RAPIER.RigidBodyDesc.fixed()
+    const hfBody     = this.world.createRigidBody(hfBodyDesc)
+    const hfDesc     = RAPIER.ColliderDesc.heightField(
+      nRows, nCols, heights,
+      { x: HF_SIZE, y: 1.0, z: HF_SIZE }
+    )
+    // HeightField is centered at origin by default — matches visual mesh
+    this.world.createCollider(hfDesc, hfBody)
 
     // Character controller
     this.characterController = this.world.createCharacterController(0.01)
     this.characterController.setApplyImpulsesToDynamicBodies(true)
-    this.characterController.enableAutostep(0.3, 0.2, true)
-    this.characterController.enableSnapToGround(0.3)
+    this.characterController.enableAutostep(0.4, 0.3, true)
+    this.characterController.enableSnapToGround(0.5)
 
     // Character collider (capsule)
-    // Capsule: halfHeight=0.3, radius=0.25 → center at 0.55 above ground
+    // Capsule center starts at: groundY(0,5) + capsuleOffset(0.55)
+    const startGroundY = sampleGroundHeight(0, 5)
     const charBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased()
-      .setTranslation(0, 0.39, 5)
+      .setTranslation(0, startGroundY + 0.55, 5)
     this.characterBody = this.world.createRigidBody(charBodyDesc)
     const charColliderDesc = RAPIER.ColliderDesc.capsule(0.3, 0.25)
     this.characterCollider = this.world.createCollider(charColliderDesc, this.characterBody)

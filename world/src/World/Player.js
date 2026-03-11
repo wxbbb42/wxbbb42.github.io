@@ -46,14 +46,8 @@ export default class Player {
     this.currentAction = null
 
     // Capsule half-height+radius offset (capsule center above feet)
-    this._capsuleOffset  = 0.55   // physics: halfHeight(0.3) + radius(0.25)
-    this._visualYOffset  = 0      // auto-computed from model bbox in _createCharacter
-
-    // Raycast for visual ground-snap (physics handles collision; raycast aligns feet visually)
-    this._raycaster  = new THREE.Raycaster()
-    this._rayDir     = new THREE.Vector3(0, -1, 0)
-    this._groundY    = 0
-    this._smoothPos  = new THREE.Vector3()  // smoothed visual position (anti-jitter)
+    this._capsuleOffset = 0.55   // halfHeight(0.3) + radius(0.25)
+    // No raycast needed — physics heightField is exact same data as visual terrain
 
     this._createCharacter()
     this.group.position.copy(this.position)
@@ -83,14 +77,7 @@ export default class Player {
       // Recompute after repositioning to find actual model feet offset
       // Model min.y after centering should be 0; measure total height
       const box2 = new THREE.Box3().setFromObject(wrapper)
-      const modelHeight = box2.max.y - box2.min.y
-      // Capsule top of ground = capsuleOffset = 0.55
-      // We want model feet (min.y of wrapper = 0) to sit at ground level
-      // feetY = physicsY - capsuleOffset + visualYOffset
-      // For feet at ground: visualYOffset = 0 if wrapper.min.y=0
-      // But capsule may float above visual ground — auto-tune:
-      this._visualYOffset = box2.min.y  // typically 0 after centering
-      console.log(`[Player] modelHeight=${modelHeight.toFixed(3)}, visualYOffset=${this._visualYOffset.toFixed(3)}`)
+      console.log(`[Player] modelHeight=${(box2.max.y - box2.min.y).toFixed(3)}`)
 
       this.model = wrapper
       this.group.add(wrapper)
@@ -250,36 +237,10 @@ export default class Player {
     const newPos = this.experience.physics.getCharacterPosition()
     this.position.copy(newPos)
 
-    // Feet Y = capsule center Y - capsuleOffset + visualYOffset
-    const feetY = newPos.y - this._capsuleOffset + this._visualYOffset
-
-    // Raycast to find visual ground surface and snap feet there (when grounded)
-    if (this._isGrounded) {
-      const origin = new THREE.Vector3(newPos.x, newPos.y + 1, newPos.z)
-      this._raycaster.set(origin, this._rayDir)
-      this._raycaster.far = 4
-      const groundGroup = this.experience.world?.ground?.group
-      if (groundGroup) {
-        const hits = this._raycaster.intersectObjects(groundGroup.children, true)
-        if (hits.length > 0) {
-          // Lerp groundY to avoid jitter from per-frame noise sampling
-          this._groundY += (hits[0].point.y - this._groundY) * 0.25
-        }
-      }
-      const targetY = this._groundY + this._visualYOffset
-      // Smooth full position to remove physics tick micro-stutter
-      this._smoothPos.set(
-        this._smoothPos.x + (newPos.x - this._smoothPos.x) * 0.35,
-        this._smoothPos.y + (targetY   - this._smoothPos.y) * 0.25,
-        this._smoothPos.z + (newPos.z - this._smoothPos.z) * 0.35,
-      )
-      this.group.position.copy(this._smoothPos)
-    } else {
-      // Airborne: use physics Y directly (no raycast needed)
-      const feetY = newPos.y - this._capsuleOffset + this._visualYOffset
-      this._smoothPos.set(newPos.x, feetY, newPos.z)
-      this.group.position.copy(this._smoothPos)
-    }
+    // Physics Y is ground truth — heightField matches visual terrain exactly
+    // feetY = capsule center Y - capsuleOffset
+    const feetY = newPos.y - this._capsuleOffset
+    this.group.position.set(newPos.x, feetY, newPos.z)
 
     // Squash & stretch
     if (this._squashing) {
