@@ -12,24 +12,32 @@ export default class Camera {
       200
     )
 
-    // Third-person offset from target
-    this.offset = new THREE.Vector3(0, 6, 9)
-    this.lookAtOffset = new THREE.Vector3(0, 1, 0)
+    // Spherical camera orbit around player
+    this.azimuth   = Math.PI        // horizontal angle (radians), start behind player
+    this.elevation = 0.45           // vertical angle (radians), ~25° above horizon
+    this.radius    = 9              // distance from player
+    this.minElevation = 0.05        // prevent going below ground
+    this.maxElevation = Math.PI / 2 - 0.05
 
     // Smooth follow target
-    this.target = new THREE.Vector3(0, 0, 0)
+    this.target     = new THREE.Vector3(0, 0, 0)
+    this.lookAtOffset = new THREE.Vector3(0, 1.2, 0)
     this.smoothPosition = new THREE.Vector3()
-    this.smoothLookAt = new THREE.Vector3()
+    this.smoothLookAt   = new THREE.Vector3()
+
+    // Pointer lock mouse look
+    this.sensitivity = 0.002
+    this._pointerLocked = false
+    this._setupPointerLock()
 
     // Set initial position
-    this.smoothPosition.copy(this.target).add(this.offset)
-    this.instance.position.copy(this.smoothPosition)
+    this._applySpherical()
+    this.smoothPosition.copy(this.instance.position)
     this.smoothLookAt.copy(this.target).add(this.lookAtOffset)
-    this.instance.lookAt(this.smoothLookAt)
 
     this.experience.scene.add(this.instance)
 
-    // Debug orbit controls (toggle with C key)
+    // Debug orbit controls (C key)
     this.orbitMode = false
     this.orbitControls = new OrbitControls(this.instance, experience.canvas)
     this.orbitControls.enableDamping = true
@@ -41,16 +49,59 @@ export default class Camera {
         this.orbitMode = !this.orbitMode
         this.orbitControls.enabled = this.orbitMode
         if (this.orbitMode) {
-          // Set orbit target to current look-at point
           this.orbitControls.target.copy(this.smoothLookAt)
-          console.log('📷 Orbit camera ON — drag to rotate, scroll to zoom')
+          console.log('📷 Orbit camera ON')
         } else {
-          console.log('📷 Orbit camera OFF — following player')
+          console.log('📷 Orbit camera OFF')
         }
       }
+      // ESC to exit pointer lock (browser handles this natively too)
     })
 
     window.addEventListener('resize', () => this.resize())
+  }
+
+  _setupPointerLock() {
+    const canvas = this.experience.canvas
+
+    // Click to lock pointer
+    canvas.addEventListener('click', () => {
+      if (!this._pointerLocked && !this.orbitMode) {
+        canvas.requestPointerLock()
+      }
+    })
+
+    document.addEventListener('pointerlockchange', () => {
+      this._pointerLocked = document.pointerLockElement === canvas
+      // Show/hide hint
+      const hint = document.getElementById('pointer-lock-hint')
+      if (hint) hint.style.display = this._pointerLocked ? 'none' : 'flex'
+    })
+
+    document.addEventListener('mousemove', (e) => {
+      if (!this._pointerLocked || this.orbitMode) return
+      this.azimuth   -= e.movementX * this.sensitivity
+      this.elevation  = Math.max(
+        this.minElevation,
+        Math.min(this.maxElevation, this.elevation - e.movementY * this.sensitivity)
+      )
+    })
+  }
+
+  _applySpherical() {
+    // Convert spherical → cartesian offset from target
+    const sinEl = Math.sin(this.elevation)
+    const cosEl = Math.cos(this.elevation)
+    const x = this.radius * cosEl * Math.sin(this.azimuth)
+    const y = this.radius * sinEl
+    const z = this.radius * cosEl * Math.cos(this.azimuth)
+    this.instance.position.set(
+      this.target.x + x,
+      this.target.y + this.lookAtOffset.y + y,
+      this.target.z + z,
+    )
+    const lookAt = this.target.clone().add(this.lookAtOffset)
+    this.instance.lookAt(lookAt)
   }
 
   resize() {
@@ -62,22 +113,37 @@ export default class Camera {
     this.target.copy(position)
   }
 
+  // Returns the horizontal forward direction of camera (for player movement)
+  getAzimuth() {
+    return this.azimuth
+  }
+
   update(delta) {
     if (this.orbitMode) {
       this.orbitControls.update()
       return
     }
 
-    const lerpFactor = 1 - Math.pow(0.01, delta)
+    const lerpFactor = 1 - Math.pow(0.015, delta)
 
-    // Desired camera position
-    const desiredPos = this.target.clone().add(this.offset)
-    this.smoothPosition.lerp(desiredPos, lerpFactor)
-    this.instance.position.copy(this.smoothPosition)
+    // Compute desired camera position from spherical coords
+    const sinEl = Math.sin(this.elevation)
+    const cosEl = Math.cos(this.elevation)
+    const x = this.radius * cosEl * Math.sin(this.azimuth)
+    const y = this.radius * sinEl
+    const z = this.radius * cosEl * Math.cos(this.azimuth)
 
-    // Desired look-at point
+    const desiredPos = new THREE.Vector3(
+      this.target.x + x,
+      this.target.y + this.lookAtOffset.y + y,
+      this.target.z + z,
+    )
     const desiredLookAt = this.target.clone().add(this.lookAtOffset)
+
+    this.smoothPosition.lerp(desiredPos, lerpFactor)
     this.smoothLookAt.lerp(desiredLookAt, lerpFactor)
+
+    this.instance.position.copy(this.smoothPosition)
     this.instance.lookAt(this.smoothLookAt)
   }
 }
