@@ -13,27 +13,39 @@ export default class Camera {
     )
 
     // Spherical camera orbit around player
-    this.azimuth   = Math.PI        // horizontal angle (radians), start behind player
-    this.elevation = 0.45           // vertical angle (radians), ~25° above horizon
-    this.radius    = 9              // distance from player
-    this.minElevation = 0.05        // prevent going below ground
+    this.azimuth      = Math.PI   // horizontal angle (start behind player)
+    this.elevation    = 0.45      // vertical angle (~25° above horizon)
+    this.radius       = 9         // current distance
+    this.targetRadius = 9         // smooth zoom target
+    this.minRadius    = 3
+    this.maxRadius    = 20
+    this.minElevation = 0.05
     this.maxElevation = Math.PI / 2 - 0.05
 
-    // Smooth follow target
-    this.target     = new THREE.Vector3(0, 0, 0)
+    // Smooth follow
+    this.target       = new THREE.Vector3(0, 0, 0)
     this.lookAtOffset = new THREE.Vector3(0, 1.2, 0)
     this.smoothPosition = new THREE.Vector3()
     this.smoothLookAt   = new THREE.Vector3()
 
-    // Pointer lock mouse look
-    this.sensitivity = 0.002
-    this._pointerLocked = false
-    this._setupPointerLock()
+    // Mouse state
+    this.sensitivity   = 0.005
+    this._rmb          = false   // right mouse button held
+    this._lastX        = 0
+    this._lastY        = 0
+
+    this._setupMouseControls()
+
+    // Camera collision raycast
+    this._camRaycaster = new THREE.Raycaster()
+    this._camRayDir    = new THREE.Vector3()
 
     // Set initial position
-    this._applySpherical()
-    this.smoothPosition.copy(this.instance.position)
+    const initPos = this._computeDesiredPosition()
+    this.smoothPosition.copy(initPos)
     this.smoothLookAt.copy(this.target).add(this.lookAtOffset)
+    this.instance.position.copy(this.smoothPosition)
+    this.instance.lookAt(this.smoothLookAt)
 
     this.experience.scene.add(this.instance)
 
@@ -55,53 +67,99 @@ export default class Camera {
           console.log('📷 Orbit camera OFF')
         }
       }
-      // ESC to exit pointer lock (browser handles this natively too)
     })
 
     window.addEventListener('resize', () => this.resize())
   }
 
-  _setupPointerLock() {
+  _setupMouseControls() {
     const canvas = this.experience.canvas
 
-    // Click to lock pointer
-    canvas.addEventListener('click', () => {
-      if (!this._pointerLocked && !this.orbitMode) {
-        canvas.requestPointerLock()
+    // Right mouse button drag to rotate
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 2) {
+        this._rmb = true
+        this._lastX = e.clientX
+        this._lastY = e.clientY
+        canvas.style.cursor = 'grabbing'
       }
     })
 
-    document.addEventListener('pointerlockchange', () => {
-      this._pointerLocked = document.pointerLockElement === canvas
-      // Show/hide hint
-      const hint = document.getElementById('pointer-lock-hint')
-      if (hint) hint.style.display = this._pointerLocked ? 'none' : 'flex'
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 2) {
+        this._rmb = false
+        canvas.style.cursor = 'default'
+      }
     })
 
-    document.addEventListener('mousemove', (e) => {
-      if (!this._pointerLocked || this.orbitMode) return
-      this.azimuth   -= e.movementX * this.sensitivity
+    window.addEventListener('mousemove', (e) => {
+      if (!this._rmb || this.orbitMode) return
+      const dx = e.clientX - this._lastX
+      const dy = e.clientY - this._lastY
+      this._lastX = e.clientX
+      this._lastY = e.clientY
+
+      this.azimuth   -= dx * this.sensitivity
       this.elevation  = Math.max(
         this.minElevation,
-        Math.min(this.maxElevation, this.elevation - e.movementY * this.sensitivity)
+        Math.min(this.maxElevation, this.elevation - dy * this.sensitivity)
       )
     })
+
+    // Scroll to zoom
+    canvas.addEventListener('wheel', (e) => {
+      if (this.orbitMode) return
+      e.preventDefault()
+      this.targetRadius = Math.max(
+        this.minRadius,
+        Math.min(this.maxRadius, this.targetRadius + e.deltaY * 0.01)
+      )
+    }, { passive: false })
+
+    // Prevent context menu on right click
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault())
   }
 
-  _applySpherical() {
-    // Convert spherical → cartesian offset from target
+  _computeDesiredPosition() {
     const sinEl = Math.sin(this.elevation)
     const cosEl = Math.cos(this.elevation)
-    const x = this.radius * cosEl * Math.sin(this.azimuth)
-    const y = this.radius * sinEl
-    const z = this.radius * cosEl * Math.cos(this.azimuth)
-    this.instance.position.set(
-      this.target.x + x,
-      this.target.y + this.lookAtOffset.y + y,
-      this.target.z + z,
-    )
     const lookAt = this.target.clone().add(this.lookAtOffset)
-    this.instance.lookAt(lookAt)
+    return new THREE.Vector3(
+      lookAt.x + this.radius * cosEl * Math.sin(this.azimuth),
+      lookAt.y + this.radius * sinEl,
+      lookAt.z + this.radius * cosEl * Math.cos(this.azimuth),
+    )
+  }
+
+  _computeCameraCollisionRadius() {
+    // Raycast from lookAt point toward desired camera position
+    // Returns the safe radius (shortened if something is in the way)
+    const lookAt = this.target.clone().add(this.lookAtOffset)
+    const sinEl  = Math.sin(this.elevation)
+    const cosEl  = Math.cos(this.elevation)
+    this._camRayDir.set(
+      cosEl * Math.sin(this.azimuth),
+      sinEl,
+      cosEl * Math.cos(this.azimuth),
+    ).normalize()
+
+    this._camRaycaster.set(lookAt, this._camRayDir)
+    this._camRaycaster.far = this.radius + 0.5
+
+    // Check against all scene objects (exclude player)
+    const player = this.experience.world?.player?.group
+    const objects = []
+    this.experience.scene.traverse((obj) => {
+      if (obj.isMesh && obj !== player && !player?.getObjectById(obj.id)) {
+        objects.push(obj)
+      }
+    })
+
+    const hits = this._camRaycaster.intersectObjects(objects, false)
+    if (hits.length > 0) {
+      return Math.max(1.5, hits[0].distance - 0.3)
+    }
+    return this.radius
   }
 
   resize() {
@@ -113,7 +171,6 @@ export default class Camera {
     this.target.copy(position)
   }
 
-  // Returns the horizontal forward direction of camera (for player movement)
   getAzimuth() {
     return this.azimuth
   }
@@ -124,24 +181,26 @@ export default class Camera {
       return
     }
 
-    const lerpFactor = 1 - Math.pow(0.015, delta)
+    // Smooth zoom
+    this.radius += (this.targetRadius - this.radius) * (1 - Math.pow(0.01, delta))
 
-    // Compute desired camera position from spherical coords
+    // Camera collision: shorten radius if something is in the way
+    const safeRadius = this._computeCameraCollisionRadius()
+    const effectiveRadius = Math.min(this.radius, safeRadius)
+
+    const lerpFactor = 1 - Math.pow(0.015, delta)
+    const lookAt = this.target.clone().add(this.lookAtOffset)
+
     const sinEl = Math.sin(this.elevation)
     const cosEl = Math.cos(this.elevation)
-    const x = this.radius * cosEl * Math.sin(this.azimuth)
-    const y = this.radius * sinEl
-    const z = this.radius * cosEl * Math.cos(this.azimuth)
-
     const desiredPos = new THREE.Vector3(
-      this.target.x + x,
-      this.target.y + this.lookAtOffset.y + y,
-      this.target.z + z,
+      lookAt.x + effectiveRadius * cosEl * Math.sin(this.azimuth),
+      lookAt.y + effectiveRadius * sinEl,
+      lookAt.z + effectiveRadius * cosEl * Math.cos(this.azimuth),
     )
-    const desiredLookAt = this.target.clone().add(this.lookAtOffset)
 
     this.smoothPosition.lerp(desiredPos, lerpFactor)
-    this.smoothLookAt.lerp(desiredLookAt, lerpFactor)
+    this.smoothLookAt.lerp(lookAt, lerpFactor)
 
     this.instance.position.copy(this.smoothPosition)
     this.instance.lookAt(this.smoothLookAt)

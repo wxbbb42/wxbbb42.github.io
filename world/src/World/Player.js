@@ -24,6 +24,13 @@ export default class Player {
     // Jump initial velocity — tuned for Mars feel (floaty, high arc)
     this.JUMP_VELOCITY = 6.0
 
+    // Landing squash & stretch
+    this._wasGrounded = true
+    this._landingScale = 1.0          // current Y scale
+    this._squashT      = 0            // animation progress 0→1
+    this._squashing    = false
+    this._peakVelocity = 0            // track max downward velocity for squash intensity
+
     // Animation
     this.mixer = null
     this.actions = {}
@@ -182,12 +189,26 @@ export default class Player {
     // Apply Mars gravity
     this.verticalVelocity += this.GRAVITY * delta
 
+    // Track peak downward velocity for squash intensity
+    if (!this._isGrounded && this.verticalVelocity < this._peakVelocity) {
+      this._peakVelocity = this.verticalVelocity
+    }
+
     // Move via physics (now passes vertical velocity separately)
     const grounded = this.experience.physics.moveCharacter(this.velocity, this.verticalVelocity, delta)
     if (grounded && this.verticalVelocity < 0) {
+      // Just landed
+      if (!this._wasGrounded) {
+        const impact = Math.min(Math.abs(this._peakVelocity) / this.JUMP_VELOCITY, 1)
+        this._squashT    = 0
+        this._squashing  = true
+        this._landingScale = 1 - impact * 0.35  // max squash 35%
+        this._peakVelocity = 0
+      }
       this.verticalVelocity = 0
       this._isGrounded = true
     }
+    this._wasGrounded = grounded
     const newPos = this.experience.physics.getCharacterPosition()
     this.position.copy(newPos)
 
@@ -209,6 +230,25 @@ export default class Player {
     const physicsY = newPos.y - 0.55 // subtract capsule half-height to get feet position
     const visualY = this._isGrounded ? this._groundY : Math.max(physicsY, this._groundY)
     this.group.position.set(newPos.x, visualY, newPos.z)
+
+    // Squash & stretch landing animation
+    if (this._squashing) {
+      this._squashT += delta * 8  // animation speed
+      if (this._squashT >= 1) {
+        this._squashT = 1
+        this._squashing = false
+      }
+      // Ease out: squash → normal → slight stretch → normal
+      const t = this._squashT
+      const eased = t < 0.5
+        ? 4 * t * t * t               // ease in cubic (squash phase)
+        : 1 - Math.pow(-2 * t + 2, 3) / 2  // ease out cubic (recover)
+      const scaleY = this._landingScale + (1 - this._landingScale) * eased
+      const scaleXZ = 1 + (1 - scaleY) * 0.5  // opposite axis bulge
+      this.group.scale.set(scaleXZ, scaleY, scaleXZ)
+    } else if (!this._squashing && this._isGrounded) {
+      this.group.scale.set(1, 1, 1)
+    }
 
     // Update camera target (use visual position for smooth camera)
     camera.setTarget(this.group.position)

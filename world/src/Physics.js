@@ -56,9 +56,8 @@ export default class Physics {
       y: pos.y + corrected.y,
       z: pos.z + corrected.z,
     })
-    // Return whether we're grounded (corrected.y ≈ movement.y means no floor collision above us;
-    // if corrected.y is much less than movement.y when negative → we hit the floor)
-    return corrected.y > movement.y - 0.01 // grounded if vertical movement was stopped
+    // Use Rapier's built-in grounded detection
+    return this.characterController.computedGrounded()
   }
 
   getCharacterPosition() {
