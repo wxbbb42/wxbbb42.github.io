@@ -21,7 +21,7 @@ export default class Renderer {
     this.instance.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.instance.setSize(window.innerWidth, window.innerHeight)
     this.instance.toneMapping = THREE.ACESFilmicToneMapping
-    this.instance.toneMappingExposure = 1.2
+    this.instance.toneMappingExposure = 1.35
     this.instance.shadowMap.enabled = true
     this.instance.shadowMap.type = THREE.PCFSoftShadowMap
 
@@ -40,11 +40,11 @@ export default class Renderer {
 
     // 2. Bloom — glows on emissive surfaces (agent status lights, crystals, screens)
     this.bloomEffect = new BloomEffect({
-      intensity: 1.2,
-      luminanceThreshold: 0.55,
-      luminanceSmoothing: 0.3,
+      intensity: 0.8,              // reduced — scene is brighter now
+      luminanceThreshold: 0.7,    // higher threshold, only true highlights bloom
+      luminanceSmoothing: 0.4,
       mipmapBlur: true,
-      radius: 0.6,
+      radius: 0.5,
     })
 
     // 3. SMAA anti-aliasing

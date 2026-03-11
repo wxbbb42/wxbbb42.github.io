@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
 import RAPIER from '@dimforge/rapier3d-compat'
 import Ticker from './Ticker.js'
 import Input from './Input.js'
@@ -180,27 +181,46 @@ export default class Experience {
   }
 
   _setupLighting() {
-    // Ambient light: warm Mars fill
-    const ambient = new THREE.AmbientLight(0xffccaa, 0.6)
-    this.scene.add(ambient)
+    // Environment map — key for PBR materials (removes pure-black dark faces)
+    const pmrem = new THREE.PMREMGenerator(this.renderer.instance)
+    const env = pmrem.fromScene(new RoomEnvironment(), 0.04)
+    this.scene.environment = env.texture
+    pmrem.dispose()
 
-    // Hemisphere light: peachy sky above, warm ground below
-    const hemisphere = new THREE.HemisphereLight(0xD4956B, 0xC4835A, 0.5)
+    // Hemisphere light: warm Mars sky above, deep red ground below
+    // This is the "ambient bounce" — no harsh shadows, fills all faces
+    const hemisphere = new THREE.HemisphereLight(
+      0xFFCC99,  // sky: very subtle warm haze
+      0x6B2000,  // ground: dark Mars red bounce (doesn't overpaint surface)
+      0.9        // dialed down — env map does the heavy lifting now
+    )
     this.scene.add(hemisphere)
 
-    // Directional light: bright warm sun
-    const sun = new THREE.DirectionalLight(0xffeedd, 1.3)
-    sun.position.set(15, 25, 10)
+    // Key light: sun (lower intensity — hemisphere does the heavy lifting now)
+    const sun = new THREE.DirectionalLight(0xFFEECC, 0.9)
+    sun.position.set(15, 20, 8)
     sun.castShadow = true
     sun.shadow.mapSize.set(2048, 2048)
     sun.shadow.camera.near = 0.5
     sun.shadow.camera.far = 80
-    sun.shadow.camera.left = -20
-    sun.shadow.camera.right = 20
-    sun.shadow.camera.top = 20
-    sun.shadow.camera.bottom = -20
-    sun.shadow.bias = -0.0005
+    sun.shadow.camera.left = -22
+    sun.shadow.camera.right = 22
+    sun.shadow.camera.top = 22
+    sun.shadow.camera.bottom = -22
+    sun.shadow.bias = -0.0003
+    sun.shadow.normalBias = 0.02  // reduces shadow acne on terrain
     this.scene.add(sun)
     this.scene.add(sun.target)
+
+    // Fill light: cool blue-purple from opposite side (space side)
+    // Prevents pure-black faces without competing with sun
+    const fill = new THREE.DirectionalLight(0x8899FF, 0.25)
+    fill.position.set(-12, 8, -5)
+    this.scene.add(fill)
+
+    // Rim light: subtle warm from behind-left, picks out silhouettes
+    const rim = new THREE.DirectionalLight(0xFF9966, 0.15)
+    rim.position.set(-8, 5, 12)
+    this.scene.add(rim)
   }
 }
