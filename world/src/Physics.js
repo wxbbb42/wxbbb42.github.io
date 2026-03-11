@@ -10,11 +10,12 @@ export default class Physics {
     const gravity = { x: 0.0, y: -9.81, z: 0.0 }
     this.world = new RAPIER.World(gravity)
 
-    // Create ground
-    const groundDesc = RAPIER.RigidBodyDesc.fixed()
-    const groundBody = this.world.createRigidBody(groundDesc)
+    // Create ground — visual mesh sits at ~Y=-0.16, so physics top must match
+    // cuboid halfExtent=0.1, setTranslation Y = visualGroundY - 0.1 ≈ -0.26
+    const groundDesc    = RAPIER.RigidBodyDesc.fixed()
+    const groundBody    = this.world.createRigidBody(groundDesc)
     const groundCollider = RAPIER.ColliderDesc.cuboid(18, 0.1, 18)
-      .setTranslation(0, -0.1, 0)
+      .setTranslation(0, -0.26, 0)
     this.world.createCollider(groundCollider, groundBody)
 
     // Character controller
@@ -26,7 +27,7 @@ export default class Physics {
     // Character collider (capsule)
     // Capsule: halfHeight=0.3, radius=0.25 → center at 0.55 above ground
     const charBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased()
-      .setTranslation(0, 0.55, 5)
+      .setTranslation(0, 0.39, 5)
     this.characterBody = this.world.createRigidBody(charBodyDesc)
     const charColliderDesc = RAPIER.ColliderDesc.capsule(0.3, 0.25)
     this.characterCollider = this.world.createCollider(charColliderDesc, this.characterBody)

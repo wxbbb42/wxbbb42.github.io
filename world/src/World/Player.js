@@ -46,7 +46,13 @@ export default class Player {
     this.currentAction = null
 
     // Capsule half-height+radius offset (capsule center above feet)
-    this._capsuleOffset = 0.55
+    this._capsuleOffset  = 0.55   // physics: halfHeight(0.3) + radius(0.25)
+    this._visualYOffset  = 0      // auto-computed from model bbox in _createCharacter
+
+    // Raycast for visual ground-snap (physics handles collision; raycast aligns feet visually)
+    this._raycaster  = new THREE.Raycaster()
+    this._rayDir     = new THREE.Vector3(0, -1, 0)
+    this._groundY    = 0
 
     this._createCharacter()
     this.group.position.copy(this.position)
@@ -70,7 +76,20 @@ export default class Player {
 
       const box = new THREE.Box3().setFromObject(wrapper)
       const center = box.getCenter(new THREE.Vector3())
+      // Offset wrapper so center-bottom is at origin
       wrapper.position.set(-center.x, -box.min.y, -center.z)
+
+      // Recompute after repositioning to find actual model feet offset
+      // Model min.y after centering should be 0; measure total height
+      const box2 = new THREE.Box3().setFromObject(wrapper)
+      const modelHeight = box2.max.y - box2.min.y
+      // Capsule top of ground = capsuleOffset = 0.55
+      // We want model feet (min.y of wrapper = 0) to sit at ground level
+      // feetY = physicsY - capsuleOffset + visualYOffset
+      // For feet at ground: visualYOffset = 0 if wrapper.min.y=0
+      // But capsule may float above visual ground — auto-tune:
+      this._visualYOffset = box2.min.y  // typically 0 after centering
+      console.log(`[Player] modelHeight=${modelHeight.toFixed(3)}, visualYOffset=${this._visualYOffset.toFixed(3)}`)
 
       this.model = wrapper
       this.group.add(wrapper)
@@ -230,9 +249,24 @@ export default class Player {
     const newPos = this.experience.physics.getCharacterPosition()
     this.position.copy(newPos)
 
-    // Feet Y = capsule center Y - capsuleOffset
-    const feetY = newPos.y - this._capsuleOffset
-    this.group.position.set(newPos.x, feetY, newPos.z)
+    // Feet Y = capsule center Y - capsuleOffset + visualYOffset
+    const feetY = newPos.y - this._capsuleOffset + this._visualYOffset
+
+    // Raycast to find visual ground surface and snap feet there (when grounded)
+    if (this._isGrounded) {
+      const origin = new THREE.Vector3(newPos.x, newPos.y + 1, newPos.z)
+      this._raycaster.set(origin, this._rayDir)
+      this._raycaster.far = 4
+      const groundGroup = this.experience.world?.ground?.group
+      if (groundGroup) {
+        const hits = this._raycaster.intersectObjects(groundGroup.children, true)
+        if (hits.length > 0) this._groundY = hits[0].point.y
+      }
+      this.group.position.set(newPos.x, this._groundY + this._visualYOffset, newPos.z)
+    } else {
+      // Airborne: use physics Y
+      this.group.position.set(newPos.x, feetY, newPos.z)
+    }
 
     // Squash & stretch
     if (this._squashing) {
