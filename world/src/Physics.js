@@ -33,7 +33,7 @@ export default class Physics {
 
     const hfBodyDesc = RAPIER.RigidBodyDesc.fixed()
     const hfBody     = this.world.createRigidBody(hfBodyDesc)
-    const hfDesc     = RAPIER.ColliderDesc.heightField(
+    const hfDesc     = RAPIER.ColliderDesc.heightfield(
       nRows, nCols, heights,
       { x: HF_SIZE, y: 1.0, z: HF_SIZE }
     )
