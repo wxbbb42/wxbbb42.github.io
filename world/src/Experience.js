@@ -72,9 +72,9 @@ export default class Experience {
     // 2. Load all assets
     await this.resources.loadAll()
 
-    // 3. Show enter button
-    this.intro.showEnterButton()
+    // 3. Auto-enter: bind callback first, then trigger
     this.intro.onEnter = () => this._start()
+    this.intro.showEnterButton()
   }
 
   _start() {

@@ -12,6 +12,8 @@ body {
   width: 100vw;
   height: 100vh;
   display: block;
+  /* Saturation + contrast boost via CSS — no WebGL shader needed */
+  filter: saturate(1.4) contrast(1.1);
 }
 
 /* Intro / Loading */

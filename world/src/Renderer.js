@@ -5,8 +5,6 @@ import {
   EffectPass,
   BloomEffect,
   SMAAEffect,
-  HueSaturationEffect,
-  BrightnessContrastEffect,
 } from 'postprocessing'
 
 export default class Renderer {
@@ -40,7 +38,7 @@ export default class Renderer {
     // 1. Base render
     this.composer.addPass(new RenderPass(scene, camera.instance))
 
-    // 2. Bloom — glows on emissive surfaces
+    // 2. Bloom
     this.bloomEffect = new BloomEffect({
       intensity: 0.8,
       luminanceThreshold: 0.7,
@@ -49,16 +47,10 @@ export default class Renderer {
       radius: 0.5,
     })
 
-    // 3. Saturation boost — richer colors without blowing highlights
-    this.saturationEffect = new HueSaturationEffect({ saturation: 0.35 })
-
-    // 4. Contrast lift — punchier shadows
-    this.contrastEffect = new BrightnessContrastEffect({ brightness: 0.0, contrast: 0.12 })
-
-    // 5. SMAA anti-aliasing
+    // 3. SMAA anti-aliasing
     this.smaaEffect = new SMAAEffect()
 
-    this.composer.addPass(new EffectPass(camera.instance, this.bloomEffect, this.saturationEffect, this.contrastEffect, this.smaaEffect))
+    this.composer.addPass(new EffectPass(camera.instance, this.bloomEffect, this.smaaEffect))
   }
 
   resize() {
