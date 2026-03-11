@@ -74,26 +74,30 @@ export default class Player {
       rawModel.rotation.y = Math.PI
 
       // DO NOT use Box3.setFromObject on SkinnedMesh before first render —
-      // skeleton bones are uninitialized, positions are NaN → triggers computeBoundingSphere() → black screen
-      // Disable frustum culling on all skinned meshes to prevent Three.js from calling it
+      // skeleton bones are uninitialized → NaN positions → computeBoundingSphere crash
+      // Instead: use geometry.boundingBox (rest pose, no skeleton deformation)
       rawModel.traverse((child) => {
         if (child.isSkinnedMesh || child.isMesh) {
           child.frustumCulled = false
         }
       })
 
-      // Defer bounding box centering until after 2 frames (skeleton initialized by then)
-      wrapper.position.set(0, 0, 0)
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        try {
-          const box = new THREE.Box3().setFromObject(rawModel)
-          if (!isNaN(box.min.x) && !isNaN(box.min.y)) {
-            const cx = (box.min.x + box.max.x) / 2
-            const cz = (box.min.z + box.max.z) / 2
-            rawModel.position.set(-cx, -box.min.y, -cz)
-          }
-        } catch(e) { /* ignore */ }
-      }))
+      // Compute bbox from rest-pose geometry — safe before first render
+      rawModel.updateMatrixWorld(true)
+      const bbox = new THREE.Box3()
+      rawModel.traverse((child) => {
+        if ((child.isMesh || child.isSkinnedMesh) && child.geometry) {
+          if (!child.geometry.boundingBox) child.geometry.computeBoundingBox()
+          const geoBbox = child.geometry.boundingBox.clone()
+          geoBbox.applyMatrix4(child.matrixWorld)
+          bbox.union(geoBbox)
+        }
+      })
+      if (!bbox.isEmpty() && !isNaN(bbox.min.x) && !isNaN(bbox.min.y)) {
+        const cx = (bbox.min.x + bbox.max.x) / 2
+        const cz = (bbox.min.z + bbox.max.z) / 2
+        rawModel.position.set(-cx, -bbox.min.y, -cz)
+      }
 
       this.model = wrapper
       this.group.add(wrapper)
