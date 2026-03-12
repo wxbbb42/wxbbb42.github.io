@@ -1,6 +1,37 @@
 {
   "entries": [
     {
+      "date": "2026-03-12",
+      "title": "SVG Mask Scroll Reveals & Paper Portfolio Tactility",
+      "summary": "Codrops Mar 11: SVG mask + GSAP ScrollTrigger creates 4 distinct fullscreen reveal patterns (grid, blind, iris, wipe) — shape-driven transitions that feel physical. Awwwards SOTD Mar 12: Mr. Pandas Paper Portfolio wins Developer Award with scanned paper textures + hand-drawn SVG paths, proving lo-fi tactility can out-perform polished digital.",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**Codrops (Mar 11, 2026) — SVG Mask Transitions on Scroll with GSAP & ScrollTrigger**\nby Hiroki Watanabe\n\nThe core insight: SVG `<clipPath>` + `<mask>` are shape languages. Instead of `clip-path: inset(0 100% 0 0)` (a rectangle), you animate the *geometry* of an SVG path — and that geometry can be a grid of slats, an iris circle, a chevron blinds pattern, or a jagged reveal.\n\nKey techniques:\n- **Grid mask reveal:** divide the image area into a grid of SVG rectangles; stagger `scaleY` from 0→1 on each column. Feels like venetian blinds dropping.\n- **Blind pattern:** horizontal SVG paths expand width in sequence — reads as shutter opening.\n- **Iris reveal:** circular `<clipPath>` radius animates `r` from 0 → viewport diagonal. Very cinematic.\n- **GSAP ScrollTrigger pinning:** `scrub: 1.5` (not `true`) gives slight lag — the reveal feels dragged by scroll, not teleported.\n\n```js\n// Iris SVG mask reveal\ngsap.fromTo(\n  '#iris-circle',\n  { attr: { r: 0 } },\n  {\n    attr: { r: diag },\n    ease: 'power2.inOut',\n    scrollTrigger: {\n      trigger: section,\n      start: 'top center',\n      end: 'bottom center',\n      scrub: 1.5\n    }\n  }\n);\n```\n\n**Application for Ben:** Works grid could use blind-pattern reveal on scroll-in — each project card's image revealed by 6-column staggered SVG slats. More structured than opacity fade, cheaper than WebGL."
+        },
+        {
+          "type": "demo",
+          "label": "SVG Blind Mask Reveal",
+          "description": "Hover to trigger: staggered SVG clipPath slats reveal an image — simulates Codrops blind-pattern scroll transition.",
+          "html": "<div class='scene'><div class='reveal-wrap' id='wrap'><svg class='svg-mask' width='0' height='0'><defs><clipPath id='blinds' clipPathUnits='objectBoundingBox'><rect class='slat' x='0' y='0' width='0.166' height='1'/><rect class='slat' x='0.166' y='0' width='0.167' height='1'/><rect class='slat' x='0.333' y='0' width='0.167' height='1'/><rect class='slat' x='0.5' y='0' width='0.167' height='1'/><rect class='slat' x='0.667' y='0' width='0.166' height='1'/><rect class='slat' x='0.833' y='0' width='0.167' height='1'/></clipPath></defs></svg><div class='reveal-img' id='img'></div><div class='reveal-label'>SVG Blind Reveal</div></div><p class='hint'>hover to reveal</p></div>",
+          "css": "body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:monospace;gap:16px}.reveal-wrap{position:relative;width:280px;height:180px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}.reveal-img{position:absolute;inset:0;background:linear-gradient(135deg,#1a0f0f,#3d1f00);clip-path:url(#blinds);display:flex;align-items:center;justify-content:center}.reveal-label{position:absolute;bottom:12px;left:16px;font-size:9px;letter-spacing:2px;color:#C17A3A;z-index:2}.hint{font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.25)}.svg-mask{position:absolute}",
+          "js": "const slats=document.querySelectorAll('.slat');let revealed=false;const base=[0,0.166,0.333,0.5,0.667,0.833];const w=1/6;function reveal(){slats.forEach((s,i)=>{setTimeout(()=>{s.setAttribute('width',w.toFixed(3))},i*60)})}function hide(){slats.forEach(s=>s.setAttribute('width','0'))}slats.forEach(s=>s.setAttribute('width','0'));document.getElementById('wrap').addEventListener('mouseenter',reveal);document.getElementById('wrap').addEventListener('mouseleave',hide);"
+        },
+        {
+          "type": "note",
+          "text": "**Awwwards SOTD Mar 12, 2026 — Mr. Pandas Paper Portfolio (Developer Award)**\n\nThis site bets everything on lo-fi tactility: scanned paper textures as actual image sources, hand-drawn SVG path animations for UI transitions, and deliberate imperfection as the aesthetic. The Developer Award signals the *engineering* behind the charm.\n\nTechniques observed:\n- **Scanned texture as background:** `background-image: url(scan.jpg)` at low opacity — analog warmth, zero GPU cost vs WebGL grain\n- **Hand-drawn SVG paths + stroke-dashoffset animation:** each UI element 'draws itself in' on load/hover. Classic technique, executed with personality.\n- **Page weight discipline:** no Three.js, no heavy libraries — custom GSAP-only animation. Fast, tactile, memorable.\n- **Color: aged ivory + ink black + single warm red** — 3-color palette maximum, enforced ruthlessly.\n\n```css\n/* Scanned paper texture overlay */\n.paper-bg {\n  background-image: url('paper-scan.jpg');\n  background-blend-mode: multiply;\n  background-size: cover;\n}\n\n/* SVG path draw-in */\n.drawn-path {\n  stroke-dasharray: 1000;\n  stroke-dashoffset: 1000;\n  animation: draw 1.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;\n}\n@keyframes draw {\n  to { stroke-dashoffset: 0; }\n}\n```\n\n**Key insight:** In 2026, the most memorable portfolios aren't the most technically complex — they're the most *intentional*. Paper Portfolio wins because it commits 100% to its concept. Every element serves the 'handmade' narrative. Zero visual noise."
+        },
+        {
+          "type": "ref",
+          "links": [
+            { "label": "Codrops: SVG Mask Transitions on Scroll with GSAP", "url": "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/" },
+            { "label": "Awwwards SOTD Mar 12 — Mr. Pandas Paper Portfolio", "url": "https://www.awwwards.com/sites/mr-pandas-paper-portfolio" },
+            { "label": "Codrops tutorials hub", "url": "https://tympanus.net/codrops/hub/tutorials/" }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-11",
       "title": "Swiss Grid × WebGL Geometry & Typography-Led Corporate Motion",
       "summary": "Codrops Mar 5: Corentin Bernadou's portfolio uses Swiss editorial grid rules to govern Three.js geometry placement — structure-first, then WebGL. Awwwards SOTD Mar 11: Outsource Consultants wins Developer Award with restrained, typography-led layout that proves motion discipline beats effects excess.",
