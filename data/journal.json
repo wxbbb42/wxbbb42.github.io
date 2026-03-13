@@ -1,6 +1,30 @@
 {
   "entries": [
     {
+      "date": "2026-03-13",
+      "title": "2-Color Video Portfolio & Three.js r183 NodeMaterial",
+      "summary": "Awwwards SOTD Mar 13: Adam Bricker's Film/TV/Animation portfolio wins Developer Award with a radical 2-color constraint (#F0F2F1 off-white + #020202 near-black), full-bleed video as the only visual currency. Three.js r183 ships NodeMaterial stable — GPU-agnostic node-based shader graphs that compile to both WebGL and WebGPU, replacing raw GLSL for most creative use cases.",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**Awwwards SOTD Mar 13, 2026 — Adam Bricker (Developer Award)**\nFilm · TV · Photography · Animation portfolio. 2-color palette maximum: `#F0F2F1` (warm off-white) + `#020202` (near-black). Video as the only image format — no hero stills, no photo grids.\n\nKey techniques (inferred from Awwwards element breakdown):\n- **Full-bleed video tiles:** each project is a looping muted video, not a still thumbnail. Video `autoplay muted loop playsinline` — zero JS interaction needed for the primary impression.\n- **2-color lockdown as engineering discipline:** removing color forces the layout to do all the work. Spacing, scale, and motion become the only levers. This is *harder* to execute than a rich palette.\n- **Video loading strategy:** observed multi-video portfolios in 2026 use Intersection Observer + `video.load()` on demand — never preload all at once. Poster frame (single jpg) holds until 200px from viewport.\n- **Menu as typographic gesture:** from the Awwwards element capture, the nav appears to draw in as SVG or clip-path — no hover color, just motion.\n\n```js\n// Lazy video load on approach\nconst observer = new IntersectionObserver((entries) => {\n  entries.forEach(({ isIntersecting, target }) => {\n    if (isIntersecting) {\n      const video = target.querySelector('video');\n      if (video && !video.src) {\n        video.src = video.dataset.src;\n        video.load();\n      }\n    }\n  });\n}, { rootMargin: '200px' });\n\ndocument.querySelectorAll('.project-tile').forEach(tile => observer.observe(tile));\n```\n\n**Key insight:** The 2-color constraint is a *commitment device* — it forces every decision to be intentional. When you can't reach for color, you have to earn legibility through hierarchy, motion, and scale. Adam Bricker's SOTD win proves that in 2026 the most technically impressive portfolios are often the most visually restrained.\n\n**Application for Ben:** The Works page could adopt a 'poster-first, video-on-hover' pattern for each project card — 1 static jpg at rest, video plays on hover/tap (IntersectionObserver ensures it's loaded). Amber accent reserved for cursor/hover state only, not the card itself."
+        },
+        {
+          "type": "note",
+          "text": "**Three.js r183 — NodeMaterial Stable & WebGPU Parity**\n\nThree.js is now at r183 and the big story is **NodeMaterial reaching stable API** — a GPU-agnostic node-based shader system that compiles to GLSL (WebGL) *or* WGSL (WebGPU) from the same graph. This is the end of writing two shader versions.\n\nCore concepts:\n- **`Nodes` system:** replace raw `vertexShader`/`fragmentShader` strings with composable node graphs. `positionNode`, `colorNode`, `emissiveNode` are the entry points.\n- **`MeshStandardNodeMaterial`:** drop-in for `MeshStandardMaterial` but accepts node inputs — mix procedural noise into a PBR material without touching GLSL.\n- **`texture()` node + `uv()` node:** chain them for animated UV distortion: `texture(map, uv().add(timerLocal().mul(0.1)))` scrolls a texture over time.\n- **WebGPU backend:** `WebGPURenderer` is now production-ready. Falls back to WebGL if WebGPU unavailable (one `await renderer.init()` call handles detection).\n\n```js\nimport { MeshStandardNodeMaterial, texture, uv, timerLocal, vec2 } from 'three/nodes';\n\nconst material = new MeshStandardNodeMaterial();\nconst t = timerLocal(); // auto-updates each frame\n\n// Animated UV offset: texture scrolls diagonally\nmaterial.colorNode = texture(\n  myTexture,\n  uv().add(vec2(t.mul(0.05), t.mul(0.03)))\n);\n```\n\n**Why this matters:** NodeMaterial eliminates the biggest friction in creative Three.js work — shader strings that break on GLSL version changes and can't be easily composed. The node graph approach is how Blender's shader editor works; if you can think in nodes, you can now build the same effects in-browser.\n\n**Application for Ben:** A subtle animated texture on the hero section background (slow UV scroll of a noise texture, amber-tinted) — previously required writing GLSL. With NodeMaterial: ~5 lines of JavaScript."
+        },
+        {
+          "type": "ref",
+          "links": [
+            { "label": "Awwwards SOTD Mar 13 — Adam Bricker", "url": "https://www.awwwards.com/sites/adam-bricker" },
+            { "label": "Three.js r183 Changelog", "url": "https://github.com/mrdoob/three.js/releases" },
+            { "label": "Three.js NodeMaterial docs", "url": "https://threejs.org/docs/#api/en/materials/nodes/MeshStandardNodeMaterial" },
+            { "label": "Three.js Examples", "url": "https://threejs.org/examples/" }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-12",
       "title": "SVG Mask Scroll Reveals & Paper Portfolio Tactility",
       "summary": "Codrops Mar 11: SVG mask + GSAP ScrollTrigger creates 4 distinct fullscreen reveal patterns (grid, blind, iris, wipe) — shape-driven transitions that feel physical. Awwwards SOTD Mar 12: Mr. Pandas Paper Portfolio wins Developer Award with scanned paper textures + hand-drawn SVG paths, proving lo-fi tactility can out-perform polished digital.",
