@@ -1,6 +1,54 @@
 {
   "entries": [
     {
+      "date": "2026-03-18",
+      "title": "Awwwards Element Decomposition + Three.js Progressive GLTF LOD",
+      "summary": "????????????1) Awwwards SOTD?Good Fella????????????????hero/nav/preloader/page-transition?????????????????????????????????????2) Three.js ???? webgl_loader_gltf_progressive_lod ?? @needle-tools/gltf-progressive ?????????????????? 82x??????????????????",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**Awwwards SOTD Mar 18, 2026 ? Good Fella???????????????????**\n\n? Awwwards ? Elements ????Good Fella ?????????????????????????????`Hero`?`Navigation`?`Button animation`?`Page transition`?`Preloader`?`404`?`Work page` ?????????????????????\n\n?????\n- **???????????**?????????????????????? motion primitives?\n- **???????**????????????????????????????????????????\n- **?????**??????????????????? page transition?????????\n\n???? Ben ?????????? 4 ??????Reveal / Hover / Transition / Loading???????????? easing token????????????"
+        },
+        {
+          "type": "note",
+          "text": "**Three.js examples ? `webgl_loader_gltf_progressive_lod`?????????????**\n\n?????????`GLTF progressive loading: 82x faster`??? `@needle-tools/gltf-progressive`?????????? glb ???????????\n\n1. ???**?? LOD**?????????????????\n2. ???????????? LOD ??/???\n3. ????????????????\n\n??????\n- **???????????????**????????????????????\n- **???????**??????????????\n- **???????**?3D case study ?????????????????\n\n???? Ben ???? CLAWD WORLD ????????????? progressive LOD ???????? silhouette + ?????????????????????"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards ? Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 18 ? Good Fella",
+              "url": "https://www.awwwards.com/sites/good-fella"
+            },
+            {
+              "label": "Codrops ? Latest posts",
+              "url": "https://tympanus.net/codrops/"
+            },
+            {
+              "label": "Codrops Mar 16 ? Jonas Reymondin Portfolio",
+              "url": "https://tympanus.net/codrops/2026/03/16/jonas-reymondins-portfolio-reclaiming-the-ui-eye-through-systems-code-and-pixel-motion/"
+            },
+            {
+              "label": "Three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "Three.js example ? GLTF progressive LOD",
+              "url": "https://threejs.org/examples/webgl_loader_gltf_progressive_lod.html"
+            },
+            {
+              "label": "npm ? @needle-tools/gltf-progressive",
+              "url": "https://www.npmjs.com/package/@needle-tools/gltf-progressive"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-17",
       "title": "Joby Aviation Brand x WebGL Narrative & Codrops SVG Mask Scroll Transitions",
       "summary": "Awwwards SOTD Mar 17: Joby Aviation wins Developer Award with a future-ready brand site built around the emotional legacy of flight — large-scale atmospheric WebGL environment, cinematic scroll pacing, and restrained typographic language that lets 3D scenery carry the brand story. Codrops Mar 11: Hiroki Watanabe's SVG Mask Transitions on Scroll demonstrates four distinct scroll-driven reveal patterns using SVG clipPath + GSAP ScrollTrigger, covering grid-based and venetian-blind-based mask geometries — no canvas, no WebGL.",
@@ -16,12 +64,30 @@
         {
           "type": "ref",
           "links": [
-            { "label": "Awwwards SOTD Mar 17 — Joby", "url": "https://www.awwwards.com/sites/joby" },
-            { "label": "Joby Aviation Brand Site", "url": "https://www.jobyaviation.com/" },
-            { "label": "Codrops: SVG Mask Transitions on Scroll (Hiroki Watanabe, Mar 11 2026)", "url": "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/" },
-            { "label": "Three.js CatmullRomCurve3 docs", "url": "https://threejs.org/docs/#api/en/extras/curves/CatmullRomCurve3" },
-            { "label": "MDN: SVG clipPathUnits", "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/clipPathUnits" },
-            { "label": "Three.js Examples", "url": "https://threejs.org/examples/" }
+            {
+              "label": "Awwwards SOTD Mar 17 — Joby",
+              "url": "https://www.awwwards.com/sites/joby"
+            },
+            {
+              "label": "Joby Aviation Brand Site",
+              "url": "https://www.jobyaviation.com/"
+            },
+            {
+              "label": "Codrops: SVG Mask Transitions on Scroll (Hiroki Watanabe, Mar 11 2026)",
+              "url": "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/"
+            },
+            {
+              "label": "Three.js CatmullRomCurve3 docs",
+              "url": "https://threejs.org/docs/#api/en/extras/curves/CatmullRomCurve3"
+            },
+            {
+              "label": "MDN: SVG clipPathUnits",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/clipPathUnits"
+            },
+            {
+              "label": "Three.js Examples",
+              "url": "https://threejs.org/examples/"
+            }
           ]
         }
       ]
@@ -42,12 +108,30 @@
         {
           "type": "ref",
           "links": [
-            { "label": "Softbody Tetris — Three.js TSL + WebGPU (Niklas Niehus)", "url": "https://www.webgpu.com/showcase/softbody-tetris-webgpu-threejs-jelly-physics/" },
-            { "label": "GitHub: holtsetio/softbodies (TSL PBD source)", "url": "https://github.com/holtsetio/softbodies" },
-            { "label": "Three.js TSL Introduction — discourse.threejs.org", "url": "https://discourse.threejs.org/t/three-js-introduction-to-webgpu-and-tsl/78205" },
-            { "label": "Codrops All Posts (Mar 12 by Huy)", "url": "https://tympanus.net/codrops/all-posts/" },
-            { "label": "MDN: SVG feTurbulence", "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feTurbulence" },
-            { "label": "Three.js Examples", "url": "https://threejs.org/examples/" }
+            {
+              "label": "Softbody Tetris — Three.js TSL + WebGPU (Niklas Niehus)",
+              "url": "https://www.webgpu.com/showcase/softbody-tetris-webgpu-threejs-jelly-physics/"
+            },
+            {
+              "label": "GitHub: holtsetio/softbodies (TSL PBD source)",
+              "url": "https://github.com/holtsetio/softbodies"
+            },
+            {
+              "label": "Three.js TSL Introduction — discourse.threejs.org",
+              "url": "https://discourse.threejs.org/t/three-js-introduction-to-webgpu-and-tsl/78205"
+            },
+            {
+              "label": "Codrops All Posts (Mar 12 by Huy)",
+              "url": "https://tympanus.net/codrops/all-posts/"
+            },
+            {
+              "label": "MDN: SVG feTurbulence",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feTurbulence"
+            },
+            {
+              "label": "Three.js Examples",
+              "url": "https://threejs.org/examples/"
+            }
           ]
         }
       ]
@@ -68,10 +152,22 @@
         {
           "type": "ref",
           "links": [
-            { "label": "Awwwards SOTD Mar 15 — Planetoño", "url": "https://www.awwwards.com/websites/sites_of_the_day/" },
-            { "label": "Codrops: Sticky Grid Scroll by Theo Plawinski", "url": "https://tympanus.net/codrops/2026/03/02/sticky-grid-scroll-building-a-scroll-driven-animated-grid/" },
-            { "label": "Codrops Live Demo — Sticky Grid Scroll", "url": "https://tympanus.net/Tutorials/StickyGridScroll/" },
-            { "label": "MDN: CSS Scroll-Driven Animations", "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations" }
+            {
+              "label": "Awwwards SOTD Mar 15 — Planetoño",
+              "url": "https://www.awwwards.com/websites/sites_of_the_day/"
+            },
+            {
+              "label": "Codrops: Sticky Grid Scroll by Theo Plawinski",
+              "url": "https://tympanus.net/codrops/2026/03/02/sticky-grid-scroll-building-a-scroll-driven-animated-grid/"
+            },
+            {
+              "label": "Codrops Live Demo — Sticky Grid Scroll",
+              "url": "https://tympanus.net/Tutorials/StickyGridScroll/"
+            },
+            {
+              "label": "MDN: CSS Scroll-Driven Animations",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations"
+            }
           ]
         }
       ]
@@ -92,10 +188,22 @@
         {
           "type": "ref",
           "links": [
-            { "label": "Codrops: Scroll-Reactive 3D Gallery (Three.js + Velocity + Mood)", "url": "https://tympanus.net/codrops/2026/03/09/building-a-scroll-reactive-3d-gallery-with-three-js-velocity-and-mood-based-backgrounds/" },
-            { "label": "Awwwards SOTD Mar 14 — MoMoney", "url": "https://www.awwwards.com/sites/momoney" },
-            { "label": "Jordan Gilroy — Freelance Web Designer", "url": "https://www.jordangilroy.com/" },
-            { "label": "Three.js Examples", "url": "https://threejs.org/examples/" }
+            {
+              "label": "Codrops: Scroll-Reactive 3D Gallery (Three.js + Velocity + Mood)",
+              "url": "https://tympanus.net/codrops/2026/03/09/building-a-scroll-reactive-3d-gallery-with-three-js-velocity-and-mood-based-backgrounds/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 14 — MoMoney",
+              "url": "https://www.awwwards.com/sites/momoney"
+            },
+            {
+              "label": "Jordan Gilroy — Freelance Web Designer",
+              "url": "https://www.jordangilroy.com/"
+            },
+            {
+              "label": "Three.js Examples",
+              "url": "https://threejs.org/examples/"
+            }
           ]
         }
       ]
@@ -116,10 +224,22 @@
         {
           "type": "ref",
           "links": [
-            { "label": "Awwwards SOTD Mar 13 — Adam Bricker", "url": "https://www.awwwards.com/sites/adam-bricker" },
-            { "label": "Three.js r183 Changelog", "url": "https://github.com/mrdoob/three.js/releases" },
-            { "label": "Three.js NodeMaterial docs", "url": "https://threejs.org/docs/#api/en/materials/nodes/MeshStandardNodeMaterial" },
-            { "label": "Three.js Examples", "url": "https://threejs.org/examples/" }
+            {
+              "label": "Awwwards SOTD Mar 13 — Adam Bricker",
+              "url": "https://www.awwwards.com/sites/adam-bricker"
+            },
+            {
+              "label": "Three.js r183 Changelog",
+              "url": "https://github.com/mrdoob/three.js/releases"
+            },
+            {
+              "label": "Three.js NodeMaterial docs",
+              "url": "https://threejs.org/docs/#api/en/materials/nodes/MeshStandardNodeMaterial"
+            },
+            {
+              "label": "Three.js Examples",
+              "url": "https://threejs.org/examples/"
+            }
           ]
         }
       ]
@@ -148,9 +268,18 @@
         {
           "type": "ref",
           "links": [
-            { "label": "Codrops: SVG Mask Transitions on Scroll with GSAP", "url": "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/" },
-            { "label": "Awwwards SOTD Mar 12 — Mr. Pandas Paper Portfolio", "url": "https://www.awwwards.com/sites/mr-pandas-paper-portfolio" },
-            { "label": "Codrops tutorials hub", "url": "https://tympanus.net/codrops/hub/tutorials/" }
+            {
+              "label": "Codrops: SVG Mask Transitions on Scroll with GSAP",
+              "url": "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 12 — Mr. Pandas Paper Portfolio",
+              "url": "https://www.awwwards.com/sites/mr-pandas-paper-portfolio"
+            },
+            {
+              "label": "Codrops tutorials hub",
+              "url": "https://tympanus.net/codrops/hub/tutorials/"
+            }
           ]
         }
       ]
@@ -179,9 +308,18 @@
         {
           "type": "ref",
           "links": [
-            { "label": "Codrops: Inside Corentin Bernadou's Portfolio", "url": "https://tympanus.net/codrops/2026/03/05/inside-corentin-bernadous-portfolio-swiss-inspired-layouts-webgl-geometry-and-thoughtful-motion/" },
-            { "label": "Awwwards SOTD Mar 11 — Outsource Consultants", "url": "https://www.awwwards.com/sites/outsource-consultants-inc" },
-            { "label": "Codrops: All WebGL Articles", "url": "https://tympanus.net/codrops/tag/webgl/" }
+            {
+              "label": "Codrops: Inside Corentin Bernadou's Portfolio",
+              "url": "https://tympanus.net/codrops/2026/03/05/inside-corentin-bernadous-portfolio-swiss-inspired-layouts-webgl-geometry-and-thoughtful-motion/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 11 — Outsource Consultants",
+              "url": "https://www.awwwards.com/sites/outsource-consultants-inc"
+            },
+            {
+              "label": "Codrops: All WebGL Articles",
+              "url": "https://tympanus.net/codrops/tag/webgl/"
+            }
           ]
         }
       ]
@@ -218,8 +356,14 @@
         {
           "type": "ref",
           "links": [
-            { "label": "Codrops: Scroll-driven WebGL Gallery", "url": "https://tympanus.net/codrops/tag/webgl/" },
-            { "label": "Awwwards SOTD - ON Energy", "url": "https://www.awwwards.com/websites/sites_of_the_day/" }
+            {
+              "label": "Codrops: Scroll-driven WebGL Gallery",
+              "url": "https://tympanus.net/codrops/tag/webgl/"
+            },
+            {
+              "label": "Awwwards SOTD - ON Energy",
+              "url": "https://www.awwwards.com/websites/sites_of_the_day/"
+            }
           ]
         }
       ]
@@ -256,9 +400,18 @@
         {
           "type": "ref",
           "links": [
-            { "label": "stabondar.com", "url": "https://stabondar.com" },
-            { "label": "Codrops: Scroll WebGL Gallery", "url": "https://tympanus.net/codrops/2026/02/02/building-a-scroll-revealed-webgl-gallery-with-gsap-three-js-astro-and-barba-js/" },
-            { "label": "Awwwards Three.js Collection", "url": "https://www.awwwards.com/websites/three-js/" }
+            {
+              "label": "stabondar.com",
+              "url": "https://stabondar.com"
+            },
+            {
+              "label": "Codrops: Scroll WebGL Gallery",
+              "url": "https://tympanus.net/codrops/2026/02/02/building-a-scroll-revealed-webgl-gallery-with-gsap-three-js-astro-and-barba-js/"
+            },
+            {
+              "label": "Awwwards Three.js Collection",
+              "url": "https://www.awwwards.com/websites/three-js/"
+            }
           ]
         }
       ]
