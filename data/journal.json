@@ -1,6 +1,42 @@
 {
   "entries": [
     {
+      "date": "2026-03-21",
+      "title": "Reference Constraint Board + Massive Instance Rendering (BVH + BatchedMesh LOD)",
+      "summary": "今日从 Awwwards / Codrops / three.js examples 提炼两条可落地方法：1) Codrops 3/20 的受限参考板流程（固定画布+写下偷什么+到上限就停止）用于把灵感转成可执行设计决策；2) three.js webgl_batch_lod_bvh 展示 50 万实例场景的工程组合拳：BatchedMesh + 多级 LOD + TLAS/BLAS BVH，实现高密度场景仍可交互。Awwwards 当日 SOTD Darknode 也验证了 Hero 视频 + 3D元素动效 + 过渡动效 的模块化叙事结构。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Codrops（Mar 20, Jackie Zhang）— 参考收集要做受限系统，不是无限收藏夹**\n\n文章里最有用的不是视觉风格，而是流程：\n- 固定参考板边界（一个固定尺寸区域，不允许无限扩展）\n- 每条参考都写注释（我到底在偷什么：节奏/材质/层级/动效）\n- 达到上限就停止收集，强制进入实现阶段\n\n这个方法的价值是把找灵感从情绪行为变成可执行系统，避免在 Pinterest/Cosmos 无限漂移。\n\n给 Ben 的应用：做一个 Inspo Constraint Board 模板（12 个槽位上限）。每个槽位必须附一句可落地规则（例如：标题 reveal 用 clip-path 而不是 opacity），收满即停。\n\n---\n\n**2) three.js example — webgl_batch_lod_bvh：50 万实例可交互的性能架构**\n\n示例信息直接给出：10 种几何体、500k instances、每种 5 级 LOD，并通过 BVH（TLAS + BLAS）加速视锥裁剪和射线检测。\n\n关键组合：\n- BatchedMesh：把大量实例集中批处理，显著减少 draw calls\n- LOD：远处自动降模，细节按距离分配\n- TLAS/BLAS BVH：既加速可见性判断，也加速 hover/click 的 raycast 命中\n\n给 Ben 的应用：如果后续做作品宇宙/粒子背景，不要只靠 InstancedMesh，优先采用 BatchedMesh + LOD + BVH 三件套，先保住交互帧率再谈视觉密度。\n\n---\n\n**Awwwards 当日观察（Darknode, SOTD Mar 21）**\nAwwwards 元素拆解显示其高分组合仍是：Hero Screen Video + 3D Elements Animation + Slider/Transition + Mouse Hover。这再次说明获奖站点的核心不是单点特效，而是模块化动效系统。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 21 - Darknode",
+              "url": "https://www.awwwards.com/sites/darknode"
+            },
+            {
+              "label": "Codrops Mar 20 - Jackie Zhang’s Portfolio",
+              "url": "https://tympanus.net/codrops/2026/03/20/jackie-zhangs-portfolio-from-chasing-references-to-finding-direction/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_batch_lod_bvh",
+              "url": "https://threejs.org/examples/webgl_batch_lod_bvh.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-20",
       "title": "One-Color Tactile Identity + Progressive Rendering as UX Contract",
       "summary": "??? Awwwards / Codrops / three.js examples ??????????1) Awwwards SOTD (Stuff by Kris Temmerman) ????????? + ???????????????????? Stop Motion / Game ??????2) three.js progressive ???GLTF progressive LOD + Progressive Lightmaps???????????????????????????????? 3D case?",
