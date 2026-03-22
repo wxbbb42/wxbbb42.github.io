@@ -1,6 +1,42 @@
 {
   "entries": [
     {
+      "date": "2026-03-22",
+      "title": "Narrative Element Matrix + Scroll Tunnel Sequencing",
+      "summary": "今天从 Awwwards / Codrops / three.js 提炼 2 个可落地方法：1) Awwwards 当日 SOTD《FC Porto Memorial》显示高完成度叙事站不是堆特效，而是把 Hero / Scroll / Tunnel / Items 四类元素做成统一节奏的“叙事矩阵”；2) Codrops Jackie Zhang 的流程强调“概念先于风格”+ 有上限的灵感板，直接减少风格漂移。three.js examples 侧继续验证 batch/lod/bvh 这类可扩展交互架构应作为复杂视觉的底层默认。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Awwwards SOTD Mar 22（FC Porto Memorial）— 用 Element Matrix 搭建叙事，不靠单点特效**\n\n从 Awwwards 页面可见该站被拆成 `Memorial Hero / Scroll Animation / Tunnel Animation / Items Animation` 四类高亮元素。这个结构很关键：\n- Hero 负责主题定调（第一印象）\n- Scroll Animation 负责节奏推进\n- Tunnel Animation 负责情绪峰值（空间穿越/沉浸段）\n- Items Animation 负责信息承载与可读性\n\n这是一种“叙事矩阵”而非“特效清单”。可执行建议：Ben 后续页面可先做 Element Matrix 文档（每类元素只保留 1 个主手法 + 1 个备用手法），统一时长与 easing token，再做视觉细化。\n\n---\n\n**2) Codrops（Mar 20, Jackie Zhang）— 概念先行 + 有上限灵感板，防止风格漂移**\n\n文章里最实用的不是工具本身，而是决策框架：\n- 先定义“我要表达的感觉/why”，再找视觉语言\n- 灵感板固定尺寸、固定容量，达到上限就停止收集\n- 每条参考必须写“我具体在借什么”（如纸张撕裂边缘、top border 高光、手绘线条节奏）\n\n这会把“找参考”从无限浏览改成有边界的设计决策流程。\n\n**补充（three.js examples）**\nexamples 首页仍把 `webgl_batch_lod_bvh` 放在 community 可见位，持续说明：当场景复杂度上升时，优先考虑 BatchedMesh + LOD + BVH 的交互性能底座，而不是先堆视觉密度。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 22 - FC Porto Memorial",
+              "url": "https://www.awwwards.com/sites/fc-porto-memorial"
+            },
+            {
+              "label": "Codrops Mar 20 - Jackie Zhang’s Portfolio",
+              "url": "https://tympanus.net/codrops/2026/03/20/jackie-zhangs-portfolio-from-chasing-references-to-finding-direction/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_batch_lod_bvh",
+              "url": "https://threejs.org/examples/webgl_batch_lod_bvh.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-21",
       "title": "Reference Constraint Board + Massive Instance Rendering (BVH + BatchedMesh LOD)",
       "summary": "今日从 Awwwards / Codrops / three.js examples 提炼两条可落地方法：1) Codrops 3/20 的受限参考板流程（固定画布+写下偷什么+到上限就停止）用于把灵感转成可执行设计决策；2) three.js webgl_batch_lod_bvh 展示 50 万实例场景的工程组合拳：BatchedMesh + 多级 LOD + TLAS/BLAS BVH，实现高密度场景仍可交互。Awwwards 当日 SOTD Darknode 也验证了 Hero 视频 + 3D元素动效 + 过渡动效 的模块化叙事结构。",
