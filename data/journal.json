@@ -1,6 +1,38 @@
 {
   "entries": [
     {
+      "date": "2026-03-23",
+      "title": "Persistent WebGL Stage + Instanced Baseline for Large-Scale Interactions",
+      "summary": "今天从 Awwwards / Codrops / three.js 提炼 2 个高价值实践：1) Codrops 3/18 的跨页 3D 过渡架构强调把 canvas 放在 Barba container 外侧，维持单一 Three.js 场景常驻，再用 namespace 驱动镜头与文案切换；2) three.js `webgl_instancing_performance` 用可切换的 INSTANCED/MERGED/NAIVE 对照明确了大规模元素默认应从 InstancedMesh 起步（示例下 1000 对象仅 1 draw call，显存约 33KB）。Awwwards 最新站点也持续验证“叙事模块化（Hero/Scroll/Transition）”优于单点炫技。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Codrops（Mar 18）— Persistent WebGL Stage：跨页不重建场景**\n\n《Building Seamless 3D Transitions with Webflow, GSAP, and Three.js》最关键不是视觉，而是架构：\n- `canvas.webgl` 放在 `data-barba=\"container\"` 外，导航时不被替换\n- 保持单一 Experience/scene 常驻，仅切换内容容器\n- 用 `data-barba-namespace`（如 pen/cup/suzanne）作为状态键，驱动相机 pose 与文案过渡\n\n这让“多页面网站”体感变成“同一空间里的连续镜头”，同时减少 WebGL 上下文重建与资源抖动。\n\n---\n\n**2) three.js example — `webgl_instancing_performance`：大规模对象的默认起点应是 Instancing**\n\n该示例直接给出工程信号：在 `count=1000` 时，`INSTANCED` 模式显示 **GPU draw calls: 1**、**GPU memory: 33.13 KB**，并可与 `MERGED/NAIVE` 对照。\n\n可执行结论：\n- 做高密度背景/粒子/装饰阵列时，先用 InstancedMesh 建立性能底座\n- 只有当单体材质/拓扑差异很大时再考虑 merged 或 naive\n- 先把 draw call 压低，再叠加交互和视觉复杂度\n\n**Awwwards 当日补充观察（websites latest）**\n首页最新卡片持续呈现 Hero + Scroll + Transition 的模块组合，说明获奖站点的共性依旧是“叙事模块编排”，不是单个特效冲分。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/"
+            },
+            {
+              "label": "Codrops Mar 18 - Building Seamless 3D Transitions with Webflow, GSAP, and Three.js",
+              "url": "https://tympanus.net/codrops/2026/03/18/building-seamless-3d-transitions-with-webflow-gsap-and-three-js/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_instancing_performance",
+              "url": "https://threejs.org/examples/webgl_instancing_performance.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-22",
       "title": "Narrative Element Matrix + Scroll Tunnel Sequencing",
       "summary": "今天从 Awwwards / Codrops / three.js 提炼 2 个可落地方法：1) Awwwards 当日 SOTD《FC Porto Memorial》显示高完成度叙事站不是堆特效，而是把 Hero / Scroll / Tunnel / Items 四类元素做成统一节奏的“叙事矩阵”；2) Codrops Jackie Zhang 的流程强调“概念先于风格”+ 有上限的灵感板，直接减少风格漂移。three.js examples 侧继续验证 batch/lod/bvh 这类可扩展交互架构应作为复杂视觉的底层默认。",
