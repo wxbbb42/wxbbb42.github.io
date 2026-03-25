@@ -1,6 +1,42 @@
 {
   "entries": [
     {
+      "date": "2026-03-25",
+      "title": "Topographic Craft Pipeline + Fixed-Layer Infinite Scroll Window",
+      "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个高价值方法：1) Codrops 3/24 San Rita 案例给出“高模烘焙到低模”的地形资产管线（高度图→Blender拓扑→高模细节烘焙到低模贴图），在视觉细节和运行性能之间取得稳定平衡；2) 同文中的 nested scrolling 解法（将无限网格 fixed 到 UI 后方，再用“viewport hole”容器控制可视窗口与滚动长度）比 sticky+复杂联动更稳，尤其是移动端。Awwwards 当日 SOTD Corentin Bernadou Portfolio（Mar 25）也验证了该方向：2 色约束（#FF4401 / #070304）+ Infinite Scroll + WebGL/GSAP 的系统化组合。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Codrops（Mar 24）— Topographic asset pipeline：高模细节烘焙到低模运行体**\n\nSan Rita 案例里最实用的是生产管线而非单个动效：\n- 用地理坐标生成 height map（Unreal Height Map）\n- 在 Blender 建地形拓扑（高模 + 低模）\n- 在 Substance 处理高细节纹理\n- 把高模细节烘焙到低模贴图（Albedo/Normal），运行时只加载轻量网格\n\n结论：做“地形/雕刻感”视觉时，不要在运行时追求高面数；先离线做高细节，再把细节烘焙成贴图贴到低模，能同时保住质感与帧率。\n\n---\n\n**2) Codrops（Mar 24）— Nested scrolling 的稳定方案：fixed infinite layer + viewport hole**\n\n文章给出的工程解法很值得复用：\n- 把无限滚动网格层整体设为 `position: fixed`，挂在页面 UI 后方\n- 在前景放一个“可视窗口容器”（viewport hole）来暴露网格\n- 想延长滚动路程，直接增加这个容器高度\n- 无限循环仍用 `gsap.utils.wrap()` + Observer 接收 wheel/touch/pointer\n\n这比 sticky + 多层 ScrollTrigger 更稳，尤其在移动端双滚动系统场景下更可靠。\n\n**Awwwards 当日补充（SOTD Mar 25: Corentin Bernadou Portfolio）**\n- Awwwards 信息显示该站明确采用：`Infinite Scroll`、`WebGL`、`GSAP`、`Typography`，且色彩严格约束为 2 色（#FF4401 / #070304）。\n- 这再次验证“强约束视觉系统 + 可靠滚动架构”比堆叠特效更可持续。\n\n**three.js 校准点（examples）**\n- `webgl_batch_lod_bvh` 仍在 examples 列表可见位，持续提示：大规模可交互场景应优先采用批处理 + LOD + BVH 的底层性能架构。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 25 - Corentin Bernadou Portfolio",
+              "url": "https://www.awwwards.com/sites/corentin-bernadou-portfolio"
+            },
+            {
+              "label": "Codrops Mar 24 - Digital Craft, Wild Soul: Building San Rita’s Topographic Web Experience",
+              "url": "https://tympanus.net/codrops/2026/03/24/digital-craft-wild-soul-building-san-ritas-topographic-web-experience/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_batch_lod_bvh",
+              "url": "https://threejs.org/examples/webgl_batch_lod_bvh.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-24",
       "title": "Dual-Scene Fluid Reveal Pipeline + 'Element as System' Composition",
       "summary": "Today's 2 key takeaways from Awwwards / Codrops / three.js: 1) Codrops (Mar 23) shows a maintainable Dual-Scene Fluid X-Ray pipeline (mouse trail -> ping-pong fluid sim -> dual-scene render -> compositor), which is a stronger architecture than packing all logic into one shader; 2) Awwwards SOTD 'Unseen Studio 2025 Wrapped' demonstrates element-level system design (Ascii Liquid Sim + Loading Sequence + Scrolling Timeline) under a strict 2-color palette. three.js webgl_instancing_performance remains the baseline proof: 1000 objects can run at 1 draw call in INSTANCED mode.",
