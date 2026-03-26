@@ -1,6 +1,42 @@
 {
   "entries": [
     {
+      "date": "2026-03-26",
+      "title": "Ultra-Thin Narrative Stack (Nuxt + WebGL + Blender) & 500k-Instance Runtime Architecture",
+      "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个可执行方向：1) Awwwards SOTD《GQ & AP The Extraordinary Lab》明确展示了高端叙事站的技术组合（Nuxt.js + WebGL + Blender + Gestures/Interaction + Responsive），说明“品牌故事=技术栈协同”而非单一特效；2) three.js `webgl_batch_lod_bvh` 再次验证超大规模交互场景的底层范式（BatchedMesh + LOD + TLAS/BLAS BVH），500k instances 仍可保持可交互。Codrops 3/25 则补充了创意职业层面的方法：用“有限但明确的作品选择”把想做的行业方向前置表达。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Awwwards SOTD Mar 26（GQ & AP The Extraordinary Lab）— 叙事型高端站的“协同技术栈”**\n\nAwwwards 页面给出的标签组合很有信息量：`WebGL`、`Blender`、`Nuxt.js`、`Gestures / Interaction`、`Responsive Design`。\n\n可执行结论：\n- 这类品牌叙事站不是靠一个 hero shader 决胜，而是 **建模资产（Blender）+ 前端架构（Nuxt）+ 实时渲染（WebGL）+ 手势交互** 的系统化配合。\n- 当主题是“超薄工程/精密工艺”时，交互节奏应围绕“层层揭示”而非快速切屏，保持内容与动效语义一致。\n- 对 Ben 后续项目的启发：先定义“故事段落”和每段的交互职责，再决定每段是否需要 3D，而不是先堆技术再找叙事。\n\n---\n\n**2) three.js example — `webgl_batch_lod_bvh`：50 万实例可交互的标准架构**\n\n示例文案持续明确：\n- BatchedMesh + 10 geometries + 500k instances\n- 每个几何体 5 级 LOD（含 meshoptimizer 生成）\n- BVH（TLAS + BLAS）同时加速 frustum culling 与 raycasting\n\n可执行结论：\n- 做高密度背景/场景（粒子宇宙、数据森林、作品星图）时，默认从 **BatchedMesh + LOD + BVH** 开局。\n- 先把“可见性判断 + 点击命中 + 细节分配”这三个性能核心建好，再上视觉风格。\n\n**Codrops 当日补充（Mar 25）**\n- 《From Web UI to Game UI...》虽然是职业故事，但给了一个可落地方法：作品集需要“**足够多样，但目标行业信号要明确**”。\n- 对设计表达同样有效：视觉探索可以多样，但主叙事方向必须单一清晰。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 26 - GQ & AP The Extraordinary Lab",
+              "url": "https://www.awwwards.com/sites/gq-ap-the-extraordinary-lab"
+            },
+            {
+              "label": "Codrops Mar 25 - From Web UI to Game UI: How Gaming & Creativity Reshaped María Vargas’ Career",
+              "url": "https://tympanus.net/codrops/2026/03/25/from-web-ui-to-game-ui-how-gaming-creativity-reshaped-maria-vargas-career/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_batch_lod_bvh",
+              "url": "https://threejs.org/examples/webgl_batch_lod_bvh.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-25",
       "title": "Topographic Craft Pipeline + Fixed-Layer Infinite Scroll Window",
       "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个高价值方法：1) Codrops 3/24 San Rita 案例给出“高模烘焙到低模”的地形资产管线（高度图→Blender拓扑→高模细节烘焙到低模贴图），在视觉细节和运行性能之间取得稳定平衡；2) 同文中的 nested scrolling 解法（将无限网格 fixed 到 UI 后方，再用“viewport hole”容器控制可视窗口与滚动长度）比 sticky+复杂联动更稳，尤其是移动端。Awwwards 当日 SOTD Corentin Bernadou Portfolio（Mar 25）也验证了该方向：2 色约束（#FF4401 / #070304）+ Infinite Scroll + WebGL/GSAP 的系统化组合。",
