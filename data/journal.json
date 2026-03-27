@@ -1,716 +1,756 @@
-{
-  "entries": [
-    {
-      "date": "2026-03-26",
-      "title": "Ultra-Thin Narrative Stack (Nuxt + WebGL + Blender) & 500k-Instance Runtime Architecture",
-      "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个可执行方向：1) Awwwards SOTD《GQ & AP The Extraordinary Lab》明确展示了高端叙事站的技术组合（Nuxt.js + WebGL + Blender + Gestures/Interaction + Responsive），说明“品牌故事=技术栈协同”而非单一特效；2) three.js `webgl_batch_lod_bvh` 再次验证超大规模交互场景的底层范式（BatchedMesh + LOD + TLAS/BLAS BVH），500k instances 仍可保持可交互。Codrops 3/25 则补充了创意职业层面的方法：用“有限但明确的作品选择”把想做的行业方向前置表达。",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**今日最有价值的 2 个手法**\n\n**1) Awwwards SOTD Mar 26（GQ & AP The Extraordinary Lab）— 叙事型高端站的“协同技术栈”**\n\nAwwwards 页面给出的标签组合很有信息量：`WebGL`、`Blender`、`Nuxt.js`、`Gestures / Interaction`、`Responsive Design`。\n\n可执行结论：\n- 这类品牌叙事站不是靠一个 hero shader 决胜，而是 **建模资产（Blender）+ 前端架构（Nuxt）+ 实时渲染（WebGL）+ 手势交互** 的系统化配合。\n- 当主题是“超薄工程/精密工艺”时，交互节奏应围绕“层层揭示”而非快速切屏，保持内容与动效语义一致。\n- 对 Ben 后续项目的启发：先定义“故事段落”和每段的交互职责，再决定每段是否需要 3D，而不是先堆技术再找叙事。\n\n---\n\n**2) three.js example — `webgl_batch_lod_bvh`：50 万实例可交互的标准架构**\n\n示例文案持续明确：\n- BatchedMesh + 10 geometries + 500k instances\n- 每个几何体 5 级 LOD（含 meshoptimizer 生成）\n- BVH（TLAS + BLAS）同时加速 frustum culling 与 raycasting\n\n可执行结论：\n- 做高密度背景/场景（粒子宇宙、数据森林、作品星图）时，默认从 **BatchedMesh + LOD + BVH** 开局。\n- 先把“可见性判断 + 点击命中 + 细节分配”这三个性能核心建好，再上视觉风格。\n\n**Codrops 当日补充（Mar 25）**\n- 《From Web UI to Game UI...》虽然是职业故事，但给了一个可落地方法：作品集需要“**足够多样，但目标行业信号要明确**”。\n- 对设计表达同样有效：视觉探索可以多样，但主叙事方向必须单一清晰。"
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards - Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 26 - GQ & AP The Extraordinary Lab",
-              "url": "https://www.awwwards.com/sites/gq-ap-the-extraordinary-lab"
-            },
-            {
-              "label": "Codrops Mar 25 - From Web UI to Game UI: How Gaming & Creativity Reshaped María Vargas’ Career",
-              "url": "https://tympanus.net/codrops/2026/03/25/from-web-ui-to-game-ui-how-gaming-creativity-reshaped-maria-vargas-career/"
-            },
-            {
-              "label": "three.js examples",
-              "url": "https://threejs.org/examples/"
-            },
-            {
-              "label": "three.js example - webgl_batch_lod_bvh",
-              "url": "https://threejs.org/examples/webgl_batch_lod_bvh.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-25",
-      "title": "Topographic Craft Pipeline + Fixed-Layer Infinite Scroll Window",
-      "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个高价值方法：1) Codrops 3/24 San Rita 案例给出“高模烘焙到低模”的地形资产管线（高度图→Blender拓扑→高模细节烘焙到低模贴图），在视觉细节和运行性能之间取得稳定平衡；2) 同文中的 nested scrolling 解法（将无限网格 fixed 到 UI 后方，再用“viewport hole”容器控制可视窗口与滚动长度）比 sticky+复杂联动更稳，尤其是移动端。Awwwards 当日 SOTD Corentin Bernadou Portfolio（Mar 25）也验证了该方向：2 色约束（#FF4401 / #070304）+ Infinite Scroll + WebGL/GSAP 的系统化组合。",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**今日最有价值的 2 个手法**\n\n**1) Codrops（Mar 24）— Topographic asset pipeline：高模细节烘焙到低模运行体**\n\nSan Rita 案例里最实用的是生产管线而非单个动效：\n- 用地理坐标生成 height map（Unreal Height Map）\n- 在 Blender 建地形拓扑（高模 + 低模）\n- 在 Substance 处理高细节纹理\n- 把高模细节烘焙到低模贴图（Albedo/Normal），运行时只加载轻量网格\n\n结论：做“地形/雕刻感”视觉时，不要在运行时追求高面数；先离线做高细节，再把细节烘焙成贴图贴到低模，能同时保住质感与帧率。\n\n---\n\n**2) Codrops（Mar 24）— Nested scrolling 的稳定方案：fixed infinite layer + viewport hole**\n\n文章给出的工程解法很值得复用：\n- 把无限滚动网格层整体设为 `position: fixed`，挂在页面 UI 后方\n- 在前景放一个“可视窗口容器”（viewport hole）来暴露网格\n- 想延长滚动路程，直接增加这个容器高度\n- 无限循环仍用 `gsap.utils.wrap()` + Observer 接收 wheel/touch/pointer\n\n这比 sticky + 多层 ScrollTrigger 更稳，尤其在移动端双滚动系统场景下更可靠。\n\n**Awwwards 当日补充（SOTD Mar 25: Corentin Bernadou Portfolio）**\n- Awwwards 信息显示该站明确采用：`Infinite Scroll`、`WebGL`、`GSAP`、`Typography`，且色彩严格约束为 2 色（#FF4401 / #070304）。\n- 这再次验证“强约束视觉系统 + 可靠滚动架构”比堆叠特效更可持续。\n\n**three.js 校准点（examples）**\n- `webgl_batch_lod_bvh` 仍在 examples 列表可见位，持续提示：大规模可交互场景应优先采用批处理 + LOD + BVH 的底层性能架构。"
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards - Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 25 - Corentin Bernadou Portfolio",
-              "url": "https://www.awwwards.com/sites/corentin-bernadou-portfolio"
-            },
-            {
-              "label": "Codrops Mar 24 - Digital Craft, Wild Soul: Building San Rita’s Topographic Web Experience",
-              "url": "https://tympanus.net/codrops/2026/03/24/digital-craft-wild-soul-building-san-ritas-topographic-web-experience/"
-            },
-            {
-              "label": "three.js examples",
-              "url": "https://threejs.org/examples/"
-            },
-            {
-              "label": "three.js example - webgl_batch_lod_bvh",
-              "url": "https://threejs.org/examples/webgl_batch_lod_bvh.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-24",
-      "title": "Dual-Scene Fluid Reveal Pipeline + 'Element as System' Composition",
-      "summary": "Today's 2 key takeaways from Awwwards / Codrops / three.js: 1) Codrops (Mar 23) shows a maintainable Dual-Scene Fluid X-Ray pipeline (mouse trail -> ping-pong fluid sim -> dual-scene render -> compositor), which is a stronger architecture than packing all logic into one shader; 2) Awwwards SOTD 'Unseen Studio 2025 Wrapped' demonstrates element-level system design (Ascii Liquid Sim + Loading Sequence + Scrolling Timeline) under a strict 2-color palette. three.js webgl_instancing_performance remains the baseline proof: 1000 objects can run at 1 draw call in INSTANCED mode.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Top 2 techniques today**\n\n**1) Codrops (Mar 23) - Dual-Scene Fluid X-Ray as a layered render pipeline**\n\nThe strongest part is architecture, not just visuals:\n- Input layer: draw mouse trail on a 2D canvas, then feed it as `CanvasTexture`\n- Simulation layer: run ping-pong render targets (A/B swap) for fluid feedback\n- Content layer: render two scenes in parallel (solid and x-ray)\n- Composite layer: final post pass blends scenes using the fluid mask\n\nActionable rule: for complex interaction effects, use a 4-layer pipeline (input -> simulation -> content -> composite) so each part can evolve independently.\n\n---\n\n**2) Awwwards SOTD Mar 24 (Unseen Studio 2025 Wrapped) - Element system + strict constraints**\n\nAwwwards highlights expose a clear system:\n- `Ascii Liquid Sim Effect` as signature visual language\n- `Loading Sequence` for entry rhythm\n- `Scrolling Timeline` for narrative progression\n\nWith only 2 palette colors (#010101 / #E4B504), the project proves that memorable work is often few strong effects + strict consistency, not many unrelated effects.\n\n**three.js calibration**\n`webgl_instancing_performance` still shows `INSTANCED` + `count=1000` => **GPU draw calls: 1**, **GPU memory: 33.13 KB**."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards - Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 24 - Unseen Studio 2025 Wrapped",
-              "url": "https://www.awwwards.com/sites/unseen-studio-2025-wrapped"
-            },
-            {
-              "label": "Codrops Mar 23 - Building a Dual-Scene Fluid X-Ray Reveal Effect in Three.js",
-              "url": "https://tympanus.net/codrops/2026/03/23/building-a-dual-scene-fluid-x-ray-reveal-effect-in-three-js/"
-            },
-            {
-              "label": "three.js examples",
-              "url": "https://threejs.org/examples/"
-            },
-            {
-              "label": "three.js example - webgl_instancing_performance",
-              "url": "https://threejs.org/examples/webgl_instancing_performance.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-23",
-      "title": "Persistent WebGL Stage + Instanced Baseline for Large-Scale Interactions",
-      "summary": "今天从 Awwwards / Codrops / three.js 提炼 2 个高价值实践：1) Codrops 3/18 的跨页 3D 过渡架构强调把 canvas 放在 Barba container 外侧，维持单一 Three.js 场景常驻，再用 namespace 驱动镜头与文案切换；2) three.js `webgl_instancing_performance` 用可切换的 INSTANCED/MERGED/NAIVE 对照明确了大规模元素默认应从 InstancedMesh 起步（示例下 1000 对象仅 1 draw call，显存约 33KB）。Awwwards 最新站点也持续验证“叙事模块化（Hero/Scroll/Transition）”优于单点炫技。",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**今日最有价值的 2 个手法**\n\n**1) Codrops（Mar 18）— Persistent WebGL Stage：跨页不重建场景**\n\n《Building Seamless 3D Transitions with Webflow, GSAP, and Three.js》最关键不是视觉，而是架构：\n- `canvas.webgl` 放在 `data-barba=\"container\"` 外，导航时不被替换\n- 保持单一 Experience/scene 常驻，仅切换内容容器\n- 用 `data-barba-namespace`（如 pen/cup/suzanne）作为状态键，驱动相机 pose 与文案过渡\n\n这让“多页面网站”体感变成“同一空间里的连续镜头”，同时减少 WebGL 上下文重建与资源抖动。\n\n---\n\n**2) three.js example — `webgl_instancing_performance`：大规模对象的默认起点应是 Instancing**\n\n该示例直接给出工程信号：在 `count=1000` 时，`INSTANCED` 模式显示 **GPU draw calls: 1**、**GPU memory: 33.13 KB**，并可与 `MERGED/NAIVE` 对照。\n\n可执行结论：\n- 做高密度背景/粒子/装饰阵列时，先用 InstancedMesh 建立性能底座\n- 只有当单体材质/拓扑差异很大时再考虑 merged 或 naive\n- 先把 draw call 压低，再叠加交互和视觉复杂度\n\n**Awwwards 当日补充观察（websites latest）**\n首页最新卡片持续呈现 Hero + Scroll + Transition 的模块组合，说明获奖站点的共性依旧是“叙事模块编排”，不是单个特效冲分。"
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards - Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Codrops Mar 18 - Building Seamless 3D Transitions with Webflow, GSAP, and Three.js",
-              "url": "https://tympanus.net/codrops/2026/03/18/building-seamless-3d-transitions-with-webflow-gsap-and-three-js/"
-            },
-            {
-              "label": "three.js examples",
-              "url": "https://threejs.org/examples/"
-            },
-            {
-              "label": "three.js example - webgl_instancing_performance",
-              "url": "https://threejs.org/examples/webgl_instancing_performance.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-22",
-      "title": "Narrative Element Matrix + Scroll Tunnel Sequencing",
-      "summary": "今天从 Awwwards / Codrops / three.js 提炼 2 个可落地方法：1) Awwwards 当日 SOTD《FC Porto Memorial》显示高完成度叙事站不是堆特效，而是把 Hero / Scroll / Tunnel / Items 四类元素做成统一节奏的“叙事矩阵”；2) Codrops Jackie Zhang 的流程强调“概念先于风格”+ 有上限的灵感板，直接减少风格漂移。three.js examples 侧继续验证 batch/lod/bvh 这类可扩展交互架构应作为复杂视觉的底层默认。",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**今日最有价值的 2 个手法**\n\n**1) Awwwards SOTD Mar 22（FC Porto Memorial）— 用 Element Matrix 搭建叙事，不靠单点特效**\n\n从 Awwwards 页面可见该站被拆成 `Memorial Hero / Scroll Animation / Tunnel Animation / Items Animation` 四类高亮元素。这个结构很关键：\n- Hero 负责主题定调（第一印象）\n- Scroll Animation 负责节奏推进\n- Tunnel Animation 负责情绪峰值（空间穿越/沉浸段）\n- Items Animation 负责信息承载与可读性\n\n这是一种“叙事矩阵”而非“特效清单”。可执行建议：Ben 后续页面可先做 Element Matrix 文档（每类元素只保留 1 个主手法 + 1 个备用手法），统一时长与 easing token，再做视觉细化。\n\n---\n\n**2) Codrops（Mar 20, Jackie Zhang）— 概念先行 + 有上限灵感板，防止风格漂移**\n\n文章里最实用的不是工具本身，而是决策框架：\n- 先定义“我要表达的感觉/why”，再找视觉语言\n- 灵感板固定尺寸、固定容量，达到上限就停止收集\n- 每条参考必须写“我具体在借什么”（如纸张撕裂边缘、top border 高光、手绘线条节奏）\n\n这会把“找参考”从无限浏览改成有边界的设计决策流程。\n\n**补充（three.js examples）**\nexamples 首页仍把 `webgl_batch_lod_bvh` 放在 community 可见位，持续说明：当场景复杂度上升时，优先考虑 BatchedMesh + LOD + BVH 的交互性能底座，而不是先堆视觉密度。"
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards - Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 22 - FC Porto Memorial",
-              "url": "https://www.awwwards.com/sites/fc-porto-memorial"
-            },
-            {
-              "label": "Codrops Mar 20 - Jackie Zhang’s Portfolio",
-              "url": "https://tympanus.net/codrops/2026/03/20/jackie-zhangs-portfolio-from-chasing-references-to-finding-direction/"
-            },
-            {
-              "label": "three.js examples",
-              "url": "https://threejs.org/examples/"
-            },
-            {
-              "label": "three.js example - webgl_batch_lod_bvh",
-              "url": "https://threejs.org/examples/webgl_batch_lod_bvh.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-21",
-      "title": "Reference Constraint Board + Massive Instance Rendering (BVH + BatchedMesh LOD)",
-      "summary": "今日从 Awwwards / Codrops / three.js examples 提炼两条可落地方法：1) Codrops 3/20 的受限参考板流程（固定画布+写下偷什么+到上限就停止）用于把灵感转成可执行设计决策；2) three.js webgl_batch_lod_bvh 展示 50 万实例场景的工程组合拳：BatchedMesh + 多级 LOD + TLAS/BLAS BVH，实现高密度场景仍可交互。Awwwards 当日 SOTD Darknode 也验证了 Hero 视频 + 3D元素动效 + 过渡动效 的模块化叙事结构。",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**今日最有价值的 2 个手法**\n\n**1) Codrops（Mar 20, Jackie Zhang）— 参考收集要做受限系统，不是无限收藏夹**\n\n文章里最有用的不是视觉风格，而是流程：\n- 固定参考板边界（一个固定尺寸区域，不允许无限扩展）\n- 每条参考都写注释（我到底在偷什么：节奏/材质/层级/动效）\n- 达到上限就停止收集，强制进入实现阶段\n\n这个方法的价值是把找灵感从情绪行为变成可执行系统，避免在 Pinterest/Cosmos 无限漂移。\n\n给 Ben 的应用：做一个 Inspo Constraint Board 模板（12 个槽位上限）。每个槽位必须附一句可落地规则（例如：标题 reveal 用 clip-path 而不是 opacity），收满即停。\n\n---\n\n**2) three.js example — webgl_batch_lod_bvh：50 万实例可交互的性能架构**\n\n示例信息直接给出：10 种几何体、500k instances、每种 5 级 LOD，并通过 BVH（TLAS + BLAS）加速视锥裁剪和射线检测。\n\n关键组合：\n- BatchedMesh：把大量实例集中批处理，显著减少 draw calls\n- LOD：远处自动降模，细节按距离分配\n- TLAS/BLAS BVH：既加速可见性判断，也加速 hover/click 的 raycast 命中\n\n给 Ben 的应用：如果后续做作品宇宙/粒子背景，不要只靠 InstancedMesh，优先采用 BatchedMesh + LOD + BVH 三件套，先保住交互帧率再谈视觉密度。\n\n---\n\n**Awwwards 当日观察（Darknode, SOTD Mar 21）**\nAwwwards 元素拆解显示其高分组合仍是：Hero Screen Video + 3D Elements Animation + Slider/Transition + Mouse Hover。这再次说明获奖站点的核心不是单点特效，而是模块化动效系统。"
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards - Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 21 - Darknode",
-              "url": "https://www.awwwards.com/sites/darknode"
-            },
-            {
-              "label": "Codrops Mar 20 - Jackie Zhang’s Portfolio",
-              "url": "https://tympanus.net/codrops/2026/03/20/jackie-zhangs-portfolio-from-chasing-references-to-finding-direction/"
-            },
-            {
-              "label": "three.js examples",
-              "url": "https://threejs.org/examples/"
-            },
-            {
-              "label": "three.js example - webgl_batch_lod_bvh",
-              "url": "https://threejs.org/examples/webgl_batch_lod_bvh.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-20",
-      "title": "One-Color Tactile Identity + Progressive Rendering as UX Contract",
-      "summary": "??? Awwwards / Codrops / three.js examples ??????????1) Awwwards SOTD (Stuff by Kris Temmerman) ????????? + ???????????????????? Stop Motion / Game ??????2) three.js progressive ???GLTF progressive LOD + Progressive Lightmaps???????????????????????????????? 3D case?",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 20, 2026 ? Stuff by Kris Temmerman????? + ?????**\n\n? Awwwards ??????????????? `Game`?`Stop Motion`?`Animation` ?????? Color Palette ??? **1 color**?#ded7d2???????????????????????????????????\n\n- ?????????????????????\n- ??????????????/??/?????????????\n- ??????Awwwards ? Elements ??????????????????????????\n\n**???? Ben?**? case study ?????????? + ?????????????????? 1 ???????? stop-motion ??????????????????"
-        },
-        {
-          "type": "note",
-          "text": "**three.js examples + Codrops?Progressive ?????????????**\n\nCodrops 3/18 ? persistent scene ???canvas ?? + Barba container ???? three.js ??? progressive ??????????\n\n1. `webgl_loader_gltf_progressive_lod`??????? LOD????????????????? *82x faster* ?????\n2. `webgpu_shadowmap_progressive` / `webgl_shadowmap_progressive`???????????????????\n\n????????????**?????????????????**\n\n**???? Ben?**\n- 3D ?????? silhouette + ???????????\n- ???????? WebGL ????persistent canvas??????????????????\n- ???????? progressive shadow/light???????????"
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards ? Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 20 ? Stuff by Kris Temmerman",
-              "url": "https://www.awwwards.com/sites/stuff-by-kris-temmerman"
-            },
-            {
-              "label": "Codrops ? Building Seamless 3D Transitions with Webflow, GSAP, and Three.js",
-              "url": "https://tympanus.net/codrops/2026/03/18/building-seamless-3d-transitions-with-webflow-gsap-and-three-js/"
-            },
-            {
-              "label": "three.js example ? GLTF progressive LOD",
-              "url": "https://threejs.org/examples/webgl_loader_gltf_progressive_lod.html"
-            },
-            {
-              "label": "three.js example ? WebGPU Progressive Lightmaps",
-              "url": "https://threejs.org/examples/webgpu_shadowmap_progressive.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-19",
-      "title": "Persistent 3D Canvas Across Pages + Progressive Shadow/LOD Loading",
-      "summary": "???????????1) Codrops 3/18 ???????? Three.js ?? + Barba ?????????????????????????2) Three.js examples ? progressive ???????gltf progressive LOD + progressive lightmaps???????????????????????????????",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Codrops (Mar 18, 2026) ? Persistent 3D Scene + Barba Page Transitions**\n\n?????Building Seamless 3D Transitions with Webflow, GSAP, and Three.js??????????????? `canvas.webgl` ?? `data-barba=\"container\"` ???? Three.js ????????**???????**?\n\n?????\n- ????? Barba container ? swap?3D ?????? singleton ??\n- ? `data-barba-namespace`?? pen/cup/suzanne????????????\n- GSAP ????/UI ???? camera tween?Three.js ???????\n\n**?????**????????????????????????????????????????????????? case ????????????????????"
-        },
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 19 ? Aventura Dental Arts?Elements ????**\n\nAwwwards ?? SOTD ?????????????`Scroll Interaction`?`Hero Animation`?`Services Page`?`Solutions Block` ??\n\n??????????\n- ?????????????????????? interaction units\n- ?????????????????\n- ???? motion token???/??/?????????\n\n**??? Ben ???**???????? 4 ????Reveal / Hover / Transition / Loading??????? 1-2 ? signature ????????????"
-        },
-        {
-          "type": "note",
-          "text": "**Three.js Examples ? Progressive as First-Class UX**\n\n??? examples ???????????\n- `webgl_loader_gltf_progressive_lod`??? *GLTF progressive loading: 82x faster*?\n- `webgpu_shadowmap_progressive`?Progressive Lightmaps??????????\n\n?????\n1. ????????????????? LOD / ?????\n2. ???????????? LOD / ??????\n\n**?????**?????????????????????????????????????????????????????????????"
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards ? Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 19 ? Aventura Dental Arts",
-              "url": "https://www.awwwards.com/sites/aventura-dental-arts"
-            },
-            {
-              "label": "Codrops ? Building Seamless 3D Transitions with Webflow, GSAP, and Three.js",
-              "url": "https://tympanus.net/codrops/2026/03/18/building-seamless-3d-transitions-with-webflow-gsap-and-three-js/"
-            },
-            {
-              "label": "Three.js example ? GLTF progressive LOD",
-              "url": "https://threejs.org/examples/webgl_loader_gltf_progressive_lod.html"
-            },
-            {
-              "label": "Three.js example ? WebGPU Progressive Lightmaps",
-              "url": "https://threejs.org/examples/webgpu_shadowmap_progressive.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-18",
-      "title": "Awwwards Element Decomposition + Three.js Progressive GLTF LOD",
-      "summary": "????????????1) Awwwards SOTD?Good Fella????????????????hero/nav/preloader/page-transition ???????????????????????????2) Three.js ???? webgl_loader_gltf_progressive_lod ?? @needle-tools/gltf-progressive ?????????????????? 82x??????????????????",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 18, 2026 ? Good Fella???????????????????**\n\n? Awwwards ? Elements ????Good Fella ?????????????????????????????`Hero`?`Navigation`?`Button animation`?`Page transition`?`Preloader`?`404`?`Work page` ?????????????????????\n\n?????\n- **???????????**?????????????????????? motion primitives?\n- **???????**????????????????????????????????????????\n- **?????**??????????????????? page transition?????????\n\n???? Ben ?????????? 4 ??????Reveal / Hover / Transition / Loading???????????? easing token????????????"
-        },
-        {
-          "type": "note",
-          "text": "**Three.js examples ? `webgl_loader_gltf_progressive_lod`?????????????**\n\n?????????`GLTF progressive loading: 82x faster`??? `@needle-tools/gltf-progressive`?????????? glb ???????????\n\n1. ???**?? LOD**?????????????????\n2. ???????????? LOD ??/???\n3. ????????????????\n\n??????\n- **???????????????**????????????????????\n- **???????**??????????????\n- **???????**?3D case study ?????????????????\n\n???? Ben ???? CLAWD WORLD ????????????? progressive LOD ???????? silhouette + ?????????????????????"
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards ? Winning websites (latest)",
-              "url": "https://www.awwwards.com/websites/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 18 ? Good Fella",
-              "url": "https://www.awwwards.com/sites/good-fella"
-            },
-            {
-              "label": "Codrops ? Latest posts",
-              "url": "https://tympanus.net/codrops/"
-            },
-            {
-              "label": "Codrops Mar 16 ? Jonas Reymondin Portfolio",
-              "url": "https://tympanus.net/codrops/2026/03/16/jonas-reymondins-portfolio-reclaiming-the-ui-eye-through-systems-code-and-pixel-motion/"
-            },
-            {
-              "label": "Three.js examples",
-              "url": "https://threejs.org/examples/"
-            },
-            {
-              "label": "Three.js example ? GLTF progressive LOD",
-              "url": "https://threejs.org/examples/webgl_loader_gltf_progressive_lod.html"
-            },
-            {
-              "label": "npm ? @needle-tools/gltf-progressive",
-              "url": "https://www.npmjs.com/package/@needle-tools/gltf-progressive"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-17",
-      "title": "Joby Aviation Brand x WebGL Narrative & Codrops SVG Mask Scroll Transitions",
-      "summary": "Awwwards SOTD Mar 17: Joby Aviation wins Developer Award with a future-ready brand site built around the emotional legacy of flight — large-scale atmospheric WebGL environment, cinematic scroll pacing, and restrained typographic language that lets 3D scenery carry the brand story. Codrops Mar 11: Hiroki Watanabe's SVG Mask Transitions on Scroll demonstrates four distinct scroll-driven reveal patterns using SVG clipPath + GSAP ScrollTrigger, covering grid-based and venetian-blind-based mask geometries — no canvas, no WebGL.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 17, 2026 — Joby (Developer Award)**\n\nJoby is an electric air taxi company; their brand site (rebuilt 2026) wins Developer Award with the framing: *\"a future-ready brand rooted in the emotional legacy of flight — reimagined for a new era.\"* The site is an atmospheric WebGL experience — sky, clouds, and aircraft composited into a continuous scroll-driven environment rather than discrete pages.\n\nKey techniques (from Awwwards element breakdown + brand context):\n- **Atmospheric depth fog:** the signature effect is volumetric-style fog/haze layered over a Three.js scene. Technique: multiple semi-transparent `PlaneGeometry` quads at increasing Z depth, each with a fog texture (radial gradient, white-to-transparent), slight parallax on mouse move. Not real volumetric — but visually convincing at ~zero GPU cost vs raymarched fog.\n- **Scroll-driven camera drift:** the WebGL camera moves along a predefined spline path (Three.js `CatmullRomCurve3`) as the user scrolls. Each scroll unit advances `t` along the curve by a small delta — the scene 'flies forward' without any clip or page transition.\n- **Brand tone via type restraint:** headings are minimal weight, wide tracking, always light-colored over the 3D environment. No cards, no boxed UI — the 3D world is the UI. Navigation is an overlay layer, invisible until triggered.\n- **Asset strategy:** aircraft model is likely GLTF with baked lighting (not dynamic Three.js lights — too costly for a hero experience). The baked ambient occlusion + directional light bake creates the 'golden hour aviation' feel without running PBR in real-time.\n\n```js\n// CatmullRomCurve3 scroll-camera pattern\nimport * as THREE from 'three';\n\nconst curve = new THREE.CatmullRomCurve3([\n  new THREE.Vector3(0, 5, 80),\n  new THREE.Vector3(2, 6, 40),\n  new THREE.Vector3(-1, 4, 0),\n  new THREE.Vector3(0, 3, -40),\n]);\n\nlet scrollProgress = 0; // 0 → 1 over full page height\n\nwindow.addEventListener('scroll', () => {\n  scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);\n});\n\n// In animation loop:\nconst point = curve.getPoint(scrollProgress);\nconst tangent = curve.getTangent(scrollProgress);\ncamera.position.copy(point);\ncamera.lookAt(point.clone().add(tangent));\n```\n\n**Key insight:** The Joby site reframes the brand website as *environmental storytelling* — you're not reading about electric air taxis, you're flying through the world they're building. This approach works when the brand has a strong spatial/physical world (aviation, architecture, automotive). The scroll-camera-on-spline pattern is the core primitive.\n\n**Application for Ben:** A single-page portfolio intro with a slow spline camera drift past floating text cards (project titles) — the 'world' metaphor applied to a creative portfolio. Camera starts high, descends to ground level as user scrolls through sections. Amber-tinted fog quads unify the depth layers."
-        },
-        {
-          "type": "note",
-          "text": "**Codrops (Mar 11, 2026) — SVG Mask Transitions on Scroll with GSAP and ScrollTrigger**\nby Hiroki Watanabe\n\nThe tutorial builds four distinct scroll-triggered image reveal patterns using SVG `<clipPath>` as the masking layer, animated via GSAP ScrollTrigger. No WebGL, no canvas — pure DOM + SVG, accessible and performant.\n\nFour patterns:\n1. **Grid Reveal:** image is masked by a grid of rectangles (`<rect>` elements inside `<clipPath>`). On scroll, each rect scales from 0→1 height in a staggered sequence — the image 'wipes in' through a tile grid. GSAP's `stagger` distributes the timeline across all rects.\n2. **Venetian Blind:** horizontal strips (rects with full width, fixed height = 1/N of image), each revealing top-to-bottom at a slight offset. Same stagger pattern but strips feel like window blinds opening.\n3. **Diagonal Wipe:** a single `<polygon>` or `<path>` inside clipPath, morphed from a flat line to full coverage using `MorphSVGPlugin` or manual path point lerping.\n4. **Radial Burst:** circular/star `<clipPath>` that expands from center on scroll — `r` attribute of `<circle>` animated from 0 to max radius.\n\nCore code pattern (Grid Reveal):\n```html\n<!-- SVG clipPath definition -->\n<svg style=\"position:absolute;width:0;height:0\">\n  <defs>\n    <clipPath id=\"grid-clip\" clipPathUnits=\"objectBoundingBox\">\n      <!-- 3x3 grid of rects, each 1/3 wide, 1/3 tall -->\n      <rect class=\"cell\" x=\"0\"    y=\"0\"    width=\"0.333\" height=\"0.333\"/>\n      <rect class=\"cell\" x=\"0.333\" y=\"0\"   width=\"0.333\" height=\"0.333\"/>\n      <!-- ...etc -->\n    </clipPath>\n  </defs>\n</svg>\n\n<!-- Apply clip to image container -->\n<div class=\"img-wrap\" style=\"clip-path: url(#grid-clip)\">\n  <img src=\"hero.jpg\" alt=\"...\" />\n</div>\n```\n\n```js\nimport { gsap } from 'gsap';\nimport { ScrollTrigger } from 'gsap/ScrollTrigger';\ngsap.registerPlugin(ScrollTrigger);\n\nconst cells = document.querySelectorAll('.cell');\n\ngsap.fromTo(cells,\n  { scaleY: 0 },\n  {\n    scaleY: 1,\n    stagger: { amount: 0.6, from: 'random' },\n    ease: 'power3.out',\n    scrollTrigger: {\n      trigger: '.img-wrap',\n      start: 'top 80%',\n      end: 'top 20%',\n      scrub: 1,\n    }\n  }\n);\n```\n\n**Key insight:** `clipPathUnits=\"objectBoundingBox\"` is the unlock — coordinates become 0–1 fractions of the element's bounding box, so the same SVG clipPath definition works regardless of image dimensions or viewport size. No pixel math, fully responsive.\n\n**Application for Ben:** The project case study hero image can use the venetian-blind reveal on scroll — strips open as user scrolls into the section. Amber-tinted strips (using a colored rect overlay in the same SVG layer, fading out as the reveal completes) would give the branded transition feel without any shader work."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards SOTD Mar 17 — Joby",
-              "url": "https://www.awwwards.com/sites/joby"
-            },
-            {
-              "label": "Joby Aviation Brand Site",
-              "url": "https://www.jobyaviation.com/"
-            },
-            {
-              "label": "Codrops: SVG Mask Transitions on Scroll (Hiroki Watanabe, Mar 11 2026)",
-              "url": "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/"
-            },
-            {
-              "label": "Three.js CatmullRomCurve3 docs",
-              "url": "https://threejs.org/docs/#api/en/extras/curves/CatmullRomCurve3"
-            },
-            {
-              "label": "MDN: SVG clipPathUnits",
-              "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/clipPathUnits"
-            },
-            {
-              "label": "Three.js Examples",
-              "url": "https://threejs.org/examples/"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-16",
-      "title": "Three.js TSL Softbody Physics in the Browser & Codrops Clip-Path Morphing Text",
-      "summary": "Three.js community showcase: Niklas Niehus's Softbody Tetris runs real-time elastic deformation entirely on WebGPU via TSL (Three.js Shading Language) — GPU compute replaces physics CPU loops, opening deformable-mesh interactions for production web. Codrops Articles (Mar 12, 2026) by Huy: morphing text effect using SVG feTurbulence + feDisplacementMap filters, achieving liquid letter transitions without WebGL or canvas.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Three.js TSL + WebGPU — Softbody Simulation in the Browser (Niklas Niehus)**\n\nNiklas Niehus's Softbody Tetris is the most technically striking Three.js demo circulating this week: standard Tetris blocks are replaced with jelly-like meshes that *deform on impact*, compress into gaps, and spring back — real-time soft body physics running entirely on WebGPU compute via **TSL (Three.js Shading Language)**.\n\nWhy this matters for creative web:\n- **TSL = write once, run anywhere:** TSL is Three.js's node-based shading language that compiles to WGSL (WebGPU) or GLSL (WebGL). The same softbody simulation code runs on both backends with no branching.\n- **WebGPU Compute Shaders:** the physics is handled in GPU compute passes, not requestAnimationFrame JS loops. Position-Based Dynamics (PBD) constraints run in parallel across all mesh vertices each frame — CPU is nearly idle.\n- **Position-Based Dynamics pattern:**\n  1. Predict next vertex positions (apply velocity + gravity)\n  2. Project constraints: distance constraints keep mesh from exploding, collision constraints prevent interpenetration\n  3. Update velocities from corrected positions\n  Repeat at 60fps on GPU — smooth deformation with ~zero CPU cost.\n- **Collision detection:** uses AABB (axis-aligned bounding box) broad phase on GPU, then vertex-triangle narrow phase. TSL abstracts the WGSL barrier/atomics needed for this.\n\n```js\n// TSL softbody: simplified PBD constraint projection\nimport { Fn, instanceIndex, storage, vec3, float } from 'three/tsl';\n\nconst projectConstraints = Fn(() => {\n  const posA = storage(positionBuffer, 'vec3', vertexCount).element(constraintA.element(instanceIndex));\n  const posB = storage(positionBuffer, 'vec3', vertexCount).element(constraintB.element(instanceIndex));\n  const delta = posA.sub(posB);\n  const dist = delta.length();\n  const restLen = restLengths.element(instanceIndex);\n  const correction = delta.mul(float(1).sub(restLen.div(dist)).mul(0.5));\n  posA.subAssign(correction);\n  posB.addAssign(correction);\n});\n\nconst computePass = projectConstraints().compute(constraintCount);\nrenderer.computeAsync(computePass); // runs on GPU, non-blocking\n```\n\n**Key insight:** WebGPU compute via TSL makes physics simulation a first-class browser primitive. Previously this required WASM (Rapier, Ammo.js) or simplified CPU approximations. Now: real PBD soft bodies, fluid sims, cloth — all expressible in TSL's node syntax, without writing raw WGSL.\n\n**Application for Ben:** A subtle blob/morphing hero element — a mesh that slowly deforms via spring constraints, responding to mouse proximity — is now achievable in ~50 lines of TSL. Amber-tinted softbody sphere as site mascot? The GPU compute overhead is negligible compared to a WebGL shader."
-        },
-        {
-          "type": "note",
-          "text": "**Codrops Articles (Mar 12, 2026) — SVG Filter Morphing Text**\nby Huy\n\nThe technique: SVG filter primitives (`feTurbulence` + `feDisplacementMap`) applied via CSS `filter: url(#id)` to DOM text — creating liquid, melting letter transitions with zero WebGL, zero canvas, pure CSS + SVG.\n\nCore technique breakdown:\n- **`feTurbulence`** generates Perlin/fractal noise as a displacement map source. Key attributes: `baseFrequency` (scale of the distortion, ~0.02 for large waves), `numOctaves` (detail level, 2–4 is enough), `type='turbulence'` vs `type='fractalNoise'`.\n- **`feDisplacementMap`** reads the noise texture and displaces pixel positions by a `scale` factor — higher scale = more distortion. The `xChannelSelector='R' yChannelSelector='G'` tells it to use Red/Green channels for X/Y displacement.\n- **Animating with CSS `@keyframes`** on the SVG filter's `baseFrequency` or on the `feDisplacementMap scale` (via CSS custom property + `attr()`) — but since SVG filter attributes aren't directly animatable via CSS, the trick is: GSAP animates the `scale` attribute on the element directly, or a small JS snippet reads a CSS var and sets the attribute each frame.\n- **Morphing text:**\n  1. Two text layers overlaid\n  2. Layer A fades out while feTurbulence scale increases (letter dissolves into noise)\n  3. Layer B fades in while scale decreases (letter coalesces from noise)\n  The illusion: text *melts* into and out of static\n\n```html\n<!-- SVG filter definition -->\n<svg style=\"position:absolute;width:0;height:0\">\n  <defs>\n    <filter id=\"morph\">\n      <feTurbulence type=\"turbulence\" baseFrequency=\"0.02\" numOctaves=\"3\"\n                    result=\"noise\" id=\"turbulence\"/>\n      <feDisplacementMap in=\"SourceGraphic\" in2=\"noise\"\n                         scale=\"0\" xChannelSelector=\"R\" yChannelSelector=\"G\"\n                         id=\"displace\"/>\n    </filter>\n  </defs>\n</svg>\n\n<!-- Apply to DOM text -->\n<p style=\"filter: url(#morph)\">DESIGN</p>\n```\n\n```js\n// Animate the displacement scale\nconst displace = document.getElementById('displace');\ngsap.to({ scale: 0 }, {\n  scale: 80,\n  duration: 0.6,\n  ease: 'power2.in',\n  onUpdate() {\n    displace.setAttribute('scale', this.targets()[0].scale);\n  }\n});\n```\n\n**Key insight:** SVG filter effects on DOM elements are criminally underused. `feTurbulence` + `feDisplacementMap` gives you a visual language (organic deformation, dissolution, reformation) that looks like WebGL but requires nothing but a few lines of SVG and JS. Safari 17+, Chrome, Firefox all support it well.\n\n**Application for Ben:** Hero name/tagline morphing on page load — letters dissolve in from noise over 0.8s. Or the amber cursor leaves a brief displacement trail on text elements as it passes over them. Both achievable with this SVG filter approach, no Three.js required."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Softbody Tetris — Three.js TSL + WebGPU (Niklas Niehus)",
-              "url": "https://www.webgpu.com/showcase/softbody-tetris-webgpu-threejs-jelly-physics/"
-            },
-            {
-              "label": "GitHub: holtsetio/softbodies (TSL PBD source)",
-              "url": "https://github.com/holtsetio/softbodies"
-            },
-            {
-              "label": "Three.js TSL Introduction — discourse.threejs.org",
-              "url": "https://discourse.threejs.org/t/three-js-introduction-to-webgpu-and-tsl/78205"
-            },
-            {
-              "label": "Codrops All Posts (Mar 12 by Huy)",
-              "url": "https://tympanus.net/codrops/all-posts/"
-            },
-            {
-              "label": "MDN: SVG feTurbulence",
-              "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feTurbulence"
-            },
-            {
-              "label": "Three.js Examples",
-              "url": "https://threejs.org/examples/"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-15",
-      "title": "Planetoño Planet-Click 3D Transitions & Codrops Sticky Grid Scroll",
-      "summary": "Awwwards SOTD Mar 15: Planetoño wins Developer Award with a WebGL planet-navigation UX — clicking planets triggers zoom/focus transitions and switches between overview and detail perspectives, no page reload. Codrops Mar 2: Theo Plawinski's Sticky Grid Scroll tutorial builds a scroll-driven image grid where each cell animates progressively inside a sticky container — pure CSS scroll-driven animation API, no GSAP required.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 15, 2026 — Planetoño (Developer Award)**\n\nPlanetoño is a WebGL-powered interactive universe: users click planets to zoom in, revealing detail views, and can return to an overview. The core UX metaphor is *spatial navigation as exploration* — no traditional nav menu, just a 3D space you inhabit.\n\nKey techniques:\n- **Click-to-zoom camera transition:** clicking a planet triggers a GSAP (or custom lerp) camera tween from overview position to a close-up orbit around the target. The camera `position` and `lookAt` target are both animated simultaneously with a cubic easing — this avoids the jarring teleport feeling.\n- **LOD (Level of Detail) swap on zoom:** at overview scale, planets use simple `SphereGeometry(1, 16, 16)`. On zoom-in, the geometry is hot-swapped to `SphereGeometry(1, 64, 64)` with a higher-res texture. The swap happens mid-tween at ~50% progress when the planet fills ~30% of the viewport — invisible to the user.\n- **Atmosphere glow shader:** each planet has a secondary transparent sphere slightly larger, with a custom fresnel shader that simulates atmospheric scattering (bright edge, dark center). Classic technique — `dot(vNormal, cameraDirection)` → fresnel factor.\n- **Pointer raycasting for selection:** `THREE.Raycaster` on `mousemove` highlights the hovered planet; `click` triggers the zoom sequence.\n\n```js\n// Camera zoom-to-planet pattern\nfunction zoomToPlanet(planet) {\n  const targetPos = planet.position.clone().add(\n    new THREE.Vector3(0, 0, planet.userData.radius * 3)\n  );\n  gsap.to(camera.position, {\n    x: targetPos.x, y: targetPos.y, z: targetPos.z,\n    duration: 1.8,\n    ease: 'power2.inOut',\n    onUpdate: () => controls.target.lerp(planet.position, 0.05)\n  });\n}\n\n// Fresnel atmosphere shader (fragment)\n// varying vec3 vNormal; varying vec3 vViewPosition;\nvoid main() {\n  float fresnel = 1.0 - max(dot(normalize(vNormal), normalize(-vViewPosition)), 0.0);\n  fresnel = pow(fresnel, 3.0);\n  gl_FragColor = vec4(atmosphereColor, fresnel * 0.6);\n}\n```\n\n**Key insight:** Planetoño proves that 3D spatial navigation can replace conventional site architecture — the 'page' concept dissolves into a place you move through. For portfolios, this suggests replacing 'Projects page' with a spatial gallery where works are zones you navigate into.\n\n**Application for Ben:** A lightweight version — projects as 2D cards on a CSS `perspective` plane, clicking one triggers a `transform: scale(4) translate(...)` zoom that reveals the case study inline. Same spatial metaphor, zero WebGL overhead."
-        },
-        {
-          "type": "note",
-          "text": "**Codrops (Mar 2, 2026) — Sticky Grid Scroll: Building a Scroll-Driven Animated Grid**\nby Theo Plawinski\n\nThe insight: a CSS `position: sticky` container creates a fixed frame; inside it, a grid of images animates progressively as the user scrolls — each cell has its own scroll-linked offset, creating a living, structured composition.\n\nKey techniques:\n- **CSS Scroll-Driven Animations API** (`animation-timeline: scroll()`): no JavaScript, no GSAP. The browser computes the animation progress directly from scroll position. Each grid cell gets an `@keyframes` block for its translate offset, linked to the scroll timeline.\n- **Sticky outer wrapper = fixed stage:** `position: sticky; top: 0; height: 100vh` creates a viewport-locked container. The inner grid items move *within* this frame, creating parallax without any scroll listener.\n- **Progressive reveal via `animation-range`:** each grid cell has a different `animation-range: entry X% exit Y%` — earlier cells start animating sooner, later cells lag. This staggers the motion naturally through CSS alone.\n- **Performance:** zero JS scroll listeners = zero main thread cost. The Scroll-Driven API is GPU-accelerated by the browser compositor — even low-end devices get smooth motion.\n\n```css\n/* Sticky stage */\n.grid-stage {\n  position: sticky;\n  top: 0;\n  height: 100vh;\n  overflow: hidden;\n}\n\n/* Scroll-driven cell animation */\n.grid-cell {\n  animation: cell-rise linear both;\n  animation-timeline: scroll(root block);\n  animation-range: entry 10% exit 90%;\n}\n\n@keyframes cell-rise {\n  from { transform: translateY(80px); opacity: 0; }\n  to   { transform: translateY(0);    opacity: 1; }\n}\n\n/* Stagger by cell index */\n.grid-cell:nth-child(2) { animation-delay: -0.1s; }\n.grid-cell:nth-child(3) { animation-delay: -0.2s; }\n```\n\n**Key insight:** The CSS Scroll-Driven Animations API (now baseline supported in Chrome/Edge, Firefox 115+, Safari 18+) makes GSAP's `ScrollTrigger` unnecessary for a wide class of scroll-linked animations. For structured layouts like grids, the CSS approach is simpler, faster, and has zero bundle size.\n\n**Application for Ben:** The Works page grid is exactly this pattern — sticky container, cards animate in as user scrolls, amber gradient overlay shifts on scroll progress. All achievable in ~20 lines of CSS, no JS."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards SOTD Mar 15 — Planetoño",
-              "url": "https://www.awwwards.com/websites/sites_of_the_day/"
-            },
-            {
-              "label": "Codrops: Sticky Grid Scroll by Theo Plawinski",
-              "url": "https://tympanus.net/codrops/2026/03/02/sticky-grid-scroll-building-a-scroll-driven-animated-grid/"
-            },
-            {
-              "label": "Codrops Live Demo — Sticky Grid Scroll",
-              "url": "https://tympanus.net/Tutorials/StickyGridScroll/"
-            },
-            {
-              "label": "MDN: CSS Scroll-Driven Animations",
-              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-14",
-      "title": "Scroll-Velocity WebGL Mood Shift & MoMoney Video-Layer Interactions",
-      "summary": "Codrops Mar 9: Houmahani Kane's tutorial on a scroll-reactive Three.js gallery that maps scroll velocity to image distortion and swaps background palettes per 'mood' object — a data-driven approach to emotional ambience. Awwwards SOTD Mar 14: MoMoney by Jordan Gilroy wins Developer Award with a video-element-heavy gaming rewards site; every interaction state captured as looping video rather than CSS animation.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Codrops (Mar 9, 2026) — Scroll-Reactive 3D Gallery with Three.js, Velocity & Mood-Based Backgrounds**\nby Houmahani Kane\n\nThe core insight here is *scroll velocity as an emotional signal*. Slow scroll = calm state, fast scroll = distortion/warp. Rather than treating velocity as a utility (parallax speed), Kane routes it through a warp shader on a `PlaneGeometry` so fast scrolling visibly bends images — and simultaneously lerps the background palette to the active image's `mood` object.\n\nKey techniques:\n- **Per-image mood data:** each gallery item carries a `mood` config: `{ background, blob1, blob2 }`. On active image change, CSS custom properties are lerped to these values using `gsap.to()` targeting `document.documentElement`. Zero extra DOM — just custom properties on `:root`.\n- **Scroll velocity → shader uniform:** velocity is computed frame-to-frame as `(scrollY - prevScrollY) / dt`, smoothed with exponential decay (`velocity *= 0.9`), then passed to a `uVelocity` uniform driving UV distortion in the fragment shader.\n- **Depth-layered planes:** images placed at different Z positions in the Three.js scene so fast scroll creates natural parallax between layers — no extra GSAP math needed, just the camera's FOV doing the work.\n- **Atmosphere blobs:** two `radial-gradient` divs positioned via CSS, colors driven by the mood config. GPU-free background motion that reinforces the WebGL mood.\n\n```js\n// Velocity → distortion uniform\nconst velocity = { current: 0 };\nlet prevScrollY = 0;\n\nwindow.addEventListener('scroll', () => {\n  velocity.current = (window.scrollY - prevScrollY) * 0.01;\n  prevScrollY = window.scrollY;\n});\n\n// In animation loop:\nvelocity.current *= 0.9; // exponential decay\nmaterial.uniforms.uVelocity.value = velocity.current;\n```\n\n```glsl\n// Fragment shader: velocity-driven UV warp\nuniform float uVelocity;\nvarying vec2 vUv;\n\nvoid main() {\n  vec2 uv = vUv;\n  uv.y += sin(uv.x * 10.0 + uVelocity * 5.0) * abs(uVelocity) * 0.1;\n  gl_FragColor = texture2D(uTexture, uv);\n}\n```\n\n**Application for Ben:** The portfolio Works grid could use a lightweight version of this — scroll velocity drives a subtle `skewY` transform on the cards (pure CSS + JS, no WebGL). Amber blob bleeds in from the background when scrolling fast. Mood object per project provides automatic ambient theming when a card is in view."
-        },
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 14, 2026 — MoMoney by Jordan Gilroy (Developer Award)**\n\nMoMoney is a gaming rewards platform ($125B+ gaming market positioning). Jordan Gilroy, a Yorkshire-based Webflow/interaction specialist, wins Developer Award for one standout technique: **video as interaction state documentation**. Every hover state, every transition, every UI micro-moment is a looping muted video element — not a CSS keyframe, not a canvas animation.\n\nObserved techniques:\n- **Video-as-state-machine:** instead of engineering complex CSS animations for multiple UI states (idle → hover → active → exit), each state is simply a video. JS swaps `src` or toggles visibility between `<video>` elements. Engineering complexity → design complexity. The codebase stays simple.\n- **Interaction vocabulary from video editing, not CSS:** easing, overlaps, and timing come from the video editor's timeline, not `cubic-bezier()`. This is a paradigm shift for Webflow-adjacent workflows.\n- **Performance bet:** modern browsers handle multiple muted autoplaying videos efficiently (hardware decoded). With `playsinline muted autoplay loop` and `preload='auto'`, switching feels instant — faster than a complex GSAP sequence initializing.\n- **Jordan Gilroy's stack:** Webflow + GSAP + custom vanilla JS for the video orchestration. No framework overhead.\n\n```js\n// Video-state pattern: preload all, show/hide\nconst states = {\n  idle: document.querySelector('.vid-idle'),\n  hover: document.querySelector('.vid-hover'),\n  active: document.querySelector('.vid-active')\n};\n\nfunction setState(name) {\n  Object.entries(states).forEach(([key, el]) => {\n    el.style.opacity = key === name ? '1' : '0';\n    key === name ? el.play() : el.pause();\n  });\n}\n\nbtn.addEventListener('mouseenter', () => setState('hover'));\nbtn.addEventListener('mouseleave', () => setState('idle'));\n```\n\n**Key insight:** Replacing CSS animation engineering with video files is a 2026 production workflow emerging from studios where designers own the motion. If you can render it in After Effects faster than you can code it — render it. Video is a valid interaction primitive, not a fallback.\n\n**Application for Ben:** Project case study pages could use a single looping hero video (screen recording / motion export) instead of complex scroll animations. Amber cursor overlay on video = branded without touching the video file."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Codrops: Scroll-Reactive 3D Gallery (Three.js + Velocity + Mood)",
-              "url": "https://tympanus.net/codrops/2026/03/09/building-a-scroll-reactive-3d-gallery-with-three-js-velocity-and-mood-based-backgrounds/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 14 — MoMoney",
-              "url": "https://www.awwwards.com/sites/momoney"
-            },
-            {
-              "label": "Jordan Gilroy — Freelance Web Designer",
-              "url": "https://www.jordangilroy.com/"
-            },
-            {
-              "label": "Three.js Examples",
-              "url": "https://threejs.org/examples/"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-13",
-      "title": "2-Color Video Portfolio & Three.js r183 NodeMaterial",
-      "summary": "Awwwards SOTD Mar 13: Adam Bricker's Film/TV/Animation portfolio wins Developer Award with a radical 2-color constraint (#F0F2F1 off-white + #020202 near-black), full-bleed video as the only visual currency. Three.js r183 ships NodeMaterial stable — GPU-agnostic node-based shader graphs that compile to both WebGL and WebGPU, replacing raw GLSL for most creative use cases.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 13, 2026 — Adam Bricker (Developer Award)**\nFilm · TV · Photography · Animation portfolio. 2-color palette maximum: `#F0F2F1` (warm off-white) + `#020202` (near-black). Video as the only image format — no hero stills, no photo grids.\n\nKey techniques (inferred from Awwwards element breakdown):\n- **Full-bleed video tiles:** each project is a looping muted video, not a still thumbnail. Video `autoplay muted loop playsinline` — zero JS interaction needed for the primary impression.\n- **2-color lockdown as engineering discipline:** removing color forces the layout to do all the work. Spacing, scale, and motion become the only levers. This is *harder* to execute than a rich palette.\n- **Video loading strategy:** observed multi-video portfolios in 2026 use Intersection Observer + `video.load()` on demand — never preload all at once. Poster frame (single jpg) holds until 200px from viewport.\n- **Menu as typographic gesture:** from the Awwwards element capture, the nav appears to draw in as SVG or clip-path — no hover color, just motion.\n\n```js\n// Lazy video load on approach\nconst observer = new IntersectionObserver((entries) => {\n  entries.forEach(({ isIntersecting, target }) => {\n    if (isIntersecting) {\n      const video = target.querySelector('video');\n      if (video && !video.src) {\n        video.src = video.dataset.src;\n        video.load();\n      }\n    }\n  });\n}, { rootMargin: '200px' });\n\ndocument.querySelectorAll('.project-tile').forEach(tile => observer.observe(tile));\n```\n\n**Key insight:** The 2-color constraint is a *commitment device* — it forces every decision to be intentional. When you can't reach for color, you have to earn legibility through hierarchy, motion, and scale. Adam Bricker's SOTD win proves that in 2026 the most technically impressive portfolios are often the most visually restrained.\n\n**Application for Ben:** The Works page could adopt a 'poster-first, video-on-hover' pattern for each project card — 1 static jpg at rest, video plays on hover/tap (IntersectionObserver ensures it's loaded). Amber accent reserved for cursor/hover state only, not the card itself."
-        },
-        {
-          "type": "note",
-          "text": "**Three.js r183 — NodeMaterial Stable & WebGPU Parity**\n\nThree.js is now at r183 and the big story is **NodeMaterial reaching stable API** — a GPU-agnostic node-based shader system that compiles to GLSL (WebGL) *or* WGSL (WebGPU) from the same graph. This is the end of writing two shader versions.\n\nCore concepts:\n- **`Nodes` system:** replace raw `vertexShader`/`fragmentShader` strings with composable node graphs. `positionNode`, `colorNode`, `emissiveNode` are the entry points.\n- **`MeshStandardNodeMaterial`:** drop-in for `MeshStandardMaterial` but accepts node inputs — mix procedural noise into a PBR material without touching GLSL.\n- **`texture()` node + `uv()` node:** chain them for animated UV distortion: `texture(map, uv().add(timerLocal().mul(0.1)))` scrolls a texture over time.\n- **WebGPU backend:** `WebGPURenderer` is now production-ready. Falls back to WebGL if WebGPU unavailable (one `await renderer.init()` call handles detection).\n\n```js\nimport { MeshStandardNodeMaterial, texture, uv, timerLocal, vec2 } from 'three/nodes';\n\nconst material = new MeshStandardNodeMaterial();\nconst t = timerLocal(); // auto-updates each frame\n\n// Animated UV offset: texture scrolls diagonally\nmaterial.colorNode = texture(\n  myTexture,\n  uv().add(vec2(t.mul(0.05), t.mul(0.03)))\n);\n```\n\n**Why this matters:** NodeMaterial eliminates the biggest friction in creative Three.js work — shader strings that break on GLSL version changes and can't be easily composed. The node graph approach is how Blender's shader editor works; if you can think in nodes, you can now build the same effects in-browser.\n\n**Application for Ben:** A subtle animated texture on the hero section background (slow UV scroll of a noise texture, amber-tinted) — previously required writing GLSL. With NodeMaterial: ~5 lines of JavaScript."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Awwwards SOTD Mar 13 — Adam Bricker",
-              "url": "https://www.awwwards.com/sites/adam-bricker"
-            },
-            {
-              "label": "Three.js r183 Changelog",
-              "url": "https://github.com/mrdoob/three.js/releases"
-            },
-            {
-              "label": "Three.js NodeMaterial docs",
-              "url": "https://threejs.org/docs/#api/en/materials/nodes/MeshStandardNodeMaterial"
-            },
-            {
-              "label": "Three.js Examples",
-              "url": "https://threejs.org/examples/"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-12",
-      "title": "SVG Mask Scroll Reveals & Paper Portfolio Tactility",
-      "summary": "Codrops Mar 11: SVG mask + GSAP ScrollTrigger creates 4 distinct fullscreen reveal patterns (grid, blind, iris, wipe) — shape-driven transitions that feel physical. Awwwards SOTD Mar 12: Mr. Pandas Paper Portfolio wins Developer Award with scanned paper textures + hand-drawn SVG paths, proving lo-fi tactility can out-perform polished digital.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Codrops (Mar 11, 2026) — SVG Mask Transitions on Scroll with GSAP & ScrollTrigger**\nby Hiroki Watanabe\n\nThe core insight: SVG `<clipPath>` + `<mask>` are shape languages. Instead of `clip-path: inset(0 100% 0 0)` (a rectangle), you animate the *geometry* of an SVG path — and that geometry can be a grid of slats, an iris circle, a chevron blinds pattern, or a jagged reveal.\n\nKey techniques:\n- **Grid mask reveal:** divide the image area into a grid of SVG rectangles; stagger `scaleY` from 0→1 on each column. Feels like venetian blinds dropping.\n- **Blind pattern:** horizontal SVG paths expand width in sequence — reads as shutter opening.\n- **Iris reveal:** circular `<clipPath>` radius animates `r` from 0 → viewport diagonal. Very cinematic.\n- **GSAP ScrollTrigger pinning:** `scrub: 1.5` (not `true`) gives slight lag — the reveal feels dragged by scroll, not teleported.\n\n```js\n// Iris SVG mask reveal\ngsap.fromTo(\n  '#iris-circle',\n  { attr: { r: 0 } },\n  {\n    attr: { r: diag },\n    ease: 'power2.inOut',\n    scrollTrigger: {\n      trigger: section,\n      start: 'top center',\n      end: 'bottom center',\n      scrub: 1.5\n    }\n  }\n);\n```\n\n**Application for Ben:** Works grid could use blind-pattern reveal on scroll-in — each project card's image revealed by 6-column staggered SVG slats. More structured than opacity fade, cheaper than WebGL."
-        },
-        {
-          "type": "demo",
-          "label": "SVG Blind Mask Reveal",
-          "description": "Hover to trigger: staggered SVG clipPath slats reveal an image — simulates Codrops blind-pattern scroll transition.",
-          "html": "<div class='scene'><div class='reveal-wrap' id='wrap'><svg class='svg-mask' width='0' height='0'><defs><clipPath id='blinds' clipPathUnits='objectBoundingBox'><rect class='slat' x='0' y='0' width='0.166' height='1'/><rect class='slat' x='0.166' y='0' width='0.167' height='1'/><rect class='slat' x='0.333' y='0' width='0.167' height='1'/><rect class='slat' x='0.5' y='0' width='0.167' height='1'/><rect class='slat' x='0.667' y='0' width='0.166' height='1'/><rect class='slat' x='0.833' y='0' width='0.167' height='1'/></clipPath></defs></svg><div class='reveal-img' id='img'></div><div class='reveal-label'>SVG Blind Reveal</div></div><p class='hint'>hover to reveal</p></div>",
-          "css": "body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:monospace;gap:16px}.reveal-wrap{position:relative;width:280px;height:180px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}.reveal-img{position:absolute;inset:0;background:linear-gradient(135deg,#1a0f0f,#3d1f00);clip-path:url(#blinds);display:flex;align-items:center;justify-content:center}.reveal-label{position:absolute;bottom:12px;left:16px;font-size:9px;letter-spacing:2px;color:#C17A3A;z-index:2}.hint{font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.25)}.svg-mask{position:absolute}",
-          "js": "const slats=document.querySelectorAll('.slat');let revealed=false;const base=[0,0.166,0.333,0.5,0.667,0.833];const w=1/6;function reveal(){slats.forEach((s,i)=>{setTimeout(()=>{s.setAttribute('width',w.toFixed(3))},i*60)})}function hide(){slats.forEach(s=>s.setAttribute('width','0'))}slats.forEach(s=>s.setAttribute('width','0'));document.getElementById('wrap').addEventListener('mouseenter',reveal);document.getElementById('wrap').addEventListener('mouseleave',hide);"
-        },
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 12, 2026 — Mr. Pandas Paper Portfolio (Developer Award)**\n\nThis site bets everything on lo-fi tactility: scanned paper textures as actual image sources, hand-drawn SVG path animations for UI transitions, and deliberate imperfection as the aesthetic. The Developer Award signals the *engineering* behind the charm.\n\nTechniques observed:\n- **Scanned texture as background:** `background-image: url(scan.jpg)` at low opacity — analog warmth, zero GPU cost vs WebGL grain\n- **Hand-drawn SVG paths + stroke-dashoffset animation:** each UI element 'draws itself in' on load/hover. Classic technique, executed with personality.\n- **Page weight discipline:** no Three.js, no heavy libraries — custom GSAP-only animation. Fast, tactile, memorable.\n- **Color: aged ivory + ink black + single warm red** — 3-color palette maximum, enforced ruthlessly.\n\n```css\n/* Scanned paper texture overlay */\n.paper-bg {\n  background-image: url('paper-scan.jpg');\n  background-blend-mode: multiply;\n  background-size: cover;\n}\n\n/* SVG path draw-in */\n.drawn-path {\n  stroke-dasharray: 1000;\n  stroke-dashoffset: 1000;\n  animation: draw 1.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;\n}\n@keyframes draw {\n  to { stroke-dashoffset: 0; }\n}\n```\n\n**Key insight:** In 2026, the most memorable portfolios aren't the most technically complex — they're the most *intentional*. Paper Portfolio wins because it commits 100% to its concept. Every element serves the 'handmade' narrative. Zero visual noise."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Codrops: SVG Mask Transitions on Scroll with GSAP",
-              "url": "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 12 — Mr. Pandas Paper Portfolio",
-              "url": "https://www.awwwards.com/sites/mr-pandas-paper-portfolio"
-            },
-            {
-              "label": "Codrops tutorials hub",
-              "url": "https://tympanus.net/codrops/hub/tutorials/"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-11",
-      "title": "Swiss Grid × WebGL Geometry & Typography-Led Corporate Motion",
-      "summary": "Codrops Mar 5: Corentin Bernadou's portfolio uses Swiss editorial grid rules to govern Three.js geometry placement — structure-first, then WebGL. Awwwards SOTD Mar 11: Outsource Consultants wins Developer Award with restrained, typography-led layout that proves motion discipline beats effects excess.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Codrops (Mar 5, 2026) — Swiss Grid Meets WebGL Geometry**\n\nCorentin Bernadou's portfolio redesign is an architecture lesson: start with a strict Swiss editorial grid (baseline grid, column lock, clear hierarchy) and *then* layer WebGL geometry into the empty white space — not as decoration, but as geometric punctuation.\n\nKey techniques:\n- **Grid-constrained WebGL:** 3D geometry (spheres, toruses) are positioned at grid intersections, not freestyle. This stops WebGL from feeling chaotic.\n- **Thoughtful motion timing:** transitions use `cubic-bezier(0.76, 0, 0.24, 1)` — the S-curve with a slow-out, which feels editorial rather than playful.\n- **Geometry as accent:** same role as a bold pull-quote in print layout. The 3D element earns its space by framing text, not competing with it.\n\n**Application for Ben:** The Works page grid could have a single Three.js plane positioned at the column gutter — not image distortion, just a subtle mesh that reacts to scroll. Structural, not decorative."
-        },
-        {
-          "type": "demo",
-          "label": "Swiss Grid Punctuation",
-          "description": "Editorial grid with a WebGL-style geometric accent element. Structure first — geometry earns its place at grid intersections.",
-          "html": "<div class='sg-layout'><div class='sg-col-rule'></div><div class='sg-content'><span class='sg-label'>SELECTED WORK</span><h2 class='sg-title'>Brand &amp;<br>Digital</h2><div class='sg-geo' id='geo'></div><p class='sg-body'>Senior Product Designer at Microsoft. Building products that scale.</p></div></div>",
-          "css": "body{margin:0;background:#f4f0e8;display:flex;align-items:center;justify-content:center;height:100vh;font-family:'EB Garamond',serif}.sg-layout{width:360px;position:relative;padding:40px 40px 40px 60px;border-left:1px solid rgba(0,0,0,0.12)}.sg-col-rule{position:absolute;left:0;top:0;bottom:0;width:1px;background:#1a1a1a}.sg-label{font-size:9px;letter-spacing:3px;color:rgba(0,0,0,0.35);font-family:monospace;display:block;margin-bottom:20px}.sg-title{font-size:52px;line-height:1.0;margin:0 0 0 0;color:#1a1a1a;font-weight:400}.sg-geo{width:80px;height:80px;margin:20px 0;position:relative}.sg-geo::before{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(0,0,0,0.15);animation:spin 8s linear infinite}.sg-geo::after{content:'';position:absolute;inset:16px;border:1px solid #C17A3A;transform:rotate(45deg)}.sg-body{font-size:15px;color:rgba(0,0,0,0.5);line-height:1.6;margin:0;max-width:240px}@keyframes spin{to{transform:rotate(360deg)}}",
-          "js": ""
-        },
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 11, 2026 — Outsource Consultants, Inc**\n\nA NYC corporate consultancy site winning *Developer Award* is significant — it means the animation engineering is the story, not the visual design. The key lesson: **motion discipline beats motion excess.**\n\nObserved techniques (from the developer award context):\n- Text reveals using clip-path rather than opacity — letters feel *uncovered*, not faded in\n- Inter-section transitions: background color shifts (dark → light) are timed to the user's scroll momentum, not just scroll position\n- Typography as the layout: no hero imagery, no full-bleed photo. Just type scale + white space. The engineering makes type feel alive.\n\n```css\n/* Clip-path text reveal — feels physical, not digital */\n.reveal {\n  clip-path: inset(0 100% 0 0);\n  transition: clip-path 0.8s cubic-bezier(0.76, 0, 0.24, 1);\n}\n.reveal.in-view {\n  clip-path: inset(0 0% 0 0);\n}\n```\n\n**Key insight:** Corporate sites are getting technically ambitious. The genre expectation is now: clean type + sophisticated timing. 'No-fuss' is dead — you have to earn the restraint."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Codrops: Inside Corentin Bernadou's Portfolio",
-              "url": "https://tympanus.net/codrops/2026/03/05/inside-corentin-bernadous-portfolio-swiss-inspired-layouts-webgl-geometry-and-thoughtful-motion/"
-            },
-            {
-              "label": "Awwwards SOTD Mar 11 — Outsource Consultants",
-              "url": "https://www.awwwards.com/sites/outsource-consultants-inc"
-            },
-            {
-              "label": "Codrops: All WebGL Articles",
-              "url": "https://tympanus.net/codrops/tag/webgl/"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-10",
-      "title": "Scroll-Velocity WebGL Gallery & ON Energy Glass UI",
-      "summary": "Today's picks: Codrops scroll-driven WebGL gallery (scroll velocity drives shader distortion), and Awwwards SOTD ON Energy's ultra-thin glass panel language.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**Codrops (Mar 9, 2026) — Scroll-Velocity WebGL Gallery**\n\nKey technique: pipe scroll velocity as a uniform into Three.js shader. Higher velocity = more distortion, release = snap back. Unlike static hover distortion, this makes *motion itself* the visual content.\n\n- `previousScrollY` diff → clamp to -1~1 velocity\n- Vertex shader: `sin(uv.y + time) * velocity * strength`\n- Background color shifts with image palette (palette-driven immersion)\n\n**Application:** Ben's Works grid could use this — fast scroll makes images \"flow\", slow/stop = they settle back."
-        },
-        {
-          "type": "demo",
-          "label": "Scroll-Velocity Distortion",
-          "description": "CSS approximation: scroll speed drives skewY + scaleX on text. Snaps back on release.",
-          "html": "<div class='sv-container'><div class='sv-track'><div class='sv-item'>Designer who builds.</div><div class='sv-item'>Senior Product Designer</div><div class='sv-item'>at Microsoft</div><div class='sv-item'>Designer who builds.</div><div class='sv-item'>Senior Product Designer</div><div class='sv-item'>at Microsoft</div></div><div class='sv-hint'>↕ scroll here</div></div>",
-          "css": "body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;font-family:'EB Garamond',serif}.sv-container{width:340px;height:240px;overflow-y:scroll;border:1px solid rgba(255,255,255,0.1);position:relative}.sv-track{padding:20px 32px}.sv-item{font-size:26px;color:#f5f0e8;line-height:1.6;transform-origin:left center;transition:transform 0.2s cubic-bezier(.25,.46,.45,.94),opacity 0.2s}.sv-hint{position:sticky;bottom:8px;text-align:right;padding-right:12px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.25);font-family:monospace}",
-          "js": "const c=document.querySelector('.sv-container');let ly=0;c.addEventListener('scroll',()=>{const v=Math.max(-1,Math.min(1,(c.scrollTop-ly)/10));ly=c.scrollTop;c.querySelectorAll('.sv-item').forEach(el=>{el.style.transform=`skewY(${v*6}deg) scaleX(${1+Math.abs(v)*0.06})`;el.style.opacity=1-Math.abs(v)*0.25});clearTimeout(c._t);c._t=setTimeout(()=>{c.querySelectorAll('.sv-item').forEach(el=>{el.style.transform='skewY(0deg) scaleX(1)';el.style.opacity=1})},200)});"
-        },
-        {
-          "type": "note",
-          "text": "**Awwwards SOTD Mar 10, 2026 — ON Energy**\n\nGlass UI 2.0 — not the blurry 2021 glassmorphism. Instead: near-zero fill + ultra-thin border + inset top highlight. The 1px inset white line is everything — it gives the panel physical thickness.\n\n```css\n.panel {\n  background: rgba(255,255,255,0.03);\n  border: 1px solid rgba(255,255,255,0.12);\n  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);\n}\n```"
-        },
-        {
-          "type": "demo",
-          "label": "ON Energy Glass Panel",
-          "description": "Near-zero fill + ultra-thin border + inset top highlight. The 1px white inset line is what gives it depth.",
-          "html": "<div class='scene'><div class='panel'><div class='panel-tag'>ENERGY OUTPUT</div><div class='panel-value'>94.7<span class='unit'>%</span></div><div class='panel-bar'><div class='panel-fill'></div></div><div class='panel-sub'>System nominal · 3 nodes active</div></div></div>",
-          "css": "body{margin:0;background:linear-gradient(135deg,#0a0f0a,#0d1a10);display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Inter',sans-serif}.panel{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);box-shadow:inset 0 1px 0 rgba(255,255,255,0.08),0 0 40px rgba(50,255,100,0.04);padding:32px 40px;min-width:280px;border-radius:2px}.panel-tag{font-size:9px;letter-spacing:3px;color:rgba(80,255,120,0.5);margin-bottom:16px;font-family:monospace}.panel-value{font-size:56px;color:#e8f5ea;font-weight:300;line-height:1;margin-bottom:20px}.unit{font-size:24px;opacity:0.4}.panel-bar{height:2px;background:rgba(255,255,255,0.06);margin-bottom:16px;overflow:hidden}.panel-fill{height:100%;width:94.7%;background:linear-gradient(90deg,rgba(50,255,100,0.6),rgba(50,255,100,0.2))}.panel-sub{font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:0.5px}",
-          "js": ""
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "Codrops: Scroll-driven WebGL Gallery",
-              "url": "https://tympanus.net/codrops/tag/webgl/"
-            },
-            {
-              "label": "Awwwards SOTD - ON Energy",
-              "url": "https://www.awwwards.com/websites/sites_of_the_day/"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-03-10",
-      "title": "WebGL Hover Distortion & Grain Texture",
-      "summary": "Deep dive into 2025-2026 top creative sites. Focus: WebGL shader hover distortion and noise grain texture overlays.",
-      "blocks": [
-        {
-          "type": "note",
-          "text": "**stabondar.com** — project grid looks like CSS grid, but each image has a Three.js mesh layered on top. On hover, mouse velocity is injected as a uniform → vertex shader computes ripple distortion. Effect: images flow like liquid under the cursor."
-        },
-        {
-          "type": "demo",
-          "label": "Grain Texture Overlay",
-          "description": "CSS + SVG feTurbulence gives film grain feel. Near-zero cost, significant texture upgrade.",
-          "html": "<div class='grain-demo'><p>Designer who builds.</p><span class='tag'>Grain ON</span></div>",
-          "css": "body{margin:0;background:#F7F5F0;font-family:'EB Garamond',serif;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}.grain-demo{position:relative;padding:40px;text-align:center}.grain-demo p{font-size:32px;margin:0 0 16px;color:#1a1a1a}.tag{font-size:11px;letter-spacing:2px;color:#C17A3A;font-family:monospace}.grain-demo::after{content:'';position:fixed;inset:-50%;width:200%;height:200%;background-image:url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\");opacity:0.045;pointer-events:none;animation:grain 0.5s steps(2) infinite}@keyframes grain{0%,100%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(1px,-1px)}75%{transform:translate(-1px,2px)}}",
-          "js": ""
-        },
-        {
-          "type": "demo",
-          "label": "Magnetic Cursor",
-          "description": "Mouse snaps toward element on proximity, releases on exit. Good for CTA buttons and tags.",
-          "html": "<div class='scene'><button class='magnetic-btn' id='btn'>Hover me</button></div>",
-          "css": "body{margin:0;background:#1a1a1a;display:flex;align-items:center;justify-content:center;height:100vh}.magnetic-btn{padding:16px 32px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:#fff;font-size:14px;letter-spacing:3px;font-family:monospace;cursor:none;transition:border-color 0.3s;border-radius:2px}.magnetic-btn:hover{border-color:#C17A3A;color:#C17A3A}",
-          "js": "const btn=document.getElementById('btn');let rect,active=false;btn.addEventListener('mouseenter',()=>{rect=btn.getBoundingClientRect();active=true});btn.addEventListener('mouseleave',()=>{active=false;btn.style.transform='translate(0,0)'});document.addEventListener('mousemove',e=>{if(!active)return;const x=e.clientX-rect.left-rect.width/2;const y=e.clientY-rect.top-rect.height/2;const dist=Math.sqrt(x*x+y*y);const maxDist=80;if(dist<maxDist){const force=(maxDist-dist)/maxDist;btn.style.transform=`translate(${x*force*0.4}px,${y*force*0.4}px)`;rect=btn.getBoundingClientRect()}});"
-        },
-        {
-          "type": "note",
-          "text": "**2026 visual language trends:** Minimal base + single high-contrast accent (Ben's amber is spot on). Ultra Light + Bold weight contrast. Anti-UI: no card borders, whitespace as separator. Noise grain adds analog warmth."
-        },
-        {
-          "type": "ref",
-          "links": [
-            {
-              "label": "stabondar.com",
-              "url": "https://stabondar.com"
-            },
-            {
-              "label": "Codrops: Scroll WebGL Gallery",
-              "url": "https://tympanus.net/codrops/2026/02/02/building-a-scroll-revealed-webgl-gallery-with-gsap-three-js-astro-and-barba-js/"
-            },
-            {
-              "label": "Awwwards Three.js Collection",
-              "url": "https://www.awwwards.com/websites/three-js/"
-            }
-          ]
-        }
-      ]
-    }
-  ]
+﻿{
+    "entries":  [
+                    {
+                        "date":  "2026-03-27",
+                        "title":  "Dual-Scene Reveal Compositing + Instancing Scatter Interaction Baseline",
+                        "summary":  "今日从 Awwwards / Codrops / three.js 提炼 2 个可执行方向：1) Codrops 近期教程“Dual-Scene Fluid X-Ray”再次确认复杂交互应采用分层渲染管线（输入/模拟/双场景/合成），而不是把所有逻辑塞进单 shader；2) three.js examples 中 `webgl_instancing_scatter` 与 `webgl_instancing_performance` 提示可交互高密度布局应默认先做 InstancedMesh + 分布控制，再叠加视觉风格。Awwwards 最新列表（如 The Lookback、Corentin Bernadou Portfolio）持续显示“DEV + SOTD”的站点共性仍是叙事节奏与工程稳定性的统一。",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**今日最有价值的 2 个手法**\n\n**1) Codrops — Dual-Scene Fluid X-Ray：把复杂效果拆成可维护渲染管线**\n\n从近期 Codrops Three.js 教程可见，稳定的高级 reveal 不靠单个大一统 shader，而是四段式：\n- 输入层：鼠标轨迹/交互信号（CanvasTexture）\n- 模拟层：ping-pong render target 做流体反馈\n- 内容层：主场景 + X-Ray 场景并行渲染\n- 合成层：用 fluid mask 做最终 blend\n\n可执行结论：后续做“透视揭示/液态擦除/材质切换”时，先设计 pipeline 边界（谁负责输入、谁负责模拟、谁负责合成），再写效果细节，可维护性会远高于单 pass 硬写。\n\n---\n\n**2) three.js examples — `webgl_instancing_scatter` + `webgl_instancing_performance`：高密度可交互布局先用 instancing 打底**\n\nexamples 列表持续可见 instancing 系列：`scatter`、`performance`、`raycast`。这给出一个明确默认值：\n- 大量元素排布先用 `InstancedMesh` 统一 draw call\n- 用 scatter/分布规则先把空间节奏做对，再加材质和后处理\n- 若需要点击/hover，再接 raycast 分支，不先上重视觉\n\n可执行结论：作品墙、数据点阵、3D 图库这类场景，应先把“实例分布 + 交互命中 + 帧率”三件事跑通，再决定是否加入流体/体积/噪声类风格层。\n\n**Awwwards 当日补充观察（latest）**\n- 最新卡片中多站点继续出现 `DEV` / `SOTD` 组合，说明高分作品依旧依赖“叙事模块节奏 + 稳定工程实现”的双满足。"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards - Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards - The Lookback",
+                                                             "url":  "https://www.awwwards.com/sites/the-lookback"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops - Building a Dual-Scene Fluid X-Ray Reveal Effect in Three.js",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/23/building-a-dual-scene-fluid-x-ray-reveal-effect-in-three-js/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example - webgl_instancing_scatter",
+                                                             "url":  "https://threejs.org/examples/webgl_instancing_scatter.html"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example - webgl_instancing_performance",
+                                                             "url":  "https://threejs.org/examples/webgl_instancing_performance.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-26",
+                        "title":  "Ultra-Thin Narrative Stack (Nuxt + WebGL + Blender) \u0026 500k-Instance Runtime Architecture",
+                        "summary":  "ä»Šæ—¥ä»Ž Awwwards / Codrops / three.js æç‚¼ 2 ä¸ªå¯æ‰§è¡Œæ–¹å‘ï¼š1) Awwwards SOTDã€ŠGQ \u0026 AP The Extraordinary Labã€‹æ˜Žç¡®å±•ç¤ºäº†é«˜ç«¯å™äº‹ç«™çš„æŠ€æœ¯ç»„åˆï¼ˆNuxt.js + WebGL + Blender + Gestures/Interaction + Responsiveï¼‰ï¼Œè¯´æ˜Žâ€œå“ç‰Œæ•…äº‹=æŠ€æœ¯æ ˆååŒâ€è€Œéžå•ä¸€ç‰¹æ•ˆï¼›2) three.js `webgl_batch_lod_bvh` å†æ¬¡éªŒè¯è¶…å¤§è§„æ¨¡äº¤äº’åœºæ™¯çš„åº•å±‚èŒƒå¼ï¼ˆBatchedMesh + LOD + TLAS/BLAS BVHï¼‰ï¼Œ500k instances ä»å¯ä¿æŒå¯äº¤äº’ã€‚Codrops 3/25 åˆ™è¡¥å……äº†åˆ›æ„èŒä¸šå±‚é¢çš„æ–¹æ³•ï¼šç”¨â€œæœ‰é™ä½†æ˜Žç¡®çš„ä½œå“é€‰æ‹©â€æŠŠæƒ³åšçš„è¡Œä¸šæ–¹å‘å‰ç½®è¡¨è¾¾ã€‚",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**ä»Šæ—¥æœ€æœ‰ä»·å€¼çš„ 2 ä¸ªæ‰‹æ³•**\n\n**1) Awwwards SOTD Mar 26ï¼ˆGQ \u0026 AP The Extraordinary Labï¼‰â€” å™äº‹åž‹é«˜ç«¯ç«™çš„â€œååŒæŠ€æœ¯æ ˆâ€**\n\nAwwwards é¡µé¢ç»™å‡ºçš„æ ‡ç­¾ç»„åˆå¾ˆæœ‰ä¿¡æ¯é‡ï¼š`WebGL`ã€`Blender`ã€`Nuxt.js`ã€`Gestures / Interaction`ã€`Responsive Design`ã€‚\n\nå¯æ‰§è¡Œç»“è®ºï¼š\n- è¿™ç±»å“ç‰Œå™äº‹ç«™ä¸æ˜¯é ä¸€ä¸ª hero shader å†³èƒœï¼Œè€Œæ˜¯ **å»ºæ¨¡èµ„äº§ï¼ˆBlenderï¼‰+ å‰ç«¯æž¶æž„ï¼ˆNuxtï¼‰+ å®žæ—¶æ¸²æŸ“ï¼ˆWebGLï¼‰+ æ‰‹åŠ¿äº¤äº’** çš„ç³»ç»ŸåŒ–é…åˆã€‚\n- å½“ä¸»é¢˜æ˜¯â€œè¶…è–„å·¥ç¨‹/ç²¾å¯†å·¥è‰ºâ€æ—¶ï¼Œäº¤äº’èŠ‚å¥åº”å›´ç»•â€œå±‚å±‚æ­ç¤ºâ€è€Œéžå¿«é€Ÿåˆ‡å±ï¼Œä¿æŒå†…å®¹ä¸ŽåŠ¨æ•ˆè¯­ä¹‰ä¸€è‡´ã€‚\n- å¯¹ Ben åŽç»­é¡¹ç›®çš„å¯å‘ï¼šå…ˆå®šä¹‰â€œæ•…äº‹æ®µè½â€å’Œæ¯æ®µçš„äº¤äº’èŒè´£ï¼Œå†å†³å®šæ¯æ®µæ˜¯å¦éœ€è¦ 3Dï¼Œè€Œä¸æ˜¯å…ˆå †æŠ€æœ¯å†æ‰¾å™äº‹ã€‚\n\n---\n\n**2) three.js example â€” `webgl_batch_lod_bvh`ï¼š50 ä¸‡å®žä¾‹å¯äº¤äº’çš„æ ‡å‡†æž¶æž„**\n\nç¤ºä¾‹æ–‡æ¡ˆæŒç»­æ˜Žç¡®ï¼š\n- BatchedMesh + 10 geometries + 500k instances\n- æ¯ä¸ªå‡ ä½•ä½“ 5 çº§ LODï¼ˆå« meshoptimizer ç”Ÿæˆï¼‰\n- BVHï¼ˆTLAS + BLASï¼‰åŒæ—¶åŠ é€Ÿ frustum culling ä¸Ž raycasting\n\nå¯æ‰§è¡Œç»“è®ºï¼š\n- åšé«˜å¯†åº¦èƒŒæ™¯/åœºæ™¯ï¼ˆç²’å­å®‡å®™ã€æ•°æ®æ£®æž—ã€ä½œå“æ˜Ÿå›¾ï¼‰æ—¶ï¼Œé»˜è®¤ä»Ž **BatchedMesh + LOD + BVH** å¼€å±€ã€‚\n- å…ˆæŠŠâ€œå¯è§æ€§åˆ¤æ–­ + ç‚¹å‡»å‘½ä¸­ + ç»†èŠ‚åˆ†é…â€è¿™ä¸‰ä¸ªæ€§èƒ½æ ¸å¿ƒå»ºå¥½ï¼Œå†ä¸Šè§†è§‰é£Žæ ¼ã€‚\n\n**Codrops å½“æ—¥è¡¥å……ï¼ˆMar 25ï¼‰**\n- ã€ŠFrom Web UI to Game UI...ã€‹è™½ç„¶æ˜¯èŒä¸šæ•…äº‹ï¼Œä½†ç»™äº†ä¸€ä¸ªå¯è½åœ°æ–¹æ³•ï¼šä½œå“é›†éœ€è¦â€œ**è¶³å¤Ÿå¤šæ ·ï¼Œä½†ç›®æ ‡è¡Œä¸šä¿¡å·è¦æ˜Žç¡®**â€ã€‚\n- å¯¹è®¾è®¡è¡¨è¾¾åŒæ ·æœ‰æ•ˆï¼šè§†è§‰æŽ¢ç´¢å¯ä»¥å¤šæ ·ï¼Œä½†ä¸»å™äº‹æ–¹å‘å¿…é¡»å•ä¸€æ¸…æ™°ã€‚"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards - Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 26 - GQ \u0026 AP The Extraordinary Lab",
+                                                             "url":  "https://www.awwwards.com/sites/gq-ap-the-extraordinary-lab"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops Mar 25 - From Web UI to Game UI: How Gaming \u0026 Creativity Reshaped MarÃ­a Vargasâ€™ Career",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/25/from-web-ui-to-game-ui-how-gaming-creativity-reshaped-maria-vargas-career/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example - webgl_batch_lod_bvh",
+                                                             "url":  "https://threejs.org/examples/webgl_batch_lod_bvh.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-25",
+                        "title":  "Topographic Craft Pipeline + Fixed-Layer Infinite Scroll Window",
+                        "summary":  "ä»Šæ—¥ä»Ž Awwwards / Codrops / three.js æç‚¼ 2 ä¸ªé«˜ä»·å€¼æ–¹æ³•ï¼š1) Codrops 3/24 San Rita æ¡ˆä¾‹ç»™å‡ºâ€œé«˜æ¨¡çƒ˜ç„™åˆ°ä½Žæ¨¡â€çš„åœ°å½¢èµ„äº§ç®¡çº¿ï¼ˆé«˜åº¦å›¾â†’Blenderæ‹“æ‰‘â†’é«˜æ¨¡ç»†èŠ‚çƒ˜ç„™åˆ°ä½Žæ¨¡è´´å›¾ï¼‰ï¼Œåœ¨è§†è§‰ç»†èŠ‚å’Œè¿è¡Œæ€§èƒ½ä¹‹é—´å–å¾—ç¨³å®šå¹³è¡¡ï¼›2) åŒæ–‡ä¸­çš„ nested scrolling è§£æ³•ï¼ˆå°†æ— é™ç½‘æ ¼ fixed åˆ° UI åŽæ–¹ï¼Œå†ç”¨â€œviewport holeâ€å®¹å™¨æŽ§åˆ¶å¯è§†çª—å£ä¸Žæ»šåŠ¨é•¿åº¦ï¼‰æ¯” sticky+å¤æ‚è”åŠ¨æ›´ç¨³ï¼Œå°¤å…¶æ˜¯ç§»åŠ¨ç«¯ã€‚Awwwards å½“æ—¥ SOTD Corentin Bernadou Portfolioï¼ˆMar 25ï¼‰ä¹ŸéªŒè¯äº†è¯¥æ–¹å‘ï¼š2 è‰²çº¦æŸï¼ˆ#FF4401 / #070304ï¼‰+ Infinite Scroll + WebGL/GSAP çš„ç³»ç»ŸåŒ–ç»„åˆã€‚",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**ä»Šæ—¥æœ€æœ‰ä»·å€¼çš„ 2 ä¸ªæ‰‹æ³•**\n\n**1) Codropsï¼ˆMar 24ï¼‰â€” Topographic asset pipelineï¼šé«˜æ¨¡ç»†èŠ‚çƒ˜ç„™åˆ°ä½Žæ¨¡è¿è¡Œä½“**\n\nSan Rita æ¡ˆä¾‹é‡Œæœ€å®žç”¨çš„æ˜¯ç”Ÿäº§ç®¡çº¿è€Œéžå•ä¸ªåŠ¨æ•ˆï¼š\n- ç”¨åœ°ç†åæ ‡ç”Ÿæˆ height mapï¼ˆUnreal Height Mapï¼‰\n- åœ¨ Blender å»ºåœ°å½¢æ‹“æ‰‘ï¼ˆé«˜æ¨¡ + ä½Žæ¨¡ï¼‰\n- åœ¨ Substance å¤„ç†é«˜ç»†èŠ‚çº¹ç†\n- æŠŠé«˜æ¨¡ç»†èŠ‚çƒ˜ç„™åˆ°ä½Žæ¨¡è´´å›¾ï¼ˆAlbedo/Normalï¼‰ï¼Œè¿è¡Œæ—¶åªåŠ è½½è½»é‡ç½‘æ ¼\n\nç»“è®ºï¼šåšâ€œåœ°å½¢/é›•åˆ»æ„Ÿâ€è§†è§‰æ—¶ï¼Œä¸è¦åœ¨è¿è¡Œæ—¶è¿½æ±‚é«˜é¢æ•°ï¼›å…ˆç¦»çº¿åšé«˜ç»†èŠ‚ï¼Œå†æŠŠç»†èŠ‚çƒ˜ç„™æˆè´´å›¾è´´åˆ°ä½Žæ¨¡ï¼Œèƒ½åŒæ—¶ä¿ä½è´¨æ„Ÿä¸Žå¸§çŽ‡ã€‚\n\n---\n\n**2) Codropsï¼ˆMar 24ï¼‰â€” Nested scrolling çš„ç¨³å®šæ–¹æ¡ˆï¼šfixed infinite layer + viewport hole**\n\næ–‡ç« ç»™å‡ºçš„å·¥ç¨‹è§£æ³•å¾ˆå€¼å¾—å¤ç”¨ï¼š\n- æŠŠæ— é™æ»šåŠ¨ç½‘æ ¼å±‚æ•´ä½“è®¾ä¸º `position: fixed`ï¼ŒæŒ‚åœ¨é¡µé¢ UI åŽæ–¹\n- åœ¨å‰æ™¯æ”¾ä¸€ä¸ªâ€œå¯è§†çª—å£å®¹å™¨â€ï¼ˆviewport holeï¼‰æ¥æš´éœ²ç½‘æ ¼\n- æƒ³å»¶é•¿æ»šåŠ¨è·¯ç¨‹ï¼Œç›´æŽ¥å¢žåŠ è¿™ä¸ªå®¹å™¨é«˜åº¦\n- æ— é™å¾ªçŽ¯ä»ç”¨ `gsap.utils.wrap()` + Observer æŽ¥æ”¶ wheel/touch/pointer\n\nè¿™æ¯” sticky + å¤šå±‚ ScrollTrigger æ›´ç¨³ï¼Œå°¤å…¶åœ¨ç§»åŠ¨ç«¯åŒæ»šåŠ¨ç³»ç»Ÿåœºæ™¯ä¸‹æ›´å¯é ã€‚\n\n**Awwwards å½“æ—¥è¡¥å……ï¼ˆSOTD Mar 25: Corentin Bernadou Portfolioï¼‰**\n- Awwwards ä¿¡æ¯æ˜¾ç¤ºè¯¥ç«™æ˜Žç¡®é‡‡ç”¨ï¼š`Infinite Scroll`ã€`WebGL`ã€`GSAP`ã€`Typography`ï¼Œä¸”è‰²å½©ä¸¥æ ¼çº¦æŸä¸º 2 è‰²ï¼ˆ#FF4401 / #070304ï¼‰ã€‚\n- è¿™å†æ¬¡éªŒè¯â€œå¼ºçº¦æŸè§†è§‰ç³»ç»Ÿ + å¯é æ»šåŠ¨æž¶æž„â€æ¯”å †å ç‰¹æ•ˆæ›´å¯æŒç»­ã€‚\n\n**three.js æ ¡å‡†ç‚¹ï¼ˆexamplesï¼‰**\n- `webgl_batch_lod_bvh` ä»åœ¨ examples åˆ—è¡¨å¯è§ä½ï¼ŒæŒç»­æç¤ºï¼šå¤§è§„æ¨¡å¯äº¤äº’åœºæ™¯åº”ä¼˜å…ˆé‡‡ç”¨æ‰¹å¤„ç† + LOD + BVH çš„åº•å±‚æ€§èƒ½æž¶æž„ã€‚"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards - Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 25 - Corentin Bernadou Portfolio",
+                                                             "url":  "https://www.awwwards.com/sites/corentin-bernadou-portfolio"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops Mar 24 - Digital Craft, Wild Soul: Building San Ritaâ€™s Topographic Web Experience",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/24/digital-craft-wild-soul-building-san-ritas-topographic-web-experience/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example - webgl_batch_lod_bvh",
+                                                             "url":  "https://threejs.org/examples/webgl_batch_lod_bvh.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-24",
+                        "title":  "Dual-Scene Fluid Reveal Pipeline + \u0027Element as System\u0027 Composition",
+                        "summary":  "Today\u0027s 2 key takeaways from Awwwards / Codrops / three.js: 1) Codrops (Mar 23) shows a maintainable Dual-Scene Fluid X-Ray pipeline (mouse trail -\u003e ping-pong fluid sim -\u003e dual-scene render -\u003e compositor), which is a stronger architecture than packing all logic into one shader; 2) Awwwards SOTD \u0027Unseen Studio 2025 Wrapped\u0027 demonstrates element-level system design (Ascii Liquid Sim + Loading Sequence + Scrolling Timeline) under a strict 2-color palette. three.js webgl_instancing_performance remains the baseline proof: 1000 objects can run at 1 draw call in INSTANCED mode.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Top 2 techniques today**\n\n**1) Codrops (Mar 23) - Dual-Scene Fluid X-Ray as a layered render pipeline**\n\nThe strongest part is architecture, not just visuals:\n- Input layer: draw mouse trail on a 2D canvas, then feed it as `CanvasTexture`\n- Simulation layer: run ping-pong render targets (A/B swap) for fluid feedback\n- Content layer: render two scenes in parallel (solid and x-ray)\n- Composite layer: final post pass blends scenes using the fluid mask\n\nActionable rule: for complex interaction effects, use a 4-layer pipeline (input -\u003e simulation -\u003e content -\u003e composite) so each part can evolve independently.\n\n---\n\n**2) Awwwards SOTD Mar 24 (Unseen Studio 2025 Wrapped) - Element system + strict constraints**\n\nAwwwards highlights expose a clear system:\n- `Ascii Liquid Sim Effect` as signature visual language\n- `Loading Sequence` for entry rhythm\n- `Scrolling Timeline` for narrative progression\n\nWith only 2 palette colors (#010101 / #E4B504), the project proves that memorable work is often few strong effects + strict consistency, not many unrelated effects.\n\n**three.js calibration**\n`webgl_instancing_performance` still shows `INSTANCED` + `count=1000` =\u003e **GPU draw calls: 1**, **GPU memory: 33.13 KB**."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards - Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 24 - Unseen Studio 2025 Wrapped",
+                                                             "url":  "https://www.awwwards.com/sites/unseen-studio-2025-wrapped"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops Mar 23 - Building a Dual-Scene Fluid X-Ray Reveal Effect in Three.js",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/23/building-a-dual-scene-fluid-x-ray-reveal-effect-in-three-js/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example - webgl_instancing_performance",
+                                                             "url":  "https://threejs.org/examples/webgl_instancing_performance.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-23",
+                        "title":  "Persistent WebGL Stage + Instanced Baseline for Large-Scale Interactions",
+                        "summary":  "ä»Šå¤©ä»Ž Awwwards / Codrops / three.js æç‚¼ 2 ä¸ªé«˜ä»·å€¼å®žè·µï¼š1) Codrops 3/18 çš„è·¨é¡µ 3D è¿‡æ¸¡æž¶æž„å¼ºè°ƒæŠŠ canvas æ”¾åœ¨ Barba container å¤–ä¾§ï¼Œç»´æŒå•ä¸€ Three.js åœºæ™¯å¸¸é©»ï¼Œå†ç”¨ namespace é©±åŠ¨é•œå¤´ä¸Žæ–‡æ¡ˆåˆ‡æ¢ï¼›2) three.js `webgl_instancing_performance` ç”¨å¯åˆ‡æ¢çš„ INSTANCED/MERGED/NAIVE å¯¹ç…§æ˜Žç¡®äº†å¤§è§„æ¨¡å…ƒç´ é»˜è®¤åº”ä»Ž InstancedMesh èµ·æ­¥ï¼ˆç¤ºä¾‹ä¸‹ 1000 å¯¹è±¡ä»… 1 draw callï¼Œæ˜¾å­˜çº¦ 33KBï¼‰ã€‚Awwwards æœ€æ–°ç«™ç‚¹ä¹ŸæŒç»­éªŒè¯â€œå™äº‹æ¨¡å—åŒ–ï¼ˆHero/Scroll/Transitionï¼‰â€ä¼˜äºŽå•ç‚¹ç‚«æŠ€ã€‚",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**ä»Šæ—¥æœ€æœ‰ä»·å€¼çš„ 2 ä¸ªæ‰‹æ³•**\n\n**1) Codropsï¼ˆMar 18ï¼‰â€” Persistent WebGL Stageï¼šè·¨é¡µä¸é‡å»ºåœºæ™¯**\n\nã€ŠBuilding Seamless 3D Transitions with Webflow, GSAP, and Three.jsã€‹æœ€å…³é”®ä¸æ˜¯è§†è§‰ï¼Œè€Œæ˜¯æž¶æž„ï¼š\n- `canvas.webgl` æ”¾åœ¨ `data-barba=\"container\"` å¤–ï¼Œå¯¼èˆªæ—¶ä¸è¢«æ›¿æ¢\n- ä¿æŒå•ä¸€ Experience/scene å¸¸é©»ï¼Œä»…åˆ‡æ¢å†…å®¹å®¹å™¨\n- ç”¨ `data-barba-namespace`ï¼ˆå¦‚ pen/cup/suzanneï¼‰ä½œä¸ºçŠ¶æ€é”®ï¼Œé©±åŠ¨ç›¸æœº pose ä¸Žæ–‡æ¡ˆè¿‡æ¸¡\n\nè¿™è®©â€œå¤šé¡µé¢ç½‘ç«™â€ä½“æ„Ÿå˜æˆâ€œåŒä¸€ç©ºé—´é‡Œçš„è¿žç»­é•œå¤´â€ï¼ŒåŒæ—¶å‡å°‘ WebGL ä¸Šä¸‹æ–‡é‡å»ºä¸Žèµ„æºæŠ–åŠ¨ã€‚\n\n---\n\n**2) three.js example â€” `webgl_instancing_performance`ï¼šå¤§è§„æ¨¡å¯¹è±¡çš„é»˜è®¤èµ·ç‚¹åº”æ˜¯ Instancing**\n\nè¯¥ç¤ºä¾‹ç›´æŽ¥ç»™å‡ºå·¥ç¨‹ä¿¡å·ï¼šåœ¨ `count=1000` æ—¶ï¼Œ`INSTANCED` æ¨¡å¼æ˜¾ç¤º **GPU draw calls: 1**ã€**GPU memory: 33.13 KB**ï¼Œå¹¶å¯ä¸Ž `MERGED/NAIVE` å¯¹ç…§ã€‚\n\nå¯æ‰§è¡Œç»“è®ºï¼š\n- åšé«˜å¯†åº¦èƒŒæ™¯/ç²’å­/è£…é¥°é˜µåˆ—æ—¶ï¼Œå…ˆç”¨ InstancedMesh å»ºç«‹æ€§èƒ½åº•åº§\n- åªæœ‰å½“å•ä½“æè´¨/æ‹“æ‰‘å·®å¼‚å¾ˆå¤§æ—¶å†è€ƒè™‘ merged æˆ– naive\n- å…ˆæŠŠ draw call åŽ‹ä½Žï¼Œå†å åŠ äº¤äº’å’Œè§†è§‰å¤æ‚åº¦\n\n**Awwwards å½“æ—¥è¡¥å……è§‚å¯Ÿï¼ˆwebsites latestï¼‰**\né¦–é¡µæœ€æ–°å¡ç‰‡æŒç»­å‘ˆçŽ° Hero + Scroll + Transition çš„æ¨¡å—ç»„åˆï¼Œè¯´æ˜ŽèŽ·å¥–ç«™ç‚¹çš„å…±æ€§ä¾æ—§æ˜¯â€œå™äº‹æ¨¡å—ç¼–æŽ’â€ï¼Œä¸æ˜¯å•ä¸ªç‰¹æ•ˆå†²åˆ†ã€‚"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards - Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops Mar 18 - Building Seamless 3D Transitions with Webflow, GSAP, and Three.js",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/18/building-seamless-3d-transitions-with-webflow-gsap-and-three-js/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example - webgl_instancing_performance",
+                                                             "url":  "https://threejs.org/examples/webgl_instancing_performance.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-22",
+                        "title":  "Narrative Element Matrix + Scroll Tunnel Sequencing",
+                        "summary":  "ä»Šå¤©ä»Ž Awwwards / Codrops / three.js æç‚¼ 2 ä¸ªå¯è½åœ°æ–¹æ³•ï¼š1) Awwwards å½“æ—¥ SOTDã€ŠFC Porto Memorialã€‹æ˜¾ç¤ºé«˜å®Œæˆåº¦å™äº‹ç«™ä¸æ˜¯å †ç‰¹æ•ˆï¼Œè€Œæ˜¯æŠŠ Hero / Scroll / Tunnel / Items å››ç±»å…ƒç´ åšæˆç»Ÿä¸€èŠ‚å¥çš„â€œå™äº‹çŸ©é˜µâ€ï¼›2) Codrops Jackie Zhang çš„æµç¨‹å¼ºè°ƒâ€œæ¦‚å¿µå…ˆäºŽé£Žæ ¼â€+ æœ‰ä¸Šé™çš„çµæ„Ÿæ¿ï¼Œç›´æŽ¥å‡å°‘é£Žæ ¼æ¼‚ç§»ã€‚three.js examples ä¾§ç»§ç»­éªŒè¯ batch/lod/bvh è¿™ç±»å¯æ‰©å±•äº¤äº’æž¶æž„åº”ä½œä¸ºå¤æ‚è§†è§‰çš„åº•å±‚é»˜è®¤ã€‚",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**ä»Šæ—¥æœ€æœ‰ä»·å€¼çš„ 2 ä¸ªæ‰‹æ³•**\n\n**1) Awwwards SOTD Mar 22ï¼ˆFC Porto Memorialï¼‰â€” ç”¨ Element Matrix æ­å»ºå™äº‹ï¼Œä¸é å•ç‚¹ç‰¹æ•ˆ**\n\nä»Ž Awwwards é¡µé¢å¯è§è¯¥ç«™è¢«æ‹†æˆ `Memorial Hero / Scroll Animation / Tunnel Animation / Items Animation` å››ç±»é«˜äº®å…ƒç´ ã€‚è¿™ä¸ªç»“æž„å¾ˆå…³é”®ï¼š\n- Hero è´Ÿè´£ä¸»é¢˜å®šè°ƒï¼ˆç¬¬ä¸€å°è±¡ï¼‰\n- Scroll Animation è´Ÿè´£èŠ‚å¥æŽ¨è¿›\n- Tunnel Animation è´Ÿè´£æƒ…ç»ªå³°å€¼ï¼ˆç©ºé—´ç©¿è¶Š/æ²‰æµ¸æ®µï¼‰\n- Items Animation è´Ÿè´£ä¿¡æ¯æ‰¿è½½ä¸Žå¯è¯»æ€§\n\nè¿™æ˜¯ä¸€ç§â€œå™äº‹çŸ©é˜µâ€è€Œéžâ€œç‰¹æ•ˆæ¸…å•â€ã€‚å¯æ‰§è¡Œå»ºè®®ï¼šBen åŽç»­é¡µé¢å¯å…ˆåš Element Matrix æ–‡æ¡£ï¼ˆæ¯ç±»å…ƒç´ åªä¿ç•™ 1 ä¸ªä¸»æ‰‹æ³• + 1 ä¸ªå¤‡ç”¨æ‰‹æ³•ï¼‰ï¼Œç»Ÿä¸€æ—¶é•¿ä¸Ž easing tokenï¼Œå†åšè§†è§‰ç»†åŒ–ã€‚\n\n---\n\n**2) Codropsï¼ˆMar 20, Jackie Zhangï¼‰â€” æ¦‚å¿µå…ˆè¡Œ + æœ‰ä¸Šé™çµæ„Ÿæ¿ï¼Œé˜²æ­¢é£Žæ ¼æ¼‚ç§»**\n\næ–‡ç« é‡Œæœ€å®žç”¨çš„ä¸æ˜¯å·¥å…·æœ¬èº«ï¼Œè€Œæ˜¯å†³ç­–æ¡†æž¶ï¼š\n- å…ˆå®šä¹‰â€œæˆ‘è¦è¡¨è¾¾çš„æ„Ÿè§‰/whyâ€ï¼Œå†æ‰¾è§†è§‰è¯­è¨€\n- çµæ„Ÿæ¿å›ºå®šå°ºå¯¸ã€å›ºå®šå®¹é‡ï¼Œè¾¾åˆ°ä¸Šé™å°±åœæ­¢æ”¶é›†\n- æ¯æ¡å‚è€ƒå¿…é¡»å†™â€œæˆ‘å…·ä½“åœ¨å€Ÿä»€ä¹ˆâ€ï¼ˆå¦‚çº¸å¼ æ’•è£‚è¾¹ç¼˜ã€top border é«˜å…‰ã€æ‰‹ç»˜çº¿æ¡èŠ‚å¥ï¼‰\n\nè¿™ä¼šæŠŠâ€œæ‰¾å‚è€ƒâ€ä»Žæ— é™æµè§ˆæ”¹æˆæœ‰è¾¹ç•Œçš„è®¾è®¡å†³ç­–æµç¨‹ã€‚\n\n**è¡¥å……ï¼ˆthree.js examplesï¼‰**\nexamples é¦–é¡µä»æŠŠ `webgl_batch_lod_bvh` æ”¾åœ¨ community å¯è§ä½ï¼ŒæŒç»­è¯´æ˜Žï¼šå½“åœºæ™¯å¤æ‚åº¦ä¸Šå‡æ—¶ï¼Œä¼˜å…ˆè€ƒè™‘ BatchedMesh + LOD + BVH çš„äº¤äº’æ€§èƒ½åº•åº§ï¼Œè€Œä¸æ˜¯å…ˆå †è§†è§‰å¯†åº¦ã€‚"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards - Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 22 - FC Porto Memorial",
+                                                             "url":  "https://www.awwwards.com/sites/fc-porto-memorial"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops Mar 20 - Jackie Zhangâ€™s Portfolio",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/20/jackie-zhangs-portfolio-from-chasing-references-to-finding-direction/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example - webgl_batch_lod_bvh",
+                                                             "url":  "https://threejs.org/examples/webgl_batch_lod_bvh.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-21",
+                        "title":  "Reference Constraint Board + Massive Instance Rendering (BVH + BatchedMesh LOD)",
+                        "summary":  "ä»Šæ—¥ä»Ž Awwwards / Codrops / three.js examples æç‚¼ä¸¤æ¡å¯è½åœ°æ–¹æ³•ï¼š1) Codrops 3/20 çš„å—é™å‚è€ƒæ¿æµç¨‹ï¼ˆå›ºå®šç”»å¸ƒ+å†™ä¸‹å·ä»€ä¹ˆ+åˆ°ä¸Šé™å°±åœæ­¢ï¼‰ç”¨äºŽæŠŠçµæ„Ÿè½¬æˆå¯æ‰§è¡Œè®¾è®¡å†³ç­–ï¼›2) three.js webgl_batch_lod_bvh å±•ç¤º 50 ä¸‡å®žä¾‹åœºæ™¯çš„å·¥ç¨‹ç»„åˆæ‹³ï¼šBatchedMesh + å¤šçº§ LOD + TLAS/BLAS BVHï¼Œå®žçŽ°é«˜å¯†åº¦åœºæ™¯ä»å¯äº¤äº’ã€‚Awwwards å½“æ—¥ SOTD Darknode ä¹ŸéªŒè¯äº† Hero è§†é¢‘ + 3Då…ƒç´ åŠ¨æ•ˆ + è¿‡æ¸¡åŠ¨æ•ˆ çš„æ¨¡å—åŒ–å™äº‹ç»“æž„ã€‚",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**ä»Šæ—¥æœ€æœ‰ä»·å€¼çš„ 2 ä¸ªæ‰‹æ³•**\n\n**1) Codropsï¼ˆMar 20, Jackie Zhangï¼‰â€” å‚è€ƒæ”¶é›†è¦åšå—é™ç³»ç»Ÿï¼Œä¸æ˜¯æ— é™æ”¶è—å¤¹**\n\næ–‡ç« é‡Œæœ€æœ‰ç”¨çš„ä¸æ˜¯è§†è§‰é£Žæ ¼ï¼Œè€Œæ˜¯æµç¨‹ï¼š\n- å›ºå®šå‚è€ƒæ¿è¾¹ç•Œï¼ˆä¸€ä¸ªå›ºå®šå°ºå¯¸åŒºåŸŸï¼Œä¸å…è®¸æ— é™æ‰©å±•ï¼‰\n- æ¯æ¡å‚è€ƒéƒ½å†™æ³¨é‡Šï¼ˆæˆ‘åˆ°åº•åœ¨å·ä»€ä¹ˆï¼šèŠ‚å¥/æè´¨/å±‚çº§/åŠ¨æ•ˆï¼‰\n- è¾¾åˆ°ä¸Šé™å°±åœæ­¢æ”¶é›†ï¼Œå¼ºåˆ¶è¿›å…¥å®žçŽ°é˜¶æ®µ\n\nè¿™ä¸ªæ–¹æ³•çš„ä»·å€¼æ˜¯æŠŠæ‰¾çµæ„Ÿä»Žæƒ…ç»ªè¡Œä¸ºå˜æˆå¯æ‰§è¡Œç³»ç»Ÿï¼Œé¿å…åœ¨ Pinterest/Cosmos æ— é™æ¼‚ç§»ã€‚\n\nç»™ Ben çš„åº”ç”¨ï¼šåšä¸€ä¸ª Inspo Constraint Board æ¨¡æ¿ï¼ˆ12 ä¸ªæ§½ä½ä¸Šé™ï¼‰ã€‚æ¯ä¸ªæ§½ä½å¿…é¡»é™„ä¸€å¥å¯è½åœ°è§„åˆ™ï¼ˆä¾‹å¦‚ï¼šæ ‡é¢˜ reveal ç”¨ clip-path è€Œä¸æ˜¯ opacityï¼‰ï¼Œæ”¶æ»¡å³åœã€‚\n\n---\n\n**2) three.js example â€” webgl_batch_lod_bvhï¼š50 ä¸‡å®žä¾‹å¯äº¤äº’çš„æ€§èƒ½æž¶æž„**\n\nç¤ºä¾‹ä¿¡æ¯ç›´æŽ¥ç»™å‡ºï¼š10 ç§å‡ ä½•ä½“ã€500k instancesã€æ¯ç§ 5 çº§ LODï¼Œå¹¶é€šè¿‡ BVHï¼ˆTLAS + BLASï¼‰åŠ é€Ÿè§†é”¥è£å‰ªå’Œå°„çº¿æ£€æµ‹ã€‚\n\nå…³é”®ç»„åˆï¼š\n- BatchedMeshï¼šæŠŠå¤§é‡å®žä¾‹é›†ä¸­æ‰¹å¤„ç†ï¼Œæ˜¾è‘—å‡å°‘ draw calls\n- LODï¼šè¿œå¤„è‡ªåŠ¨é™æ¨¡ï¼Œç»†èŠ‚æŒ‰è·ç¦»åˆ†é…\n- TLAS/BLAS BVHï¼šæ—¢åŠ é€Ÿå¯è§æ€§åˆ¤æ–­ï¼Œä¹ŸåŠ é€Ÿ hover/click çš„ raycast å‘½ä¸­\n\nç»™ Ben çš„åº”ç”¨ï¼šå¦‚æžœåŽç»­åšä½œå“å®‡å®™/ç²’å­èƒŒæ™¯ï¼Œä¸è¦åªé  InstancedMeshï¼Œä¼˜å…ˆé‡‡ç”¨ BatchedMesh + LOD + BVH ä¸‰ä»¶å¥—ï¼Œå…ˆä¿ä½äº¤äº’å¸§çŽ‡å†è°ˆè§†è§‰å¯†åº¦ã€‚\n\n---\n\n**Awwwards å½“æ—¥è§‚å¯Ÿï¼ˆDarknode, SOTD Mar 21ï¼‰**\nAwwwards å…ƒç´ æ‹†è§£æ˜¾ç¤ºå…¶é«˜åˆ†ç»„åˆä»æ˜¯ï¼šHero Screen Video + 3D Elements Animation + Slider/Transition + Mouse Hoverã€‚è¿™å†æ¬¡è¯´æ˜ŽèŽ·å¥–ç«™ç‚¹çš„æ ¸å¿ƒä¸æ˜¯å•ç‚¹ç‰¹æ•ˆï¼Œè€Œæ˜¯æ¨¡å—åŒ–åŠ¨æ•ˆç³»ç»Ÿã€‚"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards - Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 21 - Darknode",
+                                                             "url":  "https://www.awwwards.com/sites/darknode"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops Mar 20 - Jackie Zhangâ€™s Portfolio",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/20/jackie-zhangs-portfolio-from-chasing-references-to-finding-direction/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example - webgl_batch_lod_bvh",
+                                                             "url":  "https://threejs.org/examples/webgl_batch_lod_bvh.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-20",
+                        "title":  "One-Color Tactile Identity + Progressive Rendering as UX Contract",
+                        "summary":  "??? Awwwards / Codrops / three.js examples ??????????1) Awwwards SOTD (Stuff by Kris Temmerman) ????????? + ???????????????????? Stop Motion / Game ??????2) three.js progressive ???GLTF progressive LOD + Progressive Lightmaps???????????????????????????????? 3D case?",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 20, 2026 ? Stuff by Kris Temmerman????? + ?????**\n\n? Awwwards ??????????????? `Game`?`Stop Motion`?`Animation` ?????? Color Palette ??? **1 color**?#ded7d2???????????????????????????????????\n\n- ?????????????????????\n- ??????????????/??/?????????????\n- ??????Awwwards ? Elements ??????????????????????????\n\n**???? Ben?**? case study ?????????? + ?????????????????? 1 ???????? stop-motion ??????????????????"
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**three.js examples + Codrops?Progressive ?????????????**\n\nCodrops 3/18 ? persistent scene ???canvas ?? + Barba container ???? three.js ??? progressive ??????????\n\n1. `webgl_loader_gltf_progressive_lod`??????? LOD????????????????? *82x faster* ?????\n2. `webgpu_shadowmap_progressive` / `webgl_shadowmap_progressive`???????????????????\n\n????????????**?????????????????**\n\n**???? Ben?**\n- 3D ?????? silhouette + ???????????\n- ???????? WebGL ????persistent canvas??????????????????\n- ???????? progressive shadow/light???????????"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards ? Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 20 ? Stuff by Kris Temmerman",
+                                                             "url":  "https://www.awwwards.com/sites/stuff-by-kris-temmerman"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops ? Building Seamless 3D Transitions with Webflow, GSAP, and Three.js",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/18/building-seamless-3d-transitions-with-webflow-gsap-and-three-js/"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example ? GLTF progressive LOD",
+                                                             "url":  "https://threejs.org/examples/webgl_loader_gltf_progressive_lod.html"
+                                                         },
+                                                         {
+                                                             "label":  "three.js example ? WebGPU Progressive Lightmaps",
+                                                             "url":  "https://threejs.org/examples/webgpu_shadowmap_progressive.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-19",
+                        "title":  "Persistent 3D Canvas Across Pages + Progressive Shadow/LOD Loading",
+                        "summary":  "???????????1) Codrops 3/18 ???????? Three.js ?? + Barba ?????????????????????????2) Three.js examples ? progressive ???????gltf progressive LOD + progressive lightmaps???????????????????????????????",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Codrops (Mar 18, 2026) ? Persistent 3D Scene + Barba Page Transitions**\n\n?????Building Seamless 3D Transitions with Webflow, GSAP, and Three.js??????????????? `canvas.webgl` ?? `data-barba=\"container\"` ???? Three.js ????????**???????**?\n\n?????\n- ????? Barba container ? swap?3D ?????? singleton ??\n- ? `data-barba-namespace`?? pen/cup/suzanne????????????\n- GSAP ????/UI ???? camera tween?Three.js ???????\n\n**?????**????????????????????????????????????????????????? case ????????????????????"
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 19 ? Aventura Dental Arts?Elements ????**\n\nAwwwards ?? SOTD ?????????????`Scroll Interaction`?`Hero Animation`?`Services Page`?`Solutions Block` ??\n\n??????????\n- ?????????????????????? interaction units\n- ?????????????????\n- ???? motion token???/??/?????????\n\n**??? Ben ???**???????? 4 ????Reveal / Hover / Transition / Loading??????? 1-2 ? signature ????????????"
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Three.js Examples ? Progressive as First-Class UX**\n\n??? examples ???????????\n- `webgl_loader_gltf_progressive_lod`??? *GLTF progressive loading: 82x faster*?\n- `webgpu_shadowmap_progressive`?Progressive Lightmaps??????????\n\n?????\n1. ????????????????? LOD / ?????\n2. ???????????? LOD / ??????\n\n**?????**?????????????????????????????????????????????????????????????"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards ? Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 19 ? Aventura Dental Arts",
+                                                             "url":  "https://www.awwwards.com/sites/aventura-dental-arts"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops ? Building Seamless 3D Transitions with Webflow, GSAP, and Three.js",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/18/building-seamless-3d-transitions-with-webflow-gsap-and-three-js/"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js example ? GLTF progressive LOD",
+                                                             "url":  "https://threejs.org/examples/webgl_loader_gltf_progressive_lod.html"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js example ? WebGPU Progressive Lightmaps",
+                                                             "url":  "https://threejs.org/examples/webgpu_shadowmap_progressive.html"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-18",
+                        "title":  "Awwwards Element Decomposition + Three.js Progressive GLTF LOD",
+                        "summary":  "????????????1) Awwwards SOTD?Good Fella????????????????hero/nav/preloader/page-transition ???????????????????????????2) Three.js ???? webgl_loader_gltf_progressive_lod ?? @needle-tools/gltf-progressive ?????????????????? 82x??????????????????",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 18, 2026 ? Good Fella???????????????????**\n\n? Awwwards ? Elements ????Good Fella ?????????????????????????????`Hero`?`Navigation`?`Button animation`?`Page transition`?`Preloader`?`404`?`Work page` ?????????????????????\n\n?????\n- **???????????**?????????????????????? motion primitives?\n- **???????**????????????????????????????????????????\n- **?????**??????????????????? page transition?????????\n\n???? Ben ?????????? 4 ??????Reveal / Hover / Transition / Loading???????????? easing token????????????"
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Three.js examples ? `webgl_loader_gltf_progressive_lod`?????????????**\n\n?????????`GLTF progressive loading: 82x faster`??? `@needle-tools/gltf-progressive`?????????? glb ???????????\n\n1. ???**?? LOD**?????????????????\n2. ???????????? LOD ??/???\n3. ????????????????\n\n??????\n- **???????????????**????????????????????\n- **???????**??????????????\n- **???????**?3D case study ?????????????????\n\n???? Ben ???? CLAWD WORLD ????????????? progressive LOD ???????? silhouette + ?????????????????????"
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards ? Winning websites (latest)",
+                                                             "url":  "https://www.awwwards.com/websites/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 18 ? Good Fella",
+                                                             "url":  "https://www.awwwards.com/sites/good-fella"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops ? Latest posts",
+                                                             "url":  "https://tympanus.net/codrops/"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops Mar 16 ? Jonas Reymondin Portfolio",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/16/jonas-reymondins-portfolio-reclaiming-the-ui-eye-through-systems-code-and-pixel-motion/"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js example ? GLTF progressive LOD",
+                                                             "url":  "https://threejs.org/examples/webgl_loader_gltf_progressive_lod.html"
+                                                         },
+                                                         {
+                                                             "label":  "npm ? @needle-tools/gltf-progressive",
+                                                             "url":  "https://www.npmjs.com/package/@needle-tools/gltf-progressive"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-17",
+                        "title":  "Joby Aviation Brand x WebGL Narrative \u0026 Codrops SVG Mask Scroll Transitions",
+                        "summary":  "Awwwards SOTD Mar 17: Joby Aviation wins Developer Award with a future-ready brand site built around the emotional legacy of flight â€” large-scale atmospheric WebGL environment, cinematic scroll pacing, and restrained typographic language that lets 3D scenery carry the brand story. Codrops Mar 11: Hiroki Watanabe\u0027s SVG Mask Transitions on Scroll demonstrates four distinct scroll-driven reveal patterns using SVG clipPath + GSAP ScrollTrigger, covering grid-based and venetian-blind-based mask geometries â€” no canvas, no WebGL.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 17, 2026 â€” Joby (Developer Award)**\n\nJoby is an electric air taxi company; their brand site (rebuilt 2026) wins Developer Award with the framing: *\"a future-ready brand rooted in the emotional legacy of flight â€” reimagined for a new era.\"* The site is an atmospheric WebGL experience â€” sky, clouds, and aircraft composited into a continuous scroll-driven environment rather than discrete pages.\n\nKey techniques (from Awwwards element breakdown + brand context):\n- **Atmospheric depth fog:** the signature effect is volumetric-style fog/haze layered over a Three.js scene. Technique: multiple semi-transparent `PlaneGeometry` quads at increasing Z depth, each with a fog texture (radial gradient, white-to-transparent), slight parallax on mouse move. Not real volumetric â€” but visually convincing at ~zero GPU cost vs raymarched fog.\n- **Scroll-driven camera drift:** the WebGL camera moves along a predefined spline path (Three.js `CatmullRomCurve3`) as the user scrolls. Each scroll unit advances `t` along the curve by a small delta â€” the scene \u0027flies forward\u0027 without any clip or page transition.\n- **Brand tone via type restraint:** headings are minimal weight, wide tracking, always light-colored over the 3D environment. No cards, no boxed UI â€” the 3D world is the UI. Navigation is an overlay layer, invisible until triggered.\n- **Asset strategy:** aircraft model is likely GLTF with baked lighting (not dynamic Three.js lights â€” too costly for a hero experience). The baked ambient occlusion + directional light bake creates the \u0027golden hour aviation\u0027 feel without running PBR in real-time.\n\n```js\n// CatmullRomCurve3 scroll-camera pattern\nimport * as THREE from \u0027three\u0027;\n\nconst curve = new THREE.CatmullRomCurve3([\n  new THREE.Vector3(0, 5, 80),\n  new THREE.Vector3(2, 6, 40),\n  new THREE.Vector3(-1, 4, 0),\n  new THREE.Vector3(0, 3, -40),\n]);\n\nlet scrollProgress = 0; // 0 â†’ 1 over full page height\n\nwindow.addEventListener(\u0027scroll\u0027, () =\u003e {\n  scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);\n});\n\n// In animation loop:\nconst point = curve.getPoint(scrollProgress);\nconst tangent = curve.getTangent(scrollProgress);\ncamera.position.copy(point);\ncamera.lookAt(point.clone().add(tangent));\n```\n\n**Key insight:** The Joby site reframes the brand website as *environmental storytelling* â€” you\u0027re not reading about electric air taxis, you\u0027re flying through the world they\u0027re building. This approach works when the brand has a strong spatial/physical world (aviation, architecture, automotive). The scroll-camera-on-spline pattern is the core primitive.\n\n**Application for Ben:** A single-page portfolio intro with a slow spline camera drift past floating text cards (project titles) â€” the \u0027world\u0027 metaphor applied to a creative portfolio. Camera starts high, descends to ground level as user scrolls through sections. Amber-tinted fog quads unify the depth layers."
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Codrops (Mar 11, 2026) â€” SVG Mask Transitions on Scroll with GSAP and ScrollTrigger**\nby Hiroki Watanabe\n\nThe tutorial builds four distinct scroll-triggered image reveal patterns using SVG `\u003cclipPath\u003e` as the masking layer, animated via GSAP ScrollTrigger. No WebGL, no canvas â€” pure DOM + SVG, accessible and performant.\n\nFour patterns:\n1. **Grid Reveal:** image is masked by a grid of rectangles (`\u003crect\u003e` elements inside `\u003cclipPath\u003e`). On scroll, each rect scales from 0â†’1 height in a staggered sequence â€” the image \u0027wipes in\u0027 through a tile grid. GSAP\u0027s `stagger` distributes the timeline across all rects.\n2. **Venetian Blind:** horizontal strips (rects with full width, fixed height = 1/N of image), each revealing top-to-bottom at a slight offset. Same stagger pattern but strips feel like window blinds opening.\n3. **Diagonal Wipe:** a single `\u003cpolygon\u003e` or `\u003cpath\u003e` inside clipPath, morphed from a flat line to full coverage using `MorphSVGPlugin` or manual path point lerping.\n4. **Radial Burst:** circular/star `\u003cclipPath\u003e` that expands from center on scroll â€” `r` attribute of `\u003ccircle\u003e` animated from 0 to max radius.\n\nCore code pattern (Grid Reveal):\n```html\n\u003c!-- SVG clipPath definition --\u003e\n\u003csvg style=\"position:absolute;width:0;height:0\"\u003e\n  \u003cdefs\u003e\n    \u003cclipPath id=\"grid-clip\" clipPathUnits=\"objectBoundingBox\"\u003e\n      \u003c!-- 3x3 grid of rects, each 1/3 wide, 1/3 tall --\u003e\n      \u003crect class=\"cell\" x=\"0\"    y=\"0\"    width=\"0.333\" height=\"0.333\"/\u003e\n      \u003crect class=\"cell\" x=\"0.333\" y=\"0\"   width=\"0.333\" height=\"0.333\"/\u003e\n      \u003c!-- ...etc --\u003e\n    \u003c/clipPath\u003e\n  \u003c/defs\u003e\n\u003c/svg\u003e\n\n\u003c!-- Apply clip to image container --\u003e\n\u003cdiv class=\"img-wrap\" style=\"clip-path: url(#grid-clip)\"\u003e\n  \u003cimg src=\"hero.jpg\" alt=\"...\" /\u003e\n\u003c/div\u003e\n```\n\n```js\nimport { gsap } from \u0027gsap\u0027;\nimport { ScrollTrigger } from \u0027gsap/ScrollTrigger\u0027;\ngsap.registerPlugin(ScrollTrigger);\n\nconst cells = document.querySelectorAll(\u0027.cell\u0027);\n\ngsap.fromTo(cells,\n  { scaleY: 0 },\n  {\n    scaleY: 1,\n    stagger: { amount: 0.6, from: \u0027random\u0027 },\n    ease: \u0027power3.out\u0027,\n    scrollTrigger: {\n      trigger: \u0027.img-wrap\u0027,\n      start: \u0027top 80%\u0027,\n      end: \u0027top 20%\u0027,\n      scrub: 1,\n    }\n  }\n);\n```\n\n**Key insight:** `clipPathUnits=\"objectBoundingBox\"` is the unlock â€” coordinates become 0â€“1 fractions of the element\u0027s bounding box, so the same SVG clipPath definition works regardless of image dimensions or viewport size. No pixel math, fully responsive.\n\n**Application for Ben:** The project case study hero image can use the venetian-blind reveal on scroll â€” strips open as user scrolls into the section. Amber-tinted strips (using a colored rect overlay in the same SVG layer, fading out as the reveal completes) would give the branded transition feel without any shader work."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 17 â€” Joby",
+                                                             "url":  "https://www.awwwards.com/sites/joby"
+                                                         },
+                                                         {
+                                                             "label":  "Joby Aviation Brand Site",
+                                                             "url":  "https://www.jobyaviation.com/"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops: SVG Mask Transitions on Scroll (Hiroki Watanabe, Mar 11 2026)",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js CatmullRomCurve3 docs",
+                                                             "url":  "https://threejs.org/docs/#api/en/extras/curves/CatmullRomCurve3"
+                                                         },
+                                                         {
+                                                             "label":  "MDN: SVG clipPathUnits",
+                                                             "url":  "https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/clipPathUnits"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js Examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-16",
+                        "title":  "Three.js TSL Softbody Physics in the Browser \u0026 Codrops Clip-Path Morphing Text",
+                        "summary":  "Three.js community showcase: Niklas Niehus\u0027s Softbody Tetris runs real-time elastic deformation entirely on WebGPU via TSL (Three.js Shading Language) â€” GPU compute replaces physics CPU loops, opening deformable-mesh interactions for production web. Codrops Articles (Mar 12, 2026) by Huy: morphing text effect using SVG feTurbulence + feDisplacementMap filters, achieving liquid letter transitions without WebGL or canvas.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Three.js TSL + WebGPU â€” Softbody Simulation in the Browser (Niklas Niehus)**\n\nNiklas Niehus\u0027s Softbody Tetris is the most technically striking Three.js demo circulating this week: standard Tetris blocks are replaced with jelly-like meshes that *deform on impact*, compress into gaps, and spring back â€” real-time soft body physics running entirely on WebGPU compute via **TSL (Three.js Shading Language)**.\n\nWhy this matters for creative web:\n- **TSL = write once, run anywhere:** TSL is Three.js\u0027s node-based shading language that compiles to WGSL (WebGPU) or GLSL (WebGL). The same softbody simulation code runs on both backends with no branching.\n- **WebGPU Compute Shaders:** the physics is handled in GPU compute passes, not requestAnimationFrame JS loops. Position-Based Dynamics (PBD) constraints run in parallel across all mesh vertices each frame â€” CPU is nearly idle.\n- **Position-Based Dynamics pattern:**\n  1. Predict next vertex positions (apply velocity + gravity)\n  2. Project constraints: distance constraints keep mesh from exploding, collision constraints prevent interpenetration\n  3. Update velocities from corrected positions\n  Repeat at 60fps on GPU â€” smooth deformation with ~zero CPU cost.\n- **Collision detection:** uses AABB (axis-aligned bounding box) broad phase on GPU, then vertex-triangle narrow phase. TSL abstracts the WGSL barrier/atomics needed for this.\n\n```js\n// TSL softbody: simplified PBD constraint projection\nimport { Fn, instanceIndex, storage, vec3, float } from \u0027three/tsl\u0027;\n\nconst projectConstraints = Fn(() =\u003e {\n  const posA = storage(positionBuffer, \u0027vec3\u0027, vertexCount).element(constraintA.element(instanceIndex));\n  const posB = storage(positionBuffer, \u0027vec3\u0027, vertexCount).element(constraintB.element(instanceIndex));\n  const delta = posA.sub(posB);\n  const dist = delta.length();\n  const restLen = restLengths.element(instanceIndex);\n  const correction = delta.mul(float(1).sub(restLen.div(dist)).mul(0.5));\n  posA.subAssign(correction);\n  posB.addAssign(correction);\n});\n\nconst computePass = projectConstraints().compute(constraintCount);\nrenderer.computeAsync(computePass); // runs on GPU, non-blocking\n```\n\n**Key insight:** WebGPU compute via TSL makes physics simulation a first-class browser primitive. Previously this required WASM (Rapier, Ammo.js) or simplified CPU approximations. Now: real PBD soft bodies, fluid sims, cloth â€” all expressible in TSL\u0027s node syntax, without writing raw WGSL.\n\n**Application for Ben:** A subtle blob/morphing hero element â€” a mesh that slowly deforms via spring constraints, responding to mouse proximity â€” is now achievable in ~50 lines of TSL. Amber-tinted softbody sphere as site mascot? The GPU compute overhead is negligible compared to a WebGL shader."
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Codrops Articles (Mar 12, 2026) â€” SVG Filter Morphing Text**\nby Huy\n\nThe technique: SVG filter primitives (`feTurbulence` + `feDisplacementMap`) applied via CSS `filter: url(#id)` to DOM text â€” creating liquid, melting letter transitions with zero WebGL, zero canvas, pure CSS + SVG.\n\nCore technique breakdown:\n- **`feTurbulence`** generates Perlin/fractal noise as a displacement map source. Key attributes: `baseFrequency` (scale of the distortion, ~0.02 for large waves), `numOctaves` (detail level, 2â€“4 is enough), `type=\u0027turbulence\u0027` vs `type=\u0027fractalNoise\u0027`.\n- **`feDisplacementMap`** reads the noise texture and displaces pixel positions by a `scale` factor â€” higher scale = more distortion. The `xChannelSelector=\u0027R\u0027 yChannelSelector=\u0027G\u0027` tells it to use Red/Green channels for X/Y displacement.\n- **Animating with CSS `@keyframes`** on the SVG filter\u0027s `baseFrequency` or on the `feDisplacementMap scale` (via CSS custom property + `attr()`) â€” but since SVG filter attributes aren\u0027t directly animatable via CSS, the trick is: GSAP animates the `scale` attribute on the element directly, or a small JS snippet reads a CSS var and sets the attribute each frame.\n- **Morphing text:**\n  1. Two text layers overlaid\n  2. Layer A fades out while feTurbulence scale increases (letter dissolves into noise)\n  3. Layer B fades in while scale decreases (letter coalesces from noise)\n  The illusion: text *melts* into and out of static\n\n```html\n\u003c!-- SVG filter definition --\u003e\n\u003csvg style=\"position:absolute;width:0;height:0\"\u003e\n  \u003cdefs\u003e\n    \u003cfilter id=\"morph\"\u003e\n      \u003cfeTurbulence type=\"turbulence\" baseFrequency=\"0.02\" numOctaves=\"3\"\n                    result=\"noise\" id=\"turbulence\"/\u003e\n      \u003cfeDisplacementMap in=\"SourceGraphic\" in2=\"noise\"\n                         scale=\"0\" xChannelSelector=\"R\" yChannelSelector=\"G\"\n                         id=\"displace\"/\u003e\n    \u003c/filter\u003e\n  \u003c/defs\u003e\n\u003c/svg\u003e\n\n\u003c!-- Apply to DOM text --\u003e\n\u003cp style=\"filter: url(#morph)\"\u003eDESIGN\u003c/p\u003e\n```\n\n```js\n// Animate the displacement scale\nconst displace = document.getElementById(\u0027displace\u0027);\ngsap.to({ scale: 0 }, {\n  scale: 80,\n  duration: 0.6,\n  ease: \u0027power2.in\u0027,\n  onUpdate() {\n    displace.setAttribute(\u0027scale\u0027, this.targets()[0].scale);\n  }\n});\n```\n\n**Key insight:** SVG filter effects on DOM elements are criminally underused. `feTurbulence` + `feDisplacementMap` gives you a visual language (organic deformation, dissolution, reformation) that looks like WebGL but requires nothing but a few lines of SVG and JS. Safari 17+, Chrome, Firefox all support it well.\n\n**Application for Ben:** Hero name/tagline morphing on page load â€” letters dissolve in from noise over 0.8s. Or the amber cursor leaves a brief displacement trail on text elements as it passes over them. Both achievable with this SVG filter approach, no Three.js required."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Softbody Tetris â€” Three.js TSL + WebGPU (Niklas Niehus)",
+                                                             "url":  "https://www.webgpu.com/showcase/softbody-tetris-webgpu-threejs-jelly-physics/"
+                                                         },
+                                                         {
+                                                             "label":  "GitHub: holtsetio/softbodies (TSL PBD source)",
+                                                             "url":  "https://github.com/holtsetio/softbodies"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js TSL Introduction â€” discourse.threejs.org",
+                                                             "url":  "https://discourse.threejs.org/t/three-js-introduction-to-webgpu-and-tsl/78205"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops All Posts (Mar 12 by Huy)",
+                                                             "url":  "https://tympanus.net/codrops/all-posts/"
+                                                         },
+                                                         {
+                                                             "label":  "MDN: SVG feTurbulence",
+                                                             "url":  "https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feTurbulence"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js Examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-15",
+                        "title":  "PlanetoÃ±o Planet-Click 3D Transitions \u0026 Codrops Sticky Grid Scroll",
+                        "summary":  "Awwwards SOTD Mar 15: PlanetoÃ±o wins Developer Award with a WebGL planet-navigation UX â€” clicking planets triggers zoom/focus transitions and switches between overview and detail perspectives, no page reload. Codrops Mar 2: Theo Plawinski\u0027s Sticky Grid Scroll tutorial builds a scroll-driven image grid where each cell animates progressively inside a sticky container â€” pure CSS scroll-driven animation API, no GSAP required.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 15, 2026 â€” PlanetoÃ±o (Developer Award)**\n\nPlanetoÃ±o is a WebGL-powered interactive universe: users click planets to zoom in, revealing detail views, and can return to an overview. The core UX metaphor is *spatial navigation as exploration* â€” no traditional nav menu, just a 3D space you inhabit.\n\nKey techniques:\n- **Click-to-zoom camera transition:** clicking a planet triggers a GSAP (or custom lerp) camera tween from overview position to a close-up orbit around the target. The camera `position` and `lookAt` target are both animated simultaneously with a cubic easing â€” this avoids the jarring teleport feeling.\n- **LOD (Level of Detail) swap on zoom:** at overview scale, planets use simple `SphereGeometry(1, 16, 16)`. On zoom-in, the geometry is hot-swapped to `SphereGeometry(1, 64, 64)` with a higher-res texture. The swap happens mid-tween at ~50% progress when the planet fills ~30% of the viewport â€” invisible to the user.\n- **Atmosphere glow shader:** each planet has a secondary transparent sphere slightly larger, with a custom fresnel shader that simulates atmospheric scattering (bright edge, dark center). Classic technique â€” `dot(vNormal, cameraDirection)` â†’ fresnel factor.\n- **Pointer raycasting for selection:** `THREE.Raycaster` on `mousemove` highlights the hovered planet; `click` triggers the zoom sequence.\n\n```js\n// Camera zoom-to-planet pattern\nfunction zoomToPlanet(planet) {\n  const targetPos = planet.position.clone().add(\n    new THREE.Vector3(0, 0, planet.userData.radius * 3)\n  );\n  gsap.to(camera.position, {\n    x: targetPos.x, y: targetPos.y, z: targetPos.z,\n    duration: 1.8,\n    ease: \u0027power2.inOut\u0027,\n    onUpdate: () =\u003e controls.target.lerp(planet.position, 0.05)\n  });\n}\n\n// Fresnel atmosphere shader (fragment)\n// varying vec3 vNormal; varying vec3 vViewPosition;\nvoid main() {\n  float fresnel = 1.0 - max(dot(normalize(vNormal), normalize(-vViewPosition)), 0.0);\n  fresnel = pow(fresnel, 3.0);\n  gl_FragColor = vec4(atmosphereColor, fresnel * 0.6);\n}\n```\n\n**Key insight:** PlanetoÃ±o proves that 3D spatial navigation can replace conventional site architecture â€” the \u0027page\u0027 concept dissolves into a place you move through. For portfolios, this suggests replacing \u0027Projects page\u0027 with a spatial gallery where works are zones you navigate into.\n\n**Application for Ben:** A lightweight version â€” projects as 2D cards on a CSS `perspective` plane, clicking one triggers a `transform: scale(4) translate(...)` zoom that reveals the case study inline. Same spatial metaphor, zero WebGL overhead."
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Codrops (Mar 2, 2026) â€” Sticky Grid Scroll: Building a Scroll-Driven Animated Grid**\nby Theo Plawinski\n\nThe insight: a CSS `position: sticky` container creates a fixed frame; inside it, a grid of images animates progressively as the user scrolls â€” each cell has its own scroll-linked offset, creating a living, structured composition.\n\nKey techniques:\n- **CSS Scroll-Driven Animations API** (`animation-timeline: scroll()`): no JavaScript, no GSAP. The browser computes the animation progress directly from scroll position. Each grid cell gets an `@keyframes` block for its translate offset, linked to the scroll timeline.\n- **Sticky outer wrapper = fixed stage:** `position: sticky; top: 0; height: 100vh` creates a viewport-locked container. The inner grid items move *within* this frame, creating parallax without any scroll listener.\n- **Progressive reveal via `animation-range`:** each grid cell has a different `animation-range: entry X% exit Y%` â€” earlier cells start animating sooner, later cells lag. This staggers the motion naturally through CSS alone.\n- **Performance:** zero JS scroll listeners = zero main thread cost. The Scroll-Driven API is GPU-accelerated by the browser compositor â€” even low-end devices get smooth motion.\n\n```css\n/* Sticky stage */\n.grid-stage {\n  position: sticky;\n  top: 0;\n  height: 100vh;\n  overflow: hidden;\n}\n\n/* Scroll-driven cell animation */\n.grid-cell {\n  animation: cell-rise linear both;\n  animation-timeline: scroll(root block);\n  animation-range: entry 10% exit 90%;\n}\n\n@keyframes cell-rise {\n  from { transform: translateY(80px); opacity: 0; }\n  to   { transform: translateY(0);    opacity: 1; }\n}\n\n/* Stagger by cell index */\n.grid-cell:nth-child(2) { animation-delay: -0.1s; }\n.grid-cell:nth-child(3) { animation-delay: -0.2s; }\n```\n\n**Key insight:** The CSS Scroll-Driven Animations API (now baseline supported in Chrome/Edge, Firefox 115+, Safari 18+) makes GSAP\u0027s `ScrollTrigger` unnecessary for a wide class of scroll-linked animations. For structured layouts like grids, the CSS approach is simpler, faster, and has zero bundle size.\n\n**Application for Ben:** The Works page grid is exactly this pattern â€” sticky container, cards animate in as user scrolls, amber gradient overlay shifts on scroll progress. All achievable in ~20 lines of CSS, no JS."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 15 â€” PlanetoÃ±o",
+                                                             "url":  "https://www.awwwards.com/websites/sites_of_the_day/"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops: Sticky Grid Scroll by Theo Plawinski",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/02/sticky-grid-scroll-building-a-scroll-driven-animated-grid/"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops Live Demo â€” Sticky Grid Scroll",
+                                                             "url":  "https://tympanus.net/Tutorials/StickyGridScroll/"
+                                                         },
+                                                         {
+                                                             "label":  "MDN: CSS Scroll-Driven Animations",
+                                                             "url":  "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-14",
+                        "title":  "Scroll-Velocity WebGL Mood Shift \u0026 MoMoney Video-Layer Interactions",
+                        "summary":  "Codrops Mar 9: Houmahani Kane\u0027s tutorial on a scroll-reactive Three.js gallery that maps scroll velocity to image distortion and swaps background palettes per \u0027mood\u0027 object â€” a data-driven approach to emotional ambience. Awwwards SOTD Mar 14: MoMoney by Jordan Gilroy wins Developer Award with a video-element-heavy gaming rewards site; every interaction state captured as looping video rather than CSS animation.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Codrops (Mar 9, 2026) â€” Scroll-Reactive 3D Gallery with Three.js, Velocity \u0026 Mood-Based Backgrounds**\nby Houmahani Kane\n\nThe core insight here is *scroll velocity as an emotional signal*. Slow scroll = calm state, fast scroll = distortion/warp. Rather than treating velocity as a utility (parallax speed), Kane routes it through a warp shader on a `PlaneGeometry` so fast scrolling visibly bends images â€” and simultaneously lerps the background palette to the active image\u0027s `mood` object.\n\nKey techniques:\n- **Per-image mood data:** each gallery item carries a `mood` config: `{ background, blob1, blob2 }`. On active image change, CSS custom properties are lerped to these values using `gsap.to()` targeting `document.documentElement`. Zero extra DOM â€” just custom properties on `:root`.\n- **Scroll velocity â†’ shader uniform:** velocity is computed frame-to-frame as `(scrollY - prevScrollY) / dt`, smoothed with exponential decay (`velocity *= 0.9`), then passed to a `uVelocity` uniform driving UV distortion in the fragment shader.\n- **Depth-layered planes:** images placed at different Z positions in the Three.js scene so fast scroll creates natural parallax between layers â€” no extra GSAP math needed, just the camera\u0027s FOV doing the work.\n- **Atmosphere blobs:** two `radial-gradient` divs positioned via CSS, colors driven by the mood config. GPU-free background motion that reinforces the WebGL mood.\n\n```js\n// Velocity â†’ distortion uniform\nconst velocity = { current: 0 };\nlet prevScrollY = 0;\n\nwindow.addEventListener(\u0027scroll\u0027, () =\u003e {\n  velocity.current = (window.scrollY - prevScrollY) * 0.01;\n  prevScrollY = window.scrollY;\n});\n\n// In animation loop:\nvelocity.current *= 0.9; // exponential decay\nmaterial.uniforms.uVelocity.value = velocity.current;\n```\n\n```glsl\n// Fragment shader: velocity-driven UV warp\nuniform float uVelocity;\nvarying vec2 vUv;\n\nvoid main() {\n  vec2 uv = vUv;\n  uv.y += sin(uv.x * 10.0 + uVelocity * 5.0) * abs(uVelocity) * 0.1;\n  gl_FragColor = texture2D(uTexture, uv);\n}\n```\n\n**Application for Ben:** The portfolio Works grid could use a lightweight version of this â€” scroll velocity drives a subtle `skewY` transform on the cards (pure CSS + JS, no WebGL). Amber blob bleeds in from the background when scrolling fast. Mood object per project provides automatic ambient theming when a card is in view."
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 14, 2026 â€” MoMoney by Jordan Gilroy (Developer Award)**\n\nMoMoney is a gaming rewards platform ($125B+ gaming market positioning). Jordan Gilroy, a Yorkshire-based Webflow/interaction specialist, wins Developer Award for one standout technique: **video as interaction state documentation**. Every hover state, every transition, every UI micro-moment is a looping muted video element â€” not a CSS keyframe, not a canvas animation.\n\nObserved techniques:\n- **Video-as-state-machine:** instead of engineering complex CSS animations for multiple UI states (idle â†’ hover â†’ active â†’ exit), each state is simply a video. JS swaps `src` or toggles visibility between `\u003cvideo\u003e` elements. Engineering complexity â†’ design complexity. The codebase stays simple.\n- **Interaction vocabulary from video editing, not CSS:** easing, overlaps, and timing come from the video editor\u0027s timeline, not `cubic-bezier()`. This is a paradigm shift for Webflow-adjacent workflows.\n- **Performance bet:** modern browsers handle multiple muted autoplaying videos efficiently (hardware decoded). With `playsinline muted autoplay loop` and `preload=\u0027auto\u0027`, switching feels instant â€” faster than a complex GSAP sequence initializing.\n- **Jordan Gilroy\u0027s stack:** Webflow + GSAP + custom vanilla JS for the video orchestration. No framework overhead.\n\n```js\n// Video-state pattern: preload all, show/hide\nconst states = {\n  idle: document.querySelector(\u0027.vid-idle\u0027),\n  hover: document.querySelector(\u0027.vid-hover\u0027),\n  active: document.querySelector(\u0027.vid-active\u0027)\n};\n\nfunction setState(name) {\n  Object.entries(states).forEach(([key, el]) =\u003e {\n    el.style.opacity = key === name ? \u00271\u0027 : \u00270\u0027;\n    key === name ? el.play() : el.pause();\n  });\n}\n\nbtn.addEventListener(\u0027mouseenter\u0027, () =\u003e setState(\u0027hover\u0027));\nbtn.addEventListener(\u0027mouseleave\u0027, () =\u003e setState(\u0027idle\u0027));\n```\n\n**Key insight:** Replacing CSS animation engineering with video files is a 2026 production workflow emerging from studios where designers own the motion. If you can render it in After Effects faster than you can code it â€” render it. Video is a valid interaction primitive, not a fallback.\n\n**Application for Ben:** Project case study pages could use a single looping hero video (screen recording / motion export) instead of complex scroll animations. Amber cursor overlay on video = branded without touching the video file."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Codrops: Scroll-Reactive 3D Gallery (Three.js + Velocity + Mood)",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/09/building-a-scroll-reactive-3d-gallery-with-three-js-velocity-and-mood-based-backgrounds/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 14 â€” MoMoney",
+                                                             "url":  "https://www.awwwards.com/sites/momoney"
+                                                         },
+                                                         {
+                                                             "label":  "Jordan Gilroy â€” Freelance Web Designer",
+                                                             "url":  "https://www.jordangilroy.com/"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js Examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-13",
+                        "title":  "2-Color Video Portfolio \u0026 Three.js r183 NodeMaterial",
+                        "summary":  "Awwwards SOTD Mar 13: Adam Bricker\u0027s Film/TV/Animation portfolio wins Developer Award with a radical 2-color constraint (#F0F2F1 off-white + #020202 near-black), full-bleed video as the only visual currency. Three.js r183 ships NodeMaterial stable â€” GPU-agnostic node-based shader graphs that compile to both WebGL and WebGPU, replacing raw GLSL for most creative use cases.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 13, 2026 â€” Adam Bricker (Developer Award)**\nFilm Â· TV Â· Photography Â· Animation portfolio. 2-color palette maximum: `#F0F2F1` (warm off-white) + `#020202` (near-black). Video as the only image format â€” no hero stills, no photo grids.\n\nKey techniques (inferred from Awwwards element breakdown):\n- **Full-bleed video tiles:** each project is a looping muted video, not a still thumbnail. Video `autoplay muted loop playsinline` â€” zero JS interaction needed for the primary impression.\n- **2-color lockdown as engineering discipline:** removing color forces the layout to do all the work. Spacing, scale, and motion become the only levers. This is *harder* to execute than a rich palette.\n- **Video loading strategy:** observed multi-video portfolios in 2026 use Intersection Observer + `video.load()` on demand â€” never preload all at once. Poster frame (single jpg) holds until 200px from viewport.\n- **Menu as typographic gesture:** from the Awwwards element capture, the nav appears to draw in as SVG or clip-path â€” no hover color, just motion.\n\n```js\n// Lazy video load on approach\nconst observer = new IntersectionObserver((entries) =\u003e {\n  entries.forEach(({ isIntersecting, target }) =\u003e {\n    if (isIntersecting) {\n      const video = target.querySelector(\u0027video\u0027);\n      if (video \u0026\u0026 !video.src) {\n        video.src = video.dataset.src;\n        video.load();\n      }\n    }\n  });\n}, { rootMargin: \u0027200px\u0027 });\n\ndocument.querySelectorAll(\u0027.project-tile\u0027).forEach(tile =\u003e observer.observe(tile));\n```\n\n**Key insight:** The 2-color constraint is a *commitment device* â€” it forces every decision to be intentional. When you can\u0027t reach for color, you have to earn legibility through hierarchy, motion, and scale. Adam Bricker\u0027s SOTD win proves that in 2026 the most technically impressive portfolios are often the most visually restrained.\n\n**Application for Ben:** The Works page could adopt a \u0027poster-first, video-on-hover\u0027 pattern for each project card â€” 1 static jpg at rest, video plays on hover/tap (IntersectionObserver ensures it\u0027s loaded). Amber accent reserved for cursor/hover state only, not the card itself."
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Three.js r183 â€” NodeMaterial Stable \u0026 WebGPU Parity**\n\nThree.js is now at r183 and the big story is **NodeMaterial reaching stable API** â€” a GPU-agnostic node-based shader system that compiles to GLSL (WebGL) *or* WGSL (WebGPU) from the same graph. This is the end of writing two shader versions.\n\nCore concepts:\n- **`Nodes` system:** replace raw `vertexShader`/`fragmentShader` strings with composable node graphs. `positionNode`, `colorNode`, `emissiveNode` are the entry points.\n- **`MeshStandardNodeMaterial`:** drop-in for `MeshStandardMaterial` but accepts node inputs â€” mix procedural noise into a PBR material without touching GLSL.\n- **`texture()` node + `uv()` node:** chain them for animated UV distortion: `texture(map, uv().add(timerLocal().mul(0.1)))` scrolls a texture over time.\n- **WebGPU backend:** `WebGPURenderer` is now production-ready. Falls back to WebGL if WebGPU unavailable (one `await renderer.init()` call handles detection).\n\n```js\nimport { MeshStandardNodeMaterial, texture, uv, timerLocal, vec2 } from \u0027three/nodes\u0027;\n\nconst material = new MeshStandardNodeMaterial();\nconst t = timerLocal(); // auto-updates each frame\n\n// Animated UV offset: texture scrolls diagonally\nmaterial.colorNode = texture(\n  myTexture,\n  uv().add(vec2(t.mul(0.05), t.mul(0.03)))\n);\n```\n\n**Why this matters:** NodeMaterial eliminates the biggest friction in creative Three.js work â€” shader strings that break on GLSL version changes and can\u0027t be easily composed. The node graph approach is how Blender\u0027s shader editor works; if you can think in nodes, you can now build the same effects in-browser.\n\n**Application for Ben:** A subtle animated texture on the hero section background (slow UV scroll of a noise texture, amber-tinted) â€” previously required writing GLSL. With NodeMaterial: ~5 lines of JavaScript."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 13 â€” Adam Bricker",
+                                                             "url":  "https://www.awwwards.com/sites/adam-bricker"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js r183 Changelog",
+                                                             "url":  "https://github.com/mrdoob/three.js/releases"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js NodeMaterial docs",
+                                                             "url":  "https://threejs.org/docs/#api/en/materials/nodes/MeshStandardNodeMaterial"
+                                                         },
+                                                         {
+                                                             "label":  "Three.js Examples",
+                                                             "url":  "https://threejs.org/examples/"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-12",
+                        "title":  "SVG Mask Scroll Reveals \u0026 Paper Portfolio Tactility",
+                        "summary":  "Codrops Mar 11: SVG mask + GSAP ScrollTrigger creates 4 distinct fullscreen reveal patterns (grid, blind, iris, wipe) â€” shape-driven transitions that feel physical. Awwwards SOTD Mar 12: Mr. Pandas Paper Portfolio wins Developer Award with scanned paper textures + hand-drawn SVG paths, proving lo-fi tactility can out-perform polished digital.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Codrops (Mar 11, 2026) â€” SVG Mask Transitions on Scroll with GSAP \u0026 ScrollTrigger**\nby Hiroki Watanabe\n\nThe core insight: SVG `\u003cclipPath\u003e` + `\u003cmask\u003e` are shape languages. Instead of `clip-path: inset(0 100% 0 0)` (a rectangle), you animate the *geometry* of an SVG path â€” and that geometry can be a grid of slats, an iris circle, a chevron blinds pattern, or a jagged reveal.\n\nKey techniques:\n- **Grid mask reveal:** divide the image area into a grid of SVG rectangles; stagger `scaleY` from 0â†’1 on each column. Feels like venetian blinds dropping.\n- **Blind pattern:** horizontal SVG paths expand width in sequence â€” reads as shutter opening.\n- **Iris reveal:** circular `\u003cclipPath\u003e` radius animates `r` from 0 â†’ viewport diagonal. Very cinematic.\n- **GSAP ScrollTrigger pinning:** `scrub: 1.5` (not `true`) gives slight lag â€” the reveal feels dragged by scroll, not teleported.\n\n```js\n// Iris SVG mask reveal\ngsap.fromTo(\n  \u0027#iris-circle\u0027,\n  { attr: { r: 0 } },\n  {\n    attr: { r: diag },\n    ease: \u0027power2.inOut\u0027,\n    scrollTrigger: {\n      trigger: section,\n      start: \u0027top center\u0027,\n      end: \u0027bottom center\u0027,\n      scrub: 1.5\n    }\n  }\n);\n```\n\n**Application for Ben:** Works grid could use blind-pattern reveal on scroll-in â€” each project card\u0027s image revealed by 6-column staggered SVG slats. More structured than opacity fade, cheaper than WebGL."
+                                       },
+                                       {
+                                           "type":  "demo",
+                                           "label":  "SVG Blind Mask Reveal",
+                                           "description":  "Hover to trigger: staggered SVG clipPath slats reveal an image â€” simulates Codrops blind-pattern scroll transition.",
+                                           "html":  "\u003cdiv class=\u0027scene\u0027\u003e\u003cdiv class=\u0027reveal-wrap\u0027 id=\u0027wrap\u0027\u003e\u003csvg class=\u0027svg-mask\u0027 width=\u00270\u0027 height=\u00270\u0027\u003e\u003cdefs\u003e\u003cclipPath id=\u0027blinds\u0027 clipPathUnits=\u0027objectBoundingBox\u0027\u003e\u003crect class=\u0027slat\u0027 x=\u00270\u0027 y=\u00270\u0027 width=\u00270.166\u0027 height=\u00271\u0027/\u003e\u003crect class=\u0027slat\u0027 x=\u00270.166\u0027 y=\u00270\u0027 width=\u00270.167\u0027 height=\u00271\u0027/\u003e\u003crect class=\u0027slat\u0027 x=\u00270.333\u0027 y=\u00270\u0027 width=\u00270.167\u0027 height=\u00271\u0027/\u003e\u003crect class=\u0027slat\u0027 x=\u00270.5\u0027 y=\u00270\u0027 width=\u00270.167\u0027 height=\u00271\u0027/\u003e\u003crect class=\u0027slat\u0027 x=\u00270.667\u0027 y=\u00270\u0027 width=\u00270.166\u0027 height=\u00271\u0027/\u003e\u003crect class=\u0027slat\u0027 x=\u00270.833\u0027 y=\u00270\u0027 width=\u00270.167\u0027 height=\u00271\u0027/\u003e\u003c/clipPath\u003e\u003c/defs\u003e\u003c/svg\u003e\u003cdiv class=\u0027reveal-img\u0027 id=\u0027img\u0027\u003e\u003c/div\u003e\u003cdiv class=\u0027reveal-label\u0027\u003eSVG Blind Reveal\u003c/div\u003e\u003c/div\u003e\u003cp class=\u0027hint\u0027\u003ehover to reveal\u003c/p\u003e\u003c/div\u003e",
+                                           "css":  "body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:monospace;gap:16px}.reveal-wrap{position:relative;width:280px;height:180px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}.reveal-img{position:absolute;inset:0;background:linear-gradient(135deg,#1a0f0f,#3d1f00);clip-path:url(#blinds);display:flex;align-items:center;justify-content:center}.reveal-label{position:absolute;bottom:12px;left:16px;font-size:9px;letter-spacing:2px;color:#C17A3A;z-index:2}.hint{font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.25)}.svg-mask{position:absolute}",
+                                           "js":  "const slats=document.querySelectorAll(\u0027.slat\u0027);let revealed=false;const base=[0,0.166,0.333,0.5,0.667,0.833];const w=1/6;function reveal(){slats.forEach((s,i)=\u003e{setTimeout(()=\u003e{s.setAttribute(\u0027width\u0027,w.toFixed(3))},i*60)})}function hide(){slats.forEach(s=\u003es.setAttribute(\u0027width\u0027,\u00270\u0027))}slats.forEach(s=\u003es.setAttribute(\u0027width\u0027,\u00270\u0027));document.getElementById(\u0027wrap\u0027).addEventListener(\u0027mouseenter\u0027,reveal);document.getElementById(\u0027wrap\u0027).addEventListener(\u0027mouseleave\u0027,hide);"
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 12, 2026 â€” Mr. Pandas Paper Portfolio (Developer Award)**\n\nThis site bets everything on lo-fi tactility: scanned paper textures as actual image sources, hand-drawn SVG path animations for UI transitions, and deliberate imperfection as the aesthetic. The Developer Award signals the *engineering* behind the charm.\n\nTechniques observed:\n- **Scanned texture as background:** `background-image: url(scan.jpg)` at low opacity â€” analog warmth, zero GPU cost vs WebGL grain\n- **Hand-drawn SVG paths + stroke-dashoffset animation:** each UI element \u0027draws itself in\u0027 on load/hover. Classic technique, executed with personality.\n- **Page weight discipline:** no Three.js, no heavy libraries â€” custom GSAP-only animation. Fast, tactile, memorable.\n- **Color: aged ivory + ink black + single warm red** â€” 3-color palette maximum, enforced ruthlessly.\n\n```css\n/* Scanned paper texture overlay */\n.paper-bg {\n  background-image: url(\u0027paper-scan.jpg\u0027);\n  background-blend-mode: multiply;\n  background-size: cover;\n}\n\n/* SVG path draw-in */\n.drawn-path {\n  stroke-dasharray: 1000;\n  stroke-dashoffset: 1000;\n  animation: draw 1.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;\n}\n@keyframes draw {\n  to { stroke-dashoffset: 0; }\n}\n```\n\n**Key insight:** In 2026, the most memorable portfolios aren\u0027t the most technically complex â€” they\u0027re the most *intentional*. Paper Portfolio wins because it commits 100% to its concept. Every element serves the \u0027handmade\u0027 narrative. Zero visual noise."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Codrops: SVG Mask Transitions on Scroll with GSAP",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/11/svg-mask-transitions-on-scroll-with-gsap-and-scrolltrigger/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 12 â€” Mr. Pandas Paper Portfolio",
+                                                             "url":  "https://www.awwwards.com/sites/mr-pandas-paper-portfolio"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops tutorials hub",
+                                                             "url":  "https://tympanus.net/codrops/hub/tutorials/"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-11",
+                        "title":  "Swiss Grid Ã— WebGL Geometry \u0026 Typography-Led Corporate Motion",
+                        "summary":  "Codrops Mar 5: Corentin Bernadou\u0027s portfolio uses Swiss editorial grid rules to govern Three.js geometry placement â€” structure-first, then WebGL. Awwwards SOTD Mar 11: Outsource Consultants wins Developer Award with restrained, typography-led layout that proves motion discipline beats effects excess.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Codrops (Mar 5, 2026) â€” Swiss Grid Meets WebGL Geometry**\n\nCorentin Bernadou\u0027s portfolio redesign is an architecture lesson: start with a strict Swiss editorial grid (baseline grid, column lock, clear hierarchy) and *then* layer WebGL geometry into the empty white space â€” not as decoration, but as geometric punctuation.\n\nKey techniques:\n- **Grid-constrained WebGL:** 3D geometry (spheres, toruses) are positioned at grid intersections, not freestyle. This stops WebGL from feeling chaotic.\n- **Thoughtful motion timing:** transitions use `cubic-bezier(0.76, 0, 0.24, 1)` â€” the S-curve with a slow-out, which feels editorial rather than playful.\n- **Geometry as accent:** same role as a bold pull-quote in print layout. The 3D element earns its space by framing text, not competing with it.\n\n**Application for Ben:** The Works page grid could have a single Three.js plane positioned at the column gutter â€” not image distortion, just a subtle mesh that reacts to scroll. Structural, not decorative."
+                                       },
+                                       {
+                                           "type":  "demo",
+                                           "label":  "Swiss Grid Punctuation",
+                                           "description":  "Editorial grid with a WebGL-style geometric accent element. Structure first â€” geometry earns its place at grid intersections.",
+                                           "html":  "\u003cdiv class=\u0027sg-layout\u0027\u003e\u003cdiv class=\u0027sg-col-rule\u0027\u003e\u003c/div\u003e\u003cdiv class=\u0027sg-content\u0027\u003e\u003cspan class=\u0027sg-label\u0027\u003eSELECTED WORK\u003c/span\u003e\u003ch2 class=\u0027sg-title\u0027\u003eBrand \u0026amp;\u003cbr\u003eDigital\u003c/h2\u003e\u003cdiv class=\u0027sg-geo\u0027 id=\u0027geo\u0027\u003e\u003c/div\u003e\u003cp class=\u0027sg-body\u0027\u003eSenior Product Designer at Microsoft. Building products that scale.\u003c/p\u003e\u003c/div\u003e\u003c/div\u003e",
+                                           "css":  "body{margin:0;background:#f4f0e8;display:flex;align-items:center;justify-content:center;height:100vh;font-family:\u0027EB Garamond\u0027,serif}.sg-layout{width:360px;position:relative;padding:40px 40px 40px 60px;border-left:1px solid rgba(0,0,0,0.12)}.sg-col-rule{position:absolute;left:0;top:0;bottom:0;width:1px;background:#1a1a1a}.sg-label{font-size:9px;letter-spacing:3px;color:rgba(0,0,0,0.35);font-family:monospace;display:block;margin-bottom:20px}.sg-title{font-size:52px;line-height:1.0;margin:0 0 0 0;color:#1a1a1a;font-weight:400}.sg-geo{width:80px;height:80px;margin:20px 0;position:relative}.sg-geo::before{content:\u0027\u0027;position:absolute;inset:0;border-radius:50%;border:1px solid rgba(0,0,0,0.15);animation:spin 8s linear infinite}.sg-geo::after{content:\u0027\u0027;position:absolute;inset:16px;border:1px solid #C17A3A;transform:rotate(45deg)}.sg-body{font-size:15px;color:rgba(0,0,0,0.5);line-height:1.6;margin:0;max-width:240px}@keyframes spin{to{transform:rotate(360deg)}}",
+                                           "js":  ""
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 11, 2026 â€” Outsource Consultants, Inc**\n\nA NYC corporate consultancy site winning *Developer Award* is significant â€” it means the animation engineering is the story, not the visual design. The key lesson: **motion discipline beats motion excess.**\n\nObserved techniques (from the developer award context):\n- Text reveals using clip-path rather than opacity â€” letters feel *uncovered*, not faded in\n- Inter-section transitions: background color shifts (dark â†’ light) are timed to the user\u0027s scroll momentum, not just scroll position\n- Typography as the layout: no hero imagery, no full-bleed photo. Just type scale + white space. The engineering makes type feel alive.\n\n```css\n/* Clip-path text reveal â€” feels physical, not digital */\n.reveal {\n  clip-path: inset(0 100% 0 0);\n  transition: clip-path 0.8s cubic-bezier(0.76, 0, 0.24, 1);\n}\n.reveal.in-view {\n  clip-path: inset(0 0% 0 0);\n}\n```\n\n**Key insight:** Corporate sites are getting technically ambitious. The genre expectation is now: clean type + sophisticated timing. \u0027No-fuss\u0027 is dead â€” you have to earn the restraint."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Codrops: Inside Corentin Bernadou\u0027s Portfolio",
+                                                             "url":  "https://tympanus.net/codrops/2026/03/05/inside-corentin-bernadous-portfolio-swiss-inspired-layouts-webgl-geometry-and-thoughtful-motion/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD Mar 11 â€” Outsource Consultants",
+                                                             "url":  "https://www.awwwards.com/sites/outsource-consultants-inc"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops: All WebGL Articles",
+                                                             "url":  "https://tympanus.net/codrops/tag/webgl/"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-10",
+                        "title":  "Scroll-Velocity WebGL Gallery \u0026 ON Energy Glass UI",
+                        "summary":  "Today\u0027s picks: Codrops scroll-driven WebGL gallery (scroll velocity drives shader distortion), and Awwwards SOTD ON Energy\u0027s ultra-thin glass panel language.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Codrops (Mar 9, 2026) â€” Scroll-Velocity WebGL Gallery**\n\nKey technique: pipe scroll velocity as a uniform into Three.js shader. Higher velocity = more distortion, release = snap back. Unlike static hover distortion, this makes *motion itself* the visual content.\n\n- `previousScrollY` diff â†’ clamp to -1~1 velocity\n- Vertex shader: `sin(uv.y + time) * velocity * strength`\n- Background color shifts with image palette (palette-driven immersion)\n\n**Application:** Ben\u0027s Works grid could use this â€” fast scroll makes images \"flow\", slow/stop = they settle back."
+                                       },
+                                       {
+                                           "type":  "demo",
+                                           "label":  "Scroll-Velocity Distortion",
+                                           "description":  "CSS approximation: scroll speed drives skewY + scaleX on text. Snaps back on release.",
+                                           "html":  "\u003cdiv class=\u0027sv-container\u0027\u003e\u003cdiv class=\u0027sv-track\u0027\u003e\u003cdiv class=\u0027sv-item\u0027\u003eDesigner who builds.\u003c/div\u003e\u003cdiv class=\u0027sv-item\u0027\u003eSenior Product Designer\u003c/div\u003e\u003cdiv class=\u0027sv-item\u0027\u003eat Microsoft\u003c/div\u003e\u003cdiv class=\u0027sv-item\u0027\u003eDesigner who builds.\u003c/div\u003e\u003cdiv class=\u0027sv-item\u0027\u003eSenior Product Designer\u003c/div\u003e\u003cdiv class=\u0027sv-item\u0027\u003eat Microsoft\u003c/div\u003e\u003c/div\u003e\u003cdiv class=\u0027sv-hint\u0027\u003eâ†• scroll here\u003c/div\u003e\u003c/div\u003e",
+                                           "css":  "body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;font-family:\u0027EB Garamond\u0027,serif}.sv-container{width:340px;height:240px;overflow-y:scroll;border:1px solid rgba(255,255,255,0.1);position:relative}.sv-track{padding:20px 32px}.sv-item{font-size:26px;color:#f5f0e8;line-height:1.6;transform-origin:left center;transition:transform 0.2s cubic-bezier(.25,.46,.45,.94),opacity 0.2s}.sv-hint{position:sticky;bottom:8px;text-align:right;padding-right:12px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.25);font-family:monospace}",
+                                           "js":  "const c=document.querySelector(\u0027.sv-container\u0027);let ly=0;c.addEventListener(\u0027scroll\u0027,()=\u003e{const v=Math.max(-1,Math.min(1,(c.scrollTop-ly)/10));ly=c.scrollTop;c.querySelectorAll(\u0027.sv-item\u0027).forEach(el=\u003e{el.style.transform=`skewY(${v*6}deg) scaleX(${1+Math.abs(v)*0.06})`;el.style.opacity=1-Math.abs(v)*0.25});clearTimeout(c._t);c._t=setTimeout(()=\u003e{c.querySelectorAll(\u0027.sv-item\u0027).forEach(el=\u003e{el.style.transform=\u0027skewY(0deg) scaleX(1)\u0027;el.style.opacity=1})},200)});"
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**Awwwards SOTD Mar 10, 2026 â€” ON Energy**\n\nGlass UI 2.0 â€” not the blurry 2021 glassmorphism. Instead: near-zero fill + ultra-thin border + inset top highlight. The 1px inset white line is everything â€” it gives the panel physical thickness.\n\n```css\n.panel {\n  background: rgba(255,255,255,0.03);\n  border: 1px solid rgba(255,255,255,0.12);\n  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);\n}\n```"
+                                       },
+                                       {
+                                           "type":  "demo",
+                                           "label":  "ON Energy Glass Panel",
+                                           "description":  "Near-zero fill + ultra-thin border + inset top highlight. The 1px white inset line is what gives it depth.",
+                                           "html":  "\u003cdiv class=\u0027scene\u0027\u003e\u003cdiv class=\u0027panel\u0027\u003e\u003cdiv class=\u0027panel-tag\u0027\u003eENERGY OUTPUT\u003c/div\u003e\u003cdiv class=\u0027panel-value\u0027\u003e94.7\u003cspan class=\u0027unit\u0027\u003e%\u003c/span\u003e\u003c/div\u003e\u003cdiv class=\u0027panel-bar\u0027\u003e\u003cdiv class=\u0027panel-fill\u0027\u003e\u003c/div\u003e\u003c/div\u003e\u003cdiv class=\u0027panel-sub\u0027\u003eSystem nominal Â· 3 nodes active\u003c/div\u003e\u003c/div\u003e\u003c/div\u003e",
+                                           "css":  "body{margin:0;background:linear-gradient(135deg,#0a0f0a,#0d1a10);display:flex;align-items:center;justify-content:center;height:100vh;font-family:\u0027Inter\u0027,sans-serif}.panel{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);box-shadow:inset 0 1px 0 rgba(255,255,255,0.08),0 0 40px rgba(50,255,100,0.04);padding:32px 40px;min-width:280px;border-radius:2px}.panel-tag{font-size:9px;letter-spacing:3px;color:rgba(80,255,120,0.5);margin-bottom:16px;font-family:monospace}.panel-value{font-size:56px;color:#e8f5ea;font-weight:300;line-height:1;margin-bottom:20px}.unit{font-size:24px;opacity:0.4}.panel-bar{height:2px;background:rgba(255,255,255,0.06);margin-bottom:16px;overflow:hidden}.panel-fill{height:100%;width:94.7%;background:linear-gradient(90deg,rgba(50,255,100,0.6),rgba(50,255,100,0.2))}.panel-sub{font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:0.5px}",
+                                           "js":  ""
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "Codrops: Scroll-driven WebGL Gallery",
+                                                             "url":  "https://tympanus.net/codrops/tag/webgl/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards SOTD - ON Energy",
+                                                             "url":  "https://www.awwwards.com/websites/sites_of_the_day/"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "date":  "2026-03-10",
+                        "title":  "WebGL Hover Distortion \u0026 Grain Texture",
+                        "summary":  "Deep dive into 2025-2026 top creative sites. Focus: WebGL shader hover distortion and noise grain texture overlays.",
+                        "blocks":  [
+                                       {
+                                           "type":  "note",
+                                           "text":  "**stabondar.com** â€” project grid looks like CSS grid, but each image has a Three.js mesh layered on top. On hover, mouse velocity is injected as a uniform â†’ vertex shader computes ripple distortion. Effect: images flow like liquid under the cursor."
+                                       },
+                                       {
+                                           "type":  "demo",
+                                           "label":  "Grain Texture Overlay",
+                                           "description":  "CSS + SVG feTurbulence gives film grain feel. Near-zero cost, significant texture upgrade.",
+                                           "html":  "\u003cdiv class=\u0027grain-demo\u0027\u003e\u003cp\u003eDesigner who builds.\u003c/p\u003e\u003cspan class=\u0027tag\u0027\u003eGrain ON\u003c/span\u003e\u003c/div\u003e",
+                                           "css":  "body{margin:0;background:#F7F5F0;font-family:\u0027EB Garamond\u0027,serif;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}.grain-demo{position:relative;padding:40px;text-align:center}.grain-demo p{font-size:32px;margin:0 0 16px;color:#1a1a1a}.tag{font-size:11px;letter-spacing:2px;color:#C17A3A;font-family:monospace}.grain-demo::after{content:\u0027\u0027;position:fixed;inset:-50%;width:200%;height:200%;background-image:url(\"data:image/svg+xml,%3Csvg viewBox=\u00270 0 200 200\u0027 xmlns=\u0027http://www.w3.org/2000/svg\u0027%3E%3Cfilter id=\u0027n\u0027%3E%3CfeTurbulence type=\u0027fractalNoise\u0027 baseFrequency=\u00270.9\u0027 numOctaves=\u00274\u0027 stitchTiles=\u0027stitch\u0027/%3E%3C/filter%3E%3Crect width=\u0027100%25\u0027 height=\u0027100%25\u0027 filter=\u0027url(%23n)\u0027 opacity=\u00271\u0027/%3E%3C/svg%3E\");opacity:0.045;pointer-events:none;animation:grain 0.5s steps(2) infinite}@keyframes grain{0%,100%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(1px,-1px)}75%{transform:translate(-1px,2px)}}",
+                                           "js":  ""
+                                       },
+                                       {
+                                           "type":  "demo",
+                                           "label":  "Magnetic Cursor",
+                                           "description":  "Mouse snaps toward element on proximity, releases on exit. Good for CTA buttons and tags.",
+                                           "html":  "\u003cdiv class=\u0027scene\u0027\u003e\u003cbutton class=\u0027magnetic-btn\u0027 id=\u0027btn\u0027\u003eHover me\u003c/button\u003e\u003c/div\u003e",
+                                           "css":  "body{margin:0;background:#1a1a1a;display:flex;align-items:center;justify-content:center;height:100vh}.magnetic-btn{padding:16px 32px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:#fff;font-size:14px;letter-spacing:3px;font-family:monospace;cursor:none;transition:border-color 0.3s;border-radius:2px}.magnetic-btn:hover{border-color:#C17A3A;color:#C17A3A}",
+                                           "js":  "const btn=document.getElementById(\u0027btn\u0027);let rect,active=false;btn.addEventListener(\u0027mouseenter\u0027,()=\u003e{rect=btn.getBoundingClientRect();active=true});btn.addEventListener(\u0027mouseleave\u0027,()=\u003e{active=false;btn.style.transform=\u0027translate(0,0)\u0027});document.addEventListener(\u0027mousemove\u0027,e=\u003e{if(!active)return;const x=e.clientX-rect.left-rect.width/2;const y=e.clientY-rect.top-rect.height/2;const dist=Math.sqrt(x*x+y*y);const maxDist=80;if(dist\u003cmaxDist){const force=(maxDist-dist)/maxDist;btn.style.transform=`translate(${x*force*0.4}px,${y*force*0.4}px)`;rect=btn.getBoundingClientRect()}});"
+                                       },
+                                       {
+                                           "type":  "note",
+                                           "text":  "**2026 visual language trends:** Minimal base + single high-contrast accent (Ben\u0027s amber is spot on). Ultra Light + Bold weight contrast. Anti-UI: no card borders, whitespace as separator. Noise grain adds analog warmth."
+                                       },
+                                       {
+                                           "type":  "ref",
+                                           "links":  [
+                                                         {
+                                                             "label":  "stabondar.com",
+                                                             "url":  "https://stabondar.com"
+                                                         },
+                                                         {
+                                                             "label":  "Codrops: Scroll WebGL Gallery",
+                                                             "url":  "https://tympanus.net/codrops/2026/02/02/building-a-scroll-revealed-webgl-gallery-with-gsap-three-js-astro-and-barba-js/"
+                                                         },
+                                                         {
+                                                             "label":  "Awwwards Three.js Collection",
+                                                             "url":  "https://www.awwwards.com/websites/three-js/"
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                    }
+                ]
 }
