@@ -1,6 +1,46 @@
 {
   "entries": [
     {
+      "date": "2026-03-29",
+      "title": "Mask-Driven Narrative Controls + Instance-State Interaction Architecture",
+      "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个最值得落地的方向：1) Awwwards 当日 SOTD《Utopia Tokyo》+ Codrops《Pell Mell》共同指向“弱化显式导航、强化节奏与遮罩控制”的叙事式浏览——通过 Hero Slider / 3D 段落 / Preloader / Mask Generator 等统一动效原语，把浏览过程做成连续状态机；2) three.js examples 的 instancing 家族（performance / dynamic / raycast / morph）提示高密度交互应升级为“实例状态驱动”架构：每个实例仅维护轻量状态（hover/active/progress），由 GPU 批量渲染与命中反馈，避免 DOM 级逐项动画扩散。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Awwwards SOTD（Utopia Tokyo）× Codrops（Pell Mell）— 用“遮罩 + 节奏”替代重导航**\n\nAwwwards 当日元素拆解（Hero Slider / 3D Model / Preloader / Mask generator / Hover animation）与 Codrops 的编辑节奏方法可拼成一套可执行原则：\n- 导航不必持续可见，靠分段 reveal 与轻量过渡引导用户前进\n- 把 mask 当作统一动效原语（开场、章节切换、hover 反馈复用同一语法）\n- 先定义节奏 token（段落时长、延迟梯度、进入方向），再做视觉细化\n\n可执行结论：内容型站点先做“叙事状态机”（intro → browse → detail → exit），再补菜单结构。\n\n---\n\n**2) three.js examples（instancing 系列）— 从“对象驱动”升级到“实例状态驱动”**\n\nexamples 列表中 `instancing / performance / dynamic / raycast / morph` 给出清晰工程路径：\n- 渲染层：优先 `InstancedMesh` 压低 draw calls\n- 交互层：用 raycast 命中实例 id，不直接操作大量独立 mesh\n- 动画层：把 hover/active/progress 写成实例状态字段（可映射到颜色、位移、形变）\n\n可执行结论：作品墙、点阵图库、3D 卡片海等高密度场景，应先搭“实例状态机 + 批量渲染”底座，再叠加风格化特效。\n\n**Awwwards 当日补充（Utopia Tokyo, SOTD Mar 29）**\n- 元素高亮出现 `Mask generator`，说明“可复用遮罩语言”正在从单次特效转向系统级交互组件。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/"
+            },
+            {
+              "label": "Awwwards SOTD Mar 29 - Utopia Tokyo",
+              "url": "https://www.awwwards.com/sites/utopia-tokyo"
+            },
+            {
+              "label": "Codrops Mar 27 - Pell Mell: Crafting a Visual Exploration Platform with Editorial Rhythm",
+              "url": "https://tympanus.net/codrops/2026/03/27/pell-mell-crafting-a-visual-exploration-platform-with-editorial-rhythm/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_instancing_performance",
+              "url": "https://threejs.org/examples/webgl_instancing_performance.html"
+            },
+            {
+              "label": "three.js example - webgl_instancing_raycast",
+              "url": "https://threejs.org/examples/webgl_instancing_raycast.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-28",
       "title": "Editorial Rhythm as Invisible Navigation + Instancing-First Interaction Layering",
       "summary": "今天聚焦 Awwwards / Codrops / three.js 最新内容，提炼 2 个最可执行方向：1) Codrops 3/27《Pell Mell》强调“编辑节奏即导航”——用轻量 reveal（IntersectionObserver + stagger）与极简 UI 让用户顺滑探索，而不是依赖重菜单；2) three.js examples 继续验证高密度交互应先做 InstancedMesh 基线（performance / scatter / raycast），先把分布、命中与帧率跑稳，再叠加风格层。Awwwards 当日 SOTD《SUTÉRA》的亮点也显示该趋势：Loader and Reality Transition + Lab Reality 这类分段体验，本质是节奏化叙事与结构化过渡。",
