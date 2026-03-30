@@ -1,6 +1,50 @@
 {
   "entries": [
     {
+      "date": "2026-03-30",
+      "title": "Mask-Wipe Chaptering + Instance-State Interaction Budgeting",
+      "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个最值得落地的方向：1) Awwwards 当日 SOTD《Fluid Glass》与 Codrops《Motion Highlights #17》共同指向“章节化遮罩过渡”——把 Intro、Scroll 段落、Mask wipe transition 统一成同一套节奏语法，让叙事切换像镜头而不是页面跳转；2) three.js examples（instancing_performance / instancing_raycast / instancing_dynamic）再次确认高密度交互的工程顺序应是“先实例状态预算，后视觉风格叠加”：先用实例 id 命中与状态字段驱动反馈，再上材质/后处理。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Awwwards SOTD Mar 30（Fluid Glass）× Codrops Motion Highlights #17 —— 用“遮罩切章”替代传统页面切换**\n\nAwwwards 当日 SOTD 的 Elements 明确出现 `Intro Animation`、`Process Component`、`Showroom`、`Mask wipe transition on scroll`，而 Codrops 当日 roundup 的总述是 *fluid simulations + bold microinteractions + visual storytelling*。两者组合给出的可执行结论是：\n- 把站点当“章节镜头”而不是“页面集合”\n- 统一过渡语法：同一套 mask wipe / reveal token 贯穿 intro、section 切换、detail 进入\n- 微交互只做信号放大（hover/press/feedforward），不抢章节节奏主导权\n\n可执行结论：内容型网站先定义 `chapter transition grammar`（方向、时长、遮罩密度、延迟梯度），再做单页细节。\n\n---\n\n**2) three.js examples（instancing_performance / raycast / dynamic）—— 高密度交互先做“实例状态预算”**\n\nthree.js examples 持续给出稳定路径：\n- `instancing_performance`：先压 draw calls，建立渲染预算\n- `instancing_raycast`：命中返回 instance id，交互不再依赖大量独立 mesh\n- `instancing_dynamic`：把颜色/位移/激活进度写成实例状态，再批量更新\n\n可执行结论：作品墙、点阵导航、3D 卡片海等场景，先定义实例状态字段（hover/active/progress/priority）与更新频率，再叠加视觉特效。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/?order=latest"
+            },
+            {
+              "label": "Awwwards SOTD Mar 30 - Fluid Glass",
+              "url": "https://www.awwwards.com/sites/fluid-glass"
+            },
+            {
+              "label": "Codrops Mar 29 - Motion Highlights #17",
+              "url": "https://tympanus.net/codrops/2026/03/29/motion-highlights-17/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_instancing_performance",
+              "url": "https://threejs.org/examples/webgl_instancing_performance.html"
+            },
+            {
+              "label": "three.js example - webgl_instancing_raycast",
+              "url": "https://threejs.org/examples/webgl_instancing_raycast.html"
+            },
+            {
+              "label": "three.js example - webgl_instancing_dynamic",
+              "url": "https://threejs.org/examples/webgl_instancing_dynamic.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-29",
       "title": "Mask-Driven Narrative Controls + Instance-State Interaction Architecture",
       "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个最值得落地的方向：1) Awwwards 当日 SOTD《Utopia Tokyo》+ Codrops《Pell Mell》共同指向“弱化显式导航、强化节奏与遮罩控制”的叙事式浏览——通过 Hero Slider / 3D 段落 / Preloader / Mask Generator 等统一动效原语，把浏览过程做成连续状态机；2) three.js examples 的 instancing 家族（performance / dynamic / raycast / morph）提示高密度交互应升级为“实例状态驱动”架构：每个实例仅维护轻量状态（hover/active/progress），由 GPU 批量渲染与命中反馈，避免 DOM 级逐项动画扩散。",
