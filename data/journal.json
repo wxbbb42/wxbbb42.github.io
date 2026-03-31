@@ -1,6 +1,46 @@
 {
   "entries": [
     {
+      "date": "2026-03-31",
+      "title": "Scroll-Scrubbed 3D Chaptering + Instancing KPI Baseline",
+      "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个可直接落地的方向：1) Codrops《On-Scroll 3D Carousel》结合 Awwwards 最新 SOTD 列表显示的章节化叙事趋势，适合把作品站改为“滚动即镜头切换”的 3D chapter 结构；2) three.js `webgl_instancing_performance` 给出可量化的性能决策面板（INSTANCED/MERGED/NAIVE 对照），再次确认高密度交互默认应先建立实例化预算再叠加视觉层。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Codrops《On-Scroll 3D Carousel》× Awwwards latest：把滚动做成镜头切章（chaptering），不是卡片翻页**\n\nCodrops 最新 Playground 文章《On-Scroll 3D Carousel》本质是在滚动轴上做 3D 旋转编排；结合 Awwwards 最新列表中大量 `DEV + SOTD` 的叙事站点，可以确认一个稳定方向：\n- 章节切换优先用“同一空间内转场”（rotate/translate/depth）\n- 每一章只保留一个核心视觉信号（标题/材质/对象），避免同时堆多个重动效\n- 过渡统一成单一语法（同向旋转、固定时长区间、一致缓动）\n\n可执行结论：作品站可改为 `intro -> work-1 -> work-2 -> detail` 的 3D 滚动章节流，让用户感知为连续镜头而不是跳页。\n\n---\n\n**2) three.js `webgl_instancing_performance`：把性能指标前置成交互设计约束**\n\n该示例直接提供方法切换（`INSTANCED / MERGED / NAIVE`）和实时指标读数（如 `INSTANCED`、`count=1000` 时显示 `GPU draw calls: 1`、`GPU memory: 33.13 KB`）。\n\n可执行结论：\n- 高密度场景默认先用 InstancedMesh 建立基线\n- 把交互状态写成实例字段（hover/active/progress），再做批量更新\n- 先通过指标面板确定预算（draw calls / memory），再叠加材质、后处理和转场\n\n一句话：先把“能跑稳”做成系统约束，再把“好看”叠上去。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest)",
+              "url": "https://www.awwwards.com/websites/?order=latest"
+            },
+            {
+              "label": "Awwwards latest sample - San Rita",
+              "url": "https://www.awwwards.com/sites/san-rita"
+            },
+            {
+              "label": "Codrops - Playground",
+              "url": "https://tympanus.net/codrops/category/playground/"
+            },
+            {
+              "label": "Codrops May 7, 2025 - On-Scroll 3D Carousel",
+              "url": "https://tympanus.net/codrops/2025/05/07/on-scroll-3d-carousel/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_instancing_performance",
+              "url": "https://threejs.org/examples/webgl_instancing_performance.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-03-30",
       "title": "Mask-Wipe Chaptering + Instance-State Interaction Budgeting",
       "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个最值得落地的方向：1) Awwwards 当日 SOTD《Fluid Glass》与 Codrops《Motion Highlights #17》共同指向“章节化遮罩过渡”——把 Intro、Scroll 段落、Mask wipe transition 统一成同一套节奏语法，让叙事切换像镜头而不是页面跳转；2) three.js examples（instancing_performance / instancing_raycast / instancing_dynamic）再次确认高密度交互的工程顺序应是“先实例状态预算，后视觉风格叠加”：先用实例 id 命中与状态字段驱动反馈，再上材质/后处理。",
