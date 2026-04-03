@@ -1,13 +1,53 @@
 {
   "entries": [
     {
-      "date": "2026-04-01",
-      "title": "GPU-First Massive Instance Animation + Two-Color WebGL Story Framing",
-      "summary": "??? Awwwards / Codrops / three.js ?? 2 ??????????1) Codrops 4/1?Animating 160,000 Cubes in Three.js to Visualize Dithering???????????????InstancedMesh + ShaderMaterial?? 16 ???? position/color/scale ???? GPU ?????? CPU ???2) Awwwards ?? SOTD?Vast????????? + ??? WebGL????2 ??? + Interior/Exterior WebGL ?????? three.js webgl_instancing_performance ????????????????????????????????",
+      "date": "2026-04-03",
+      "title": "Scroll-Velocity Motion Signals + Instancing-First Interaction Budget",
+      "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个可直接落地的方向：1) Codrops 最新教程线索强调“滚动速度作为动效信号”，把 scroll velocity 注入 WebGL/动画参数，让页面节奏和用户输入绑定；2) three.js examples 继续验证高密度交互应先做 instancing 预算（draw call / memory / 命中方式），再叠加叙事层与视觉风格。Awwwards 最新站点列表也持续体现‘强约束视觉 + 连续章节转场’的高分趋势。",
       "blocks": [
         {
           "type": "note",
-          "text": "**??????? 2 ???**\n\n**1) Codrops Apr 1?Animating 160,000 Cubes...?? ??????? GPU-first?InstancedMesh + Shader ????**\n\n??????????? `400 x 400 = 160,000` ? cube????????????? for-loop??????????position/color/scale??? shader ? GPU ?????\n\n??????\n- ???????? `InstancedMesh` ???????? mesh\n- ????????? shader ??????????? CPU ??????\n- ?????????? / ????? / ???????????????????????\n\n????**??????????????????????**\n\n---\n\n**2) Awwwards SOTD Apr 1?Vast?? three.js instancing_performance ? ????????????**\n\nAwwwards ? Vast ???????\n- Elements ???? `Haven-1 Interior & Exterior WebGL`????????\n- ???????? 2 ??`#2A2C2F` / `#FF5623`?????????\n\n?? three.js `webgl_instancing_performance` ???`INSTANCED`, `count=1000` ? `GPU draw calls: 1`, `GPU memory: 33.13 KB`????????\n- ???????????? draw calls/memory ??\n- ????????????????\n- ??????????????????????\n\n????**?????????????????????????????????**"
+          "text": "**今日最有价值的 2 个手法**\n\n**1) Codrops（最新教程流）— 把 scroll velocity 当成交互主信号，而不是仅做触发器**\n\nCodrops 首页/教程摘要持续强调 scroll-driven WebGL：动画不仅“随滚动开始”，而是“随滚动速度变化”。这个差异很关键：\n- 慢速滚动：形变弱、节奏稳，信息可读性高\n- 快速滚动：形变/位移增强，形成情绪峰值\n- 停止滚动：状态快速回归基线，避免视觉噪音\n\n可执行结论：把 velocity 纳入统一 motion token（范围、衰减、回弹时长），页面会从“触发式动效”升级为“输入驱动的连续反馈系统”。\n\n---\n\n**2) three.js examples — Instancing-first 仍是高密度交互默认底座**\n\nthree.js examples 的 instancing/performance 路径依旧明确：\n- 先用 `InstancedMesh` 建立 draw call 与显存预算\n- 再把交互（hover/active/progress）写成实例状态\n- 最后叠加材质、后处理和叙事镜头\n\n可执行结论：任何点阵、卡片海、作品墙类场景，先完成“预算 + 命中 + 批量更新”三件套，再做视觉表达。\n\n**Awwwards latest 补充观察**\n- 最新获奖/提名站点依然偏向“强约束视觉系统（常见双色或少色）+ 连续章节转场”的组合\n- 说明高分作品在 2026 仍是“叙事一致性 + 工程可控性”并重。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest sort)",
+              "url": "https://www.awwwards.com/websites/?order=latest"
+            },
+            {
+              "label": "Codrops - Home",
+              "url": "https://tympanus.net/codrops/"
+            },
+            {
+              "label": "Codrops - Tutorials",
+              "url": "https://tympanus.net/codrops/category/tutorials/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_instancing_performance",
+              "url": "https://threejs.org/examples/webgl_instancing_performance.html"
+            },
+            {
+              "label": "three.js example - webgl_instancing_dynamic",
+              "url": "https://threejs.org/examples/webgl_instancing_dynamic.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-04-01",
+      "title": "GPU-First Massive Instance Animation + Two-Color WebGL Story Framing",
+      "summary": "Today's top 2 takeaways from Awwwards / Codrops / three.js: (1) Codrops Apr 1 (Animating 160,000 Cubes in Three.js to Visualize Dithering) shows a GPU-first pattern for dense motion with InstancedMesh + ShaderMaterial, moving per-instance position/color/scale updates from CPU loops to parallel GPU instructions; (2) Awwwards SOTD Vast pairs a strict 2-color system with WebGL storytelling (Haven-1 interior/exterior sequences). Combined with three.js instancing metrics, the practical workflow is: lock performance budgets first, then layer narrative transitions and visual style.",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**Top 2 techniques today**\n\n**1) Codrops Apr 1 (Animating 160,000 Cubes) — GPU-first dense animation with InstancedMesh + shaders**\n\nThe tutorial maps dithering to a `400 x 400 = 160,000` cube grid and highlights the key engineering move: do not update each cube on CPU one-by-one. Instead, use `InstancedMesh` and shader instructions so position/color/scale updates run in parallel on GPU.\n\nActionable pattern:\n- Default to `InstancedMesh` for very large repeated objects\n- Express animation as state functions in shader logic, not per-object JS loops\n- For data walls / pixel sculptures / educational visualizations, design the state mapping first, then material style\n\nOne-liner: **let parallel compute handle scale first, then design handles expression.**\n\n---\n\n**2) Awwwards SOTD Apr 1 (Vast) + three.js instancing baseline — performance budget and aesthetics must start together**\n\nFrom the Vast page on Awwwards:\n- Elements highlight `Haven-1 Interior & Exterior WebGL` as the interaction core\n- Palette is tightly constrained to 2 colors (`#2A2C2F` / `#FF5623`) for strong brand focus\n\nPaired with `webgl_instancing_performance` (`INSTANCED`, `count=1000` => `GPU draw calls: 1`, `GPU memory: 33.13 KB`), the implementation order is clear:\n- First lock draw-call/memory budgets with instancing metrics\n- Then layer chapter transitions and storytelling beats\n- Treat visual language and performance constraints as one system\n\nOne-liner: **great narrative WebGL is not effects-first then optimization-later; it is budget-aware design from frame zero.**"
         },
         {
           "type": "ref",
