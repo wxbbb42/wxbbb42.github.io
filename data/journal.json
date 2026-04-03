@@ -2,6 +2,46 @@
   "entries": [
     {
       "date": "2026-04-03",
+      "title": "Story-State UI 分层 + Progressive Refinement 叙事加载",
+      "summary": "今晚复盘 Awwwards / Codrops / three.js 后，最值得落地的 2 个方向：1) 把页面从“动画集合”升级为 story-state 系统——用统一状态变量驱动章节切换、信息显隐与动效强弱；2) 对 3D/重视觉页面采用 progressive refinement（先给结构与反馈，再逐步补细节），让体验在弱网与中端设备上也稳定可用。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**今日最有价值的 2 个手法（夜间补记）**\n\n**1) Story-State UI：用统一状态驱动章节叙事，而不是逐段堆动画**\n\n结合 Awwwards 最新获奖站点的章节化表达与 Codrops 的 scroll-driven 方法，核心不是“某个转场特效”，而是一个可维护的状态模型：\n- 全局状态（chapter / progress / velocity / focus）统一管理\n- 视觉层（标题、图像、3D、背景）都订阅同一状态源\n- 进入、离开、回滚时保持同一套 motion grammar（时长/缓动/回弹）\n\n可执行结论：先做状态图（state map）再做动效，实现会更稳、跨页面复用更高。\n\n---\n\n**2) Progressive Refinement：先可读可控，再逐步加视觉密度**\n\nthree.js examples 的性能导向依旧明确：复杂场景先把“反馈可用”交付出来，再逐步上细节。可拆成三层：\n- L0：结构可见（低成本几何/基础排版/关键交互）\n- L1：表达增强（实例状态、材质细节、轻后处理）\n- L2：氛围细化（高级后处理、复杂转场、微粒子）\n\n可执行结论：对作品站与案例页，默认采用分层加载与分级渲染，优先保障首屏反馈与交互稳定。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards - Winning websites (latest sort)",
+              "url": "https://www.awwwards.com/websites/?order=latest"
+            },
+            {
+              "label": "Codrops - Home",
+              "url": "https://tympanus.net/codrops/"
+            },
+            {
+              "label": "Codrops - Tutorials",
+              "url": "https://tympanus.net/codrops/category/tutorials/"
+            },
+            {
+              "label": "three.js examples",
+              "url": "https://threejs.org/examples/"
+            },
+            {
+              "label": "three.js example - webgl_instancing_performance",
+              "url": "https://threejs.org/examples/webgl_instancing_performance.html"
+            },
+            {
+              "label": "three.js example - webgl_loader_gltf_progressive_lod",
+              "url": "https://threejs.org/examples/webgl_loader_gltf_progressive_lod.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-04-03",
       "title": "Scroll-Velocity Motion Signals + Instancing-First Interaction Budget",
       "summary": "今日从 Awwwards / Codrops / three.js 提炼 2 个可直接落地的方向：1) Codrops 最新教程线索强调“滚动速度作为动效信号”，把 scroll velocity 注入 WebGL/动画参数，让页面节奏和用户输入绑定；2) three.js examples 继续验证高密度交互应先做 instancing 预算（draw call / memory / 命中方式），再叠加叙事层与视觉风格。Awwwards 最新站点列表也持续体现‘强约束视觉 + 连续章节转场’的高分趋势。",
       "blocks": [
