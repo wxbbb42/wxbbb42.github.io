@@ -1,6 +1,46 @@
 {
   "entries": [
     {
+      "date": "2026-04-10",
+      "title": "WebGPU Migration Path + Barba.js/GSAP Page Transitions",
+      "summary": "今日从 Awwwards SOTD（ICOMAT）和 Codrops 最新教程中提炼两个方向：1) Three.js WebGPU 迁移——2026 年 WebGPU 已在主流浏览器生产可用，从 WebGLRenderer 切换到 WebGPURenderer 的实际路径与性能收益（LiDAR 场景 100× 提升案例）；2) Barba.js + GSAP 页面过渡编排——在 Astro 等 MPA 框架中实现 SPA 级别的跨页动画，结合 SVG mask reveal 和 scroll-driven transitions 打造沉浸叙事体验。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**两个技术手法提炼（2026-04-10）**\n\n**1) Three.js WebGPU 迁移实战路径（Awwwards ICOMAT + three.js 生态动态）**\n\nICOMAT 拿下 4/10 SOTD，其工业材料展示网站使用了高密度 3D 渲染。结合 2026 年 three.js 生态变化：\n- WebGPU 已在所有主流浏览器生产可用，Three.js 提供 `three/webgpu` 入口和 `WebGPURenderer` 直接替换方案\n- TSL（Three.js Shading Language）统一编译到 WGSL/GLSL，迁移时 ShaderMaterial → NodeMaterial 是最大改动点\n- 实际案例：Segments.ai LiDAR 点云标注从 WebGL 切到 WebGPU 获得 100× 性能提升\n- 迁移检查清单：grep WebGLRenderer/ShaderMaterial/RawShaderMaterial → 逐个替换\n\n**落地思考：** 个人网站 3D 场景可以开始规划 WebGPU 分支，用 feature detection 做 fallback，先在粒子/实例化场景试水。\n\n---\n\n**2) Barba.js + GSAP 跨页过渡编排（Codrops Apr 8 教程）**\n\nCodrops 4/8 发布的教程展示了在 Astro（MPA 框架）中用 Barba.js + GSAP 实现页面过渡：\n- Barba.js 拦截页面导航，注入过渡动画层，避免整页刷新的割裂感\n- 结合 GSAP timeline 编排 leave → enter 动画序列\n- 另一篇（3/2）展示 scroll-driven animated grid：sticky 布局中逐步展开的网格动画\n- 4/1 的 Dithering 可视化教程：Three.js 驱动 160,000 个立方体 + 自定义 shader 做抖动算法可视化\n\n**落地思考：** 对于多页面作品集，Barba.js 方案比全局 SPA 更轻量，可以在保持 MPA 架构优势（SEO、代码分割）的同时获得流畅过渡。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Awwwards SOTD Apr 10 - ICOMAT",
+              "url": "https://www.awwwards.com/sites/icomat"
+            },
+            {
+              "label": "Three.js WebGPU Migration Guide (2026)",
+              "url": "https://www.utsubo.com/blog/webgpu-threejs-migration-guide"
+            },
+            {
+              "label": "What's New in Three.js 2026: WebGPU Production-Ready",
+              "url": "https://www.utsubo.com/blog/threejs-2026-what-changed"
+            },
+            {
+              "label": "Codrops - Page Transitions in Astro with Barba.js and GSAP",
+              "url": "https://tympanus.net/codrops/2026/04/08/"
+            },
+            {
+              "label": "Codrops - Dithering Visualization with Three.js (160K cubes)",
+              "url": "https://tympanus.net/codrops/2026/04/01/"
+            },
+            {
+              "label": "three.js WebGPU examples",
+              "url": "https://threejs.org/examples/?q=webgpu"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-04-08",
       "title": "Narrative Constraint Pairing + Progressive Instancing Baseline",
       "summary": "???? Awwwards ???????Codrops ????? three.js examples ???????? 2 ????1) ???????????????? + ?????????????????????????2) ????/????????three.js ??? Instancing + Progressive/Lod ??????????????",
