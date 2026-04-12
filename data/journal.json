@@ -1,6 +1,74 @@
 {
   "entries": [
     {
+      "date": "2026-04-12",
+      "title": "Exat Typography Microsite (Scroll-Driven Type Choreography) + Liquid Particle Metaballs in Three.js",
+      "summary": "今日两个技术方向：1) Codrops Exat 微型站案例——用 scroll-driven animations 编排字体展示，将排版本身作为交互媒介而非静态展示，motion + interaction + scroll 三位一体驱动当代字体叙事；2) Three.js 液态粒子模拟——结合 Metaball 隐式曲面与自定义 fragment shader，在 hero section 实现流体质感的粒子融合效果，hover 时触发像素化/液态过渡。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**两个技术手法提炼（2026-04-12）**\n\n**1) Scroll-Driven Typography Choreography（Codrops - Exat Microsite 案例）**\n\nCodrops 4/10 发布的 Exat 微型站案例展示了如何把字体展示做成沉浸体验：\n- 核心思路：scroll-driven design 不只是滚动触发动画，而是让滚动本身成为排版的节奏控制器\n- 技术栈：CSS scroll-driven animations（view-timeline）+ GSAP 补充复杂编排\n- 关键手法：字符级动画分解——每个字母/字重/字距变化都与滚动位置绑定，形成连续的视觉韵律\n- 交互层：hover/click 触发字体变体轴（variable font axes）的实时插值，让用户'触摸'字体\n- 设计哲学：Typography-as-interaction，字体不只是内容载体，本身就是交互界面\n\n**落地思考：** 个人网站的 About/Skills 页面可以尝试 scroll-driven 字重渐变——随滚动从 thin 过渡到 black，用运动传达信息层级。Variable font + scroll-timeline 组合是低成本高表现力方案。\n\n---\n\n**2) Liquid Particle Metaballs + Custom Shaders（Three.js Forum Showcase）**\n\nthree.js 社区本周展示了一个作品集网站，hero 区域使用液态粒子模拟：\n- Metaball 原理：在 fragment shader 中对每个粒子计算距离场（distance field），叠加后用 threshold 截断，产生粒子融合的'液滴'效果\n- 实现要点：粒子位置用 GPGPU（DataTexture + ping-pong FBO）驱动物理模拟，shader 端做视觉渲染\n- 视觉增强：在 metaball 表面叠加 Fresnel 反射 + 环境贴图，模拟液态金属/水银质感\n- 交互：鼠标位置作为 uniform 传入 shader，粒子受鼠标引力/斥力影响，hover 卡片时触发像素化溶解过渡\n- 性能：粒子数 ~5000 时 60fps 可维持，关键优化是 instanced rendering + shader 端距离场计算\n\n**落地思考：** Metaball 效果非常适合做 hero section 的有机视觉锚点——比静态几何体更有生命感。可以从 2D SDF metaball（纯 fragment shader，不需要粒子系统）开始，逐步升级到 3D 版本。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Codrops - The Exat Microsite: Typography Showcase with Scroll-Driven Design",
+              "url": "https://tympanus.net/codrops/2026/04/10/the-exat-microsite-pushing-a-typography-showcase-to-new-creative-extremes/"
+            },
+            {
+              "label": "Three.js Forum - Liquid Particles Simulation Portfolio",
+              "url": "https://discourse.threejs.org/t/personal-portfolio-liquid-particles-simulation-and-custom-shaders/90902"
+            },
+            {
+              "label": "MDN - CSS view-timeline",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/view-timeline"
+            },
+            {
+              "label": "Inigo Quilez - Distance Functions (SDF/Metaball reference)",
+              "url": "https://iquilezles.org/articles/distfunctions/"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-04-11",
+      "title": "Diamond Refraction Shaders (BVH Ray Marching) + GSAP Free Era & CSS Scroll-Driven Animations",
+      "summary": "今日两个技术方向：1) Three.js 钻石折射 Shader——使用 three-mesh-bvh 库实现光线在宝石内部多次反射/折射 + 色散，适用于任何需要真实感透明材质的 3D 展示场景；2) GSAP 完全免费化（Webflow 收购后移除付费墙）+ CSS scroll-driven animations（view-timeline）进入生产就绪，两者结合为滚动叙事动效提供了零成本高性能方案。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**两个技术手法提炼（2026-04-11）**\n\n**1) Three.js 钻石折射 Shader：BVH 加速的光线追踪材质**\n\nAuriga IT 本周发布了完整教程，展示如何用 Three.js + three-mesh-bvh 实现逼真钻石渲染：\n- 核心思路：在 fragment shader 中用 BVH 加速的射线与网格求交，模拟光线在宝石内部的多次全内反射和折射\n- 色散（Chromatic Aberration）：对 R/G/B 三通道使用不同折射率（IOR），分离光谱产生彩虹火彩效果\n- 关键参数：bounces（反射次数，8-12 次效果最佳）、IOR（钻石 ~2.42）、aberrationStrength\n- 性能考量：BVH 预计算使得实时射线追踪可行，但高 bounce 数仍需注意 GPU 负载\n\n**落地思考：** 这个技术不只用于珠宝——任何透明/半透明材质（玻璃器皿、水晶、冰块）都可以用类似方案。个人网站的 hero section 可以考虑一个折射球体/棱镜作为视觉锚点。\n\n---\n\n**2) GSAP 完全免费 + CSS Scroll-Driven Animations 生产就绪**\n\n2026 年初 Webflow 收购 GSAP 后移除了所有付费墙（ScrollTrigger、MorphSVG 等插件全部免费），这是行业重大转变：\n- GSAP 生态完全开放：ScrollTrigger、Flip、DrawSVG 等之前需要 Club 会员的插件现在零成本\n- 同时 CSS scroll-driven animations（scroll-timeline、view-timeline）已在 Chrome/Edge 稳定版支持，Firefox 实验性支持\n- 实践策略：简单的入场/视差动效用原生 CSS scroll-driven（零 JS、零依赖），复杂的时间轴编排用 GSAP ScrollTrigger\n- Trig.js（4KB）作为超轻量 CSS-first scroll observer 也值得关注，适合性能敏感场景\n\n**落地思考：** 个人网站可以采用分层方案——基础滚动动效用 CSS view-timeline（性能最优），交互密集区段用 GSAP timeline。GSAP 免费化消除了之前的许可顾虑。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Auriga IT - Custom Diamond Shaders in Three.js (BVH refraction)",
+              "url": "https://aurigait.com/blog/how-to-create-custom-shaders-for-a-diamond-in-three-js/"
+            },
+            {
+              "label": "three-mesh-bvh GitHub",
+              "url": "https://github.com/gkjohnson/three-mesh-bvh"
+            },
+            {
+              "label": "Best JS Scroll Animation Libraries 2026 (GSAP free + Trig.js)",
+              "url": "https://cssauthor.com/best-javascript-scroll-animation-scrollytelling-libraries/"
+            },
+            {
+              "label": "MDN - CSS Scroll-Driven Animations (scroll-timeline)",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/scroll-timeline"
+            },
+            {
+              "label": "three.js examples - Refraction",
+              "url": "https://threejs.org/examples/?q=refraction"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-04-10",
       "title": "WebGPU Migration Path + Barba.js/GSAP Page Transitions",
       "summary": "今日从 Awwwards SOTD（ICOMAT）和 Codrops 最新教程中提炼两个方向：1) Three.js WebGPU 迁移——2026 年 WebGPU 已在主流浏览器生产可用，从 WebGLRenderer 切换到 WebGPURenderer 的实际路径与性能收益（LiDAR 场景 100× 提升案例）；2) Barba.js + GSAP 页面过渡编排——在 Astro 等 MPA 框架中实现 SPA 级别的跨页动画，结合 SVG mask reveal 和 scroll-driven transitions 打造沉浸叙事体验。",
