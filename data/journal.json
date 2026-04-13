@@ -1,6 +1,38 @@
 {
   "entries": [
     {
+      "date": "2026-04-13",
+      "title": "Astro + Barba.js 自定义页面过渡系统 + Three.js Baked Lighting Diorama 技术",
+      "summary": "今日两个技术方向：1) Codrops 最新教程——在 Astro 框架中用 Barba.js + GSAP 构建自定义页面过渡系统，通过 CustomEase 'hop' 缓动曲线和 leave/enter 生命周期钩子实现流畅的跨页动效，解决了 MPA 架构下页面切换的割裂感；2) Three.js Baked Lighting Diorama——零实时光源策略，将 Blender 预渲染的光照/阴影/全局光照烘焙到单张纹理贴图，在浏览器中以极低 GPU 开销呈现高品质 3D 场景。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**两个技术手法提炼（2026-04-13）**\n\n**1) Astro + Barba.js + GSAP 自定义页面过渡（Codrops Tutorial）**\n\nCodrops 4/8 发布的教程展示了如何在 Astro（MPA 框架）中实现 SPA 级别的页面过渡体验：\n- 核心架构：Barba.js 拦截链接点击，异步加载新页面 DOM，在新旧页面之间插入 GSAP 动画过渡层\n- 生命周期管理：通过 barba.init() 的 leave/enter/once 钩子精确控制退场→切换→入场时序\n- 关键手法：GSAP CustomEase 注册自定义 'hop' 缓动曲线——先快速弹起再缓落，赋予过渡物理感\n- 页面容器策略：用 data-barba='container' 标记可替换区域，data-barba-namespace 区分不同页面类型以应用差异化过渡\n- Astro 适配：Astro 的 islands 架构天然支持 MPA 路由，Barba.js 在此基础上叠加客户端过渡，兼顾 SSG 性能和交互流畅度\n\n**落地思考：** 个人网站如果用 Astro 重构（或保持 MPA），Barba.js + GSAP 是实现'作品集级'页面过渡的最佳路径。每个页面可以有独立的过渡动画——作品页用 clip-path 揭示，关于页用文字逐行展开。\n\n---\n\n**2) Baked Lighting Diorama：零实时光源的高品质 3D 场景（Three.js）**\n\nfreefrontend 2 月收录的 Interactive 3D Workspace Diorama 展示了'烘焙光照'策略的威力：\n- 核心思路：场景中不放置任何 Three.js 灯光（无 DirectionalLight/AmbientLight），所有光影信息预先在 Blender 中渲染并烘焙到单张纹理（baked.jpg）\n- 工作流：Blender 场景布光 → Cycles 渲染烘焙到 UV → 导出 glTF + baked texture → Three.js 中用 MeshBasicMaterial 加载（不参与光照计算）\n- 性能优势：MeshBasicMaterial 不做光照计算，draw call 和 shader 复杂度大幅降低，移动端也能流畅运行\n- 视觉品质：因为是离线渲染的全局光照（GI），包含了软阴影、光线弹射、环境遮蔽（AO），品质远超实时光照\n- 交互补充：相机轨道控制 + hover 高亮（用 Raycaster 检测后切换到带 emissive 的材质）\n\n**落地思考：** Baked lighting 是制作'展示型'3D 场景的最优性价比方案——适合个人网站的 hero 3D 场景或交互式房间/工作台。关键是学好 Blender 烘焙工作流。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "Codrops - Custom Page Transitions in Astro with Barba.js and GSAP",
+              "url": "https://tympanus.net/codrops/2026/04/08/creating-custom-page-transitions-in-astro-with-barba-js-and-gsap/"
+            },
+            {
+              "label": "Barba.js 官方文档",
+              "url": "https://barba.js.org/"
+            },
+            {
+              "label": "Interactive 3D Workspace Diorama (Baked Lighting)",
+              "url": "https://freefrontend.com/code/interactive-3d-workspace-diorama-2026-02-16/"
+            },
+            {
+              "label": "Three.js Forum - Baking Light with Textures",
+              "url": "https://discourse.threejs.org/t/how-to-bake-light-with-textures/52076"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-04-12",
       "title": "Exat Typography Microsite (Scroll-Driven Type Choreography) + Liquid Particle Metaballs in Three.js",
       "summary": "今日两个技术方向：1) Codrops Exat 微型站案例——用 scroll-driven animations 编排字体展示，将排版本身作为交互媒介而非静态展示，motion + interaction + scroll 三位一体驱动当代字体叙事；2) Three.js 液态粒子模拟——结合 Metaball 隐式曲面与自定义 fragment shader，在 hero section 实现流体质感的粒子融合效果，hover 时触发像素化/液态过渡。",
