@@ -1,6 +1,38 @@
 {
   "entries": [
     {
+      "date": "2026-04-14",
+      "title": "The Obsidian Assembly WebGL 粒子画廊系统 + Chanh M. Ho 的创意开发者成长路径",
+      "summary": "今日两个技术方向：1) Awwwards SOTD——The Obsidian Assembly 网站用 WebGL + 自定义粒子系统（stringtune/stringprogress）构建沉浸式画廊，粒子在图片间流动重组形成转场，配合 smooth scroll 驱动的布局编排实现叙事节奏感；2) Codrops 4/9 文章——创意开发者 Chanh M. Ho 的成长历程，从一条 DM 到首个 SOTD，揭示了 creative dev 社区的协作模式和作品集迭代策略。",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "**两个技术手法提炼（2026-04-14）**\n\n**1) WebGL 粒子画廊 + Scroll-Driven 布局编排（Awwwards SOTD - The Obsidian Assembly）**\n\nThe Obsidian Assembly 由 Fiddle.Digital 开发，获得 Awwwards 4/14 Site of the Day：\n- 核心技术：WebGL 粒子系统（stringtune + stringprogress 库），图片不是静态展示而是由成千上万粒子组成\n- 转场手法：导航或滚动时粒子从当前图片'解体'→流动→在目标图片位置'重组'，形成有机的视觉过渡\n- stringtune：控制粒子运动的时间曲线和编排节奏，类似音乐中的节拍控制\n- stringprogress：将滚动进度映射为粒子状态的连续插值，实现 scroll-driven 的粒子动画\n- smooth scroll 整合：全站使用平滑滚动，与粒子系统的 progress 值绑定，滚动即动画\n- 移动端适配：粒子数量根据设备性能动态调整，保持流畅度\n\n**落地思考：** 粒子画廊是比传统 image slider 更具表现力的作品展示方式。可以从简单的 2D canvas 粒子图片开始——将图片像素采样为粒子位置+颜色，transition 时 lerp 到下一张图的粒子分布。这是 WebGL 粒子画廊的简化版入门路径。\n\n---\n\n**2) 创意开发者的成长路径与社区策略（Codrops - Chanh M. Ho 专访）**\n\nCodrops 4/9 发布 Chanh M. Ho 的创意开发者成长故事：\n- 起点：一条发给 creative dev 社区前辈的 DM（直接消息），获得了指导和机会\n- 关键转折：首个 Awwwards SOTD 的获得过程——不是天赋驱动，而是持续迭代作品集 + 社区参与\n- 技术成长路线：从基础前端 → GSAP 动画 → WebGL/Three.js → 完整的 creative dev 技术栈\n- 作品集策略：每个项目都是技术实验场，用实际项目练新技术而非做 demo\n- 社区价值：Awwwards/Codrops/Twitter creative dev 圈子的互相推荐和反馈循环\n\n**落地思考：** 对 Ben 的启示——作品集网站本身就是最好的技术练习场。每次迭代网站时尝试一个新技术（shader、粒子、3D），积累下来就是完整的 creative dev 技术栈。同时积极参与社区分享。"
+        },
+        {
+          "type": "ref",
+          "links": [
+            {
+              "label": "The Obsidian Assembly - Awwwards SOTD April 14, 2026",
+              "url": "https://www.awwwards.com/sites/the-obsidian-assembly"
+            },
+            {
+              "label": "Awwwards Inspiration - Particle Gallery (The Obsidian Assembly)",
+              "url": "https://www.awwwards.com/inspiration/particle-gallery-the-obsidian-assembly"
+            },
+            {
+              "label": "Codrops - A Single DM, a First SOTD, and the Start of Chanh M. Ho's Creative Journey",
+              "url": "https://tympanus.net/codrops/2026/04/09/a-single-dm-a-first-sotd-and-the-start-of-chanh-m-hos-creative-journey/"
+            },
+            {
+              "label": "Fiddle.Digital Design Agency",
+              "url": "https://fiddle.digital/"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-04-13",
       "title": "Astro + Barba.js 自定义页面过渡系统 + Three.js Baked Lighting Diorama 技术",
       "summary": "今日两个技术方向：1) Codrops 最新教程——在 Astro 框架中用 Barba.js + GSAP 构建自定义页面过渡系统，通过 CustomEase 'hop' 缓动曲线和 leave/enter 生命周期钩子实现流畅的跨页动效，解决了 MPA 架构下页面切换的割裂感；2) Three.js Baked Lighting Diorama——零实时光源策略，将 Blender 预渲染的光照/阴影/全局光照烘焙到单张纹理贴图，在浏览器中以极低 GPU 开销呈现高品质 3D 场景。",
